@@ -70,11 +70,23 @@
             border: 1px solid var(--warning);
             color: var(--warning);
         }
+        .btn-upload {
+            background: rgba(0,240,255,0.1);
+            border: 2px dashed var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+        .btn-upload:hover {
+            background: rgba(0,240,255,0.2);
+        }
 
         .input-group input {
             width: 100%; padding: 0 18px; height: 50px; background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white;
             outline: none;
+        }
+        .input-group input[type="file"] {
+            padding: 12px 18px;
+            height: auto;
         }
 
         #loader {
@@ -192,6 +204,7 @@
         .key-text-pending { font-family: monospace; font-size: 14px; color: var(--warning); }
         .key-text-delivered { font-family: monospace; font-size: 14px; color: var(--success); font-weight: bold; letter-spacing: 1px; }
         .profile-stat { display: flex; justify-content: space-between; padding: 18px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
         .modal-overlay.active { visibility: visible; opacity: 1; }
@@ -294,10 +307,20 @@
         <div class="glass payment-settings-card">
             <div class="qr-image-container" id="display-qr-container"><i class="fas fa-qrcode" style="font-size:50px; opacity:0.3;"></i></div>
             <div class="upi-box" onclick="copyUPI()"><span id="display-upi">Loading...</span> <i class="fas fa-copy"></i></div>
-            <div class="input-group"><input id="add-amount" placeholder="Amount (₹)" type="number"></div>
-            <div class="input-group"><input id="add-utr" placeholder="UTR / Transaction ID"></div>
-            <div class="input-group"><input id="add-phone" placeholder="Phone Number"></div>
-            <button class="btn btn-purchase" id="btn-submit-payment">Submit Request</button>
+            <div class="input-group">
+                <label style="color:var(--text-muted);font-size:12px;">Amount (₹)</label>
+                <input id="add-amount" placeholder="Enter amount" type="number">
+            </div>
+            <div class="input-group">
+                <label style="color:var(--text-muted);font-size:12px;">Phone Number</label>
+                <input id="add-phone" placeholder="Your phone number">
+            </div>
+            <div class="input-group">
+                <label style="color:var(--text-muted);font-size:12px;">Upload Screenshot (Payment Proof)</label>
+                <input type="file" id="screenshot-input" accept="image/*" capture="environment">
+                <div id="screenshot-preview"></div>
+            </div>
+            <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-upload"></i> Submit Payment Proof</button>
         </div>
     </div>
 
@@ -331,7 +354,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, onValue, push, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, push, runTransaction, serverTimestamp, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
@@ -346,11 +370,14 @@
     const app = initializeApp(firebaseConfig, 'userApp');
     const auth = getAuth(app);
     const db = getDatabase(app);
+    const storage = getStorage(app);
     
     let currentUser = null;
     let userData = { balance: 0 };
     let refreshInterval = null;
     let balanceListenerUnsubscribe = null;
+    let selectedFile = null;
+    let screenshotPreview = null;
 
     function getVideoEmbedCode(url) {
         if (!url || url.trim() === '') return null;
@@ -411,6 +438,20 @@
             document.getElementById('auth-tg-link').href = data.telegram_login || '#';
             document.getElementById('auth-tg-link-2').href = data.telegram_login || '#';
             document.getElementById('global-telegram-btn').href = data.telegram_dashboard || '#';
+        }
+    });
+
+    // Screenshot upload preview
+    document.getElementById('screenshot-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const preview = document.getElementById('screenshot-preview');
+                preview.innerHTML = `<img src="${event.target.result}" class="preview-img" alt="Screenshot preview">`;
+            };
+            reader.readAsDataURL(file);
         }
     });
 
@@ -539,23 +580,50 @@
         }
     });
 
-    // Submit Payment
+    // ============================================================
+    // SUBMIT PAYMENT WITH SCREENSHOT - UPDATED
+    // ============================================================
     document.getElementById('btn-submit-payment').onclick = async () => {
         if(!currentUser) return;
+        
         const amount = document.getElementById('add-amount').value;
-        const utr = document.getElementById('add-utr').value.trim();
         const phone = document.getElementById('add-phone').value.trim();
+        
         if(!amount || amount <= 0) return showToast("Enter amount", "error");
-        if(!utr) return showToast("UTR required", "error");
-        await push(ref(db, 'payments'), {
-            uid: currentUser.uid, email: currentUser.email,
-            amount: parseFloat(amount), utr, phone,
-            status: 'pending', timestamp: serverTimestamp()
-        });
-        showToast("Request submitted! Admin will approve.");
-        document.getElementById('add-amount').value = '';
-        document.getElementById('add-utr').value = '';
-        document.getElementById('add-phone').value = '';
+        if(!phone) return showToast("Phone number required", "error");
+        if(!selectedFile) return showToast("Please upload screenshot", "error");
+        
+        try {
+            // Upload screenshot to Firebase Storage
+            const storagePath = `payments/${currentUser.uid}/${Date.now()}_${selectedFile.name}`;
+            const fileRef = storageRef(storage, storagePath);
+            await uploadBytes(fileRef, selectedFile);
+            const screenshotUrl = await getDownloadURL(fileRef);
+            
+            // Save payment request
+            await push(ref(db, 'payments'), {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                amount: parseFloat(amount),
+                phone: phone,
+                screenshot: screenshotUrl,
+                status: 'pending',
+                type: 'screenshot',
+                autoVerified: false,
+                timestamp: serverTimestamp()
+            });
+            
+            showToast("✅ Payment proof submitted! Admin will verify.");
+            document.getElementById('add-amount').value = '';
+            document.getElementById('add-phone').value = '';
+            document.getElementById('screenshot-input').value = '';
+            document.getElementById('screenshot-preview').innerHTML = '';
+            selectedFile = null;
+            
+        } catch(error) {
+            console.error("Payment submission error:", error);
+            showToast("Error submitting payment: " + error.message, "error");
+        }
     };
 
     async function loadHistory() {
@@ -790,13 +858,11 @@
         const mainApp = document.getElementById('main-app');
         
         if(user) {
-            // ✅ SABHI USERS KO ALLOW - Admin check nahi!
             currentUser = user;
             authScreen.style.display = 'none';
             mainApp.style.display = 'block';
             loader.style.display = 'none';
             
-            // Balance listener with error handling - NO LOGOUT
             try {
                 if (balanceListenerUnsubscribe) {
                     balanceListenerUnsubscribe();
@@ -810,7 +876,6 @@
                     const balSpan = document.getElementById('nav-balance');
                     if(balSpan) balSpan.innerText = balance.toFixed(2);
                 }, (error) => {
-                    // ERROR HANDLER - Logout nahi hoga!
                     console.warn("Balance listener error (ignored):", error);
                     userData.balance = 0;
                     const balSpan = document.getElementById('nav-balance');

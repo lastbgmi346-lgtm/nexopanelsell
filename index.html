@@ -415,7 +415,7 @@
     });
 
     // ============================================================
-    // SIGNUP - FIXED VERSION (No logout issue)
+    // SIGNUP - FIXED
     // ============================================================
     document.getElementById('btn-signup').onclick = async () => {
         const email = document.getElementById('signup-email').value.trim();
@@ -780,7 +780,7 @@
     };
 
     // ============================================================
-    // AUTH STATE - FIXED (No logout on rule errors)
+    // AUTH STATE - FIXED - SABHI USERS ALLOW
     // ============================================================
     onAuthStateChanged(auth, (user) => {
         const loader = document.getElementById('loader');
@@ -788,6 +788,7 @@
         const mainApp = document.getElementById('main-app');
         
         if(user) {
+            // ✅ SABHI USERS KO ALLOW - Admin check nahi!
             currentUser = user;
             authScreen.style.display = 'none';
             mainApp.style.display = 'block';

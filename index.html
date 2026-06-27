@@ -279,25 +279,17 @@
         .profile-stat { display: flex; justify-content: space-between; padding: 18px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
 
-        .history-actions {
+        .dashboard-actions {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
+            margin: 10px 0;
             flex-wrap: wrap;
         }
-        .history-actions .btn {
+        .dashboard-actions .btn {
             flex: 1;
             min-width: 100px;
-        }
-        .history-plan-badge {
-            display: inline-block;
-            background: rgba(188,19,254,0.2);
-            border: 1px solid var(--neon-purple);
-            padding: 4px 12px;
-            border-radius: 20px;
+            height: 40px;
             font-size: 12px;
-            color: var(--neon-purple);
-            margin-top: 5px;
         }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
@@ -324,7 +316,7 @@
             .promo-card { flex: 0 0 90%; height: 150px; }
             .coupon-box { flex-direction: column; }
             .checkout-actions { flex-direction: column; }
-            .history-actions .btn { min-width: 80px; font-size: 10px; }
+            .dashboard-actions .btn { min-width: 80px; font-size: 10px; }
         }
     </style>
 </head>
@@ -765,7 +757,7 @@
     };
 
     // ============================================================
-    // LOAD HISTORY - FIXED: ACCESS FILES HATAYA, BUTTONS NICHE
+    // LOAD HISTORY - CLEAN (Sirf Key Copy, No Extra Buttons)
     // ============================================================
     async function loadHistory() {
         if(!currentUser) return;
@@ -801,34 +793,44 @@
                 const statusText = isDelivered ? '✅ DELIVERED' : '⏳ PENDING';
                 const statusColor = isDelivered ? 'status-delivered' : 'status-pending';
                 
+                const planBadge = p.label || p.plan || 'N/A';
+                
+                // Features chips
+                let featuresHtml = '';
+                if(p.description) {
+                    const features = p.description.split(/\n|-/).filter(f => f.trim()).slice(0,4);
+                    if(features.length > 0) {
+                        featuresHtml = `<div class="features-list" style="margin-top:5px; margin-bottom:8px; gap:5px;">`;
+                        features.forEach(f => {
+                            featuresHtml += `<span class="feature-chip" style="font-size:10px; padding:4px 10px;">${f.trim()}</span>`;
+                        });
+                        featuresHtml += `</div>`;
+                    }
+                }
+                
                 let keyHtml = '';
                 if(isDelivered) {
                     keyHtml = `
-                        <div class="key-box">
+                        <div class="key-box" style="margin-top:8px;">
                             <span class="key-text-delivered" id="key-${p.id}">${p.key}</span>
                             <button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button>
-                        </div>
-                        <div class="history-actions">
-                            <button class="btn btn-warning-custom btn-sm" onclick="showToast('✅ Latest version available! Contact admin for details.')"><i class="fas fa-sync-alt"></i> CHECK UPDATE</button>
-                            <button class="btn btn-primary btn-sm" onclick="window.open('${p.link || '#'}', '_blank')"><i class="fas fa-video"></i> VIDEO/FEEDBACK</button>
                         </div>
                     `;
                 } else {
                     keyHtml = `
-                        <div class="key-box">
+                        <div class="key-box" style="margin-top:8px;">
                             <span class="key-text-pending"><i class="fas fa-clock"></i> Key Pending - Admin will deliver within 24 hours</span>
-                        </div>
-                        <div class="history-actions">
-                            <button class="btn btn-pending btn-sm" onclick="window.open('${document.getElementById('global-telegram-btn')?.href || '#'}', '_blank')"><i class="fab fa-telegram"></i> CONTACT ADMIN</button>
-                            <button class="btn btn-warning-custom btn-sm" onclick="showToast('✅ Please contact admin for update')"><i class="fas fa-sync-alt"></i> CHECK UPDATE</button>
                         </div>
                     `;
                 }
                 
                 div.innerHTML = `
-                    <div><strong>${p.panelName}</strong> <span class="history-plan-badge">${p.label || p.plan}</span></div>
-                    <div>Amount: ₹${p.price}</div>
-                    <div class="${statusColor}">${statusText}</div>
+                    <div><strong>${p.panelName}</strong></div>
+                    ${featuresHtml}
+                    <div style="margin:8px 0;">
+                        <span class="history-plan-badge">${planBadge}</span> - ₹${p.price}
+                    </div>
+                    <div class="${statusColor}" style="margin-bottom:5px;">${statusText}</div>
                     ${keyHtml}
                 `;
                 container.appendChild(div);
@@ -885,6 +887,9 @@
         });
     }
 
+    // ============================================================
+    // FETCH PANELS - DASHBOARD WITH CHECK UPDATE & VIDEO/FEEDBACK
+    // ============================================================
     function fetchPanels() {
         onValue(ref(db, 'panels'), (snapshot) => {
             const skeleton = document.getElementById('skeleton-container');
@@ -944,12 +949,24 @@
                 const card = document.createElement('div');
                 card.className = 'panel-card';
                 card.setAttribute('data-search', `${p.name} ${p.description || ''}`);
+                
+                // ============================================================
+                // DASHBOARD BUTTONS: CHECK UPDATE & VIDEO/FEEDBACK (Plan ke niche)
+                // ============================================================
+                const dashboardButtons = `
+                    <div class="dashboard-actions">
+                        <button class="btn btn-warning-custom btn-sm" onclick="showToast('✅ Latest version available! Contact admin for details.')"><i class="fas fa-sync-alt"></i> CHECK UPDATE</button>
+                        <button class="btn btn-primary btn-sm" onclick="window.open('${p.link || '#'}', '_blank')"><i class="fas fa-video"></i> VIDEO/FEEDBACK</button>
+                    </div>
+                `;
+                
                 card.innerHTML = `
                     ${videoHtml}
                     <div class="panel-info">
                         <div class="panel-title">${p.name}</div>
                         <div class="features-list">${featuresHtml || '<span class="feature-chip">Premium Quality</span>'}</div>
                         ${plansHtml}
+                        ${dashboardButtons}   // ✅ CHECK UPDATE & VIDEO/FEEDBACK PLAN KE NICHE
                         <button class="btn btn-purchase" onclick="handlePurchase('${panelId}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')">PURCHASE NOW</button>
                     </div>
                 `;

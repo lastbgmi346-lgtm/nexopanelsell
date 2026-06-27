@@ -135,8 +135,10 @@
         .status-pending { color: var(--warning); font-weight: 600; }
         .status-approved { color: var(--success); font-weight: 600; }
         .status-delivered { color: var(--success); font-weight: 600; }
+        .status-rejected { color: var(--error); font-weight: 600; }
 
-        .key-input { width: 100%; padding: 10px; background: rgba(0,0,0,0.6); border: 1px solid var(--neon-cyan-dim); border-radius: 8px; color: white; font-family: monospace; }
+        .screenshot-thumb { max-width: 100px; max-height: 80px; border-radius: 4px; cursor: pointer; }
+        .screenshot-thumb:hover { opacity: 0.8; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
         .modal-overlay.active { visibility: visible; opacity: 1; }
@@ -145,9 +147,6 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .close-modal { background: none; border: none; color: white; font-size: 24px; cursor: pointer; transition: all 0.3s; }
         .close-modal:hover { color: var(--error); transform: rotate(90deg); }
-
-        .plan-item { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .plan-item input { flex: 1; min-width: 120px; }
 
         @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-item span { display: none; } .sidebar-item i { width: auto; font-size: 20px; } .main-content { margin-left: 70px; } }
         @media (max-width: 480px) { .main-content { padding: 75px 15px 30px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .stat-card h3 { font-size: 24px; } .navbar { padding: 0 15px; } .logo { font-size: 16px; } }
@@ -214,7 +213,7 @@
             <div class="table-responsive"><table><thead><th>Title</th><th>Image</th><th>Status</th><th>Actions</th></thead><tbody id="promotions-list"></tbody></table></div>
         </div>
 
-        <!-- KEY DELIVERY PAGE - FIXED -->
+        <!-- KEY DELIVERY PAGE -->
         <div id="key-delivery-page" class="hidden">
             <div class="card-header"><h3><i class="fas fa-key"></i> Key Delivery Requests</h3></div>
             <div class="table-responsive">
@@ -225,10 +224,15 @@
             </div>
         </div>
 
-        <!-- PAYMENTS -->
+        <!-- PAYMENTS - UPDATED WITH SCREENSHOT -->
         <div id="payments-page" class="hidden">
             <div class="card-header"><h3>Payment Requests</h3></div>
-            <div class="table-responsive"><table><thead><th>User</th><th>Amount</th><th>UTR</th><th>Phone</th><th>Status</th><th>Actions</th></thead><tbody id="payments-list"></tbody></table></div>
+            <div class="table-responsive">
+                <table>
+                    <thead><th>User</th><th>Amount</th><th>Phone</th><th>Screenshot</th><th>Status</th><th>Actions</th></thead>
+                    <tbody id="payments-list"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- SETTINGS -->
@@ -252,6 +256,9 @@
 
 <!-- KEY DELIVERY MODAL -->
 <div class="modal-overlay" id="key-delivery-modal"><div class="modal"><div class="modal-header"><h3>Deliver License Key</h3><button class="close-modal" onclick="closeModal('key-delivery-modal')">&times;</button></div><div class="input-group"><label>User Email</label><input id="kd-user-email" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Panel</label><input id="kd-panel-name" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Plan</label><input id="kd-plan" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>License Key</label><input id="kd-key" placeholder="Enter real license key (e.g., ABC12-XYZ34-MNOP5)"></div><button class="btn btn-success" id="kd-confirm-btn">Deliver Key</button><input type="hidden" id="kd-purchase-id"></div></div>
+
+<!-- PAYMENT DETAILS MODAL -->
+<div class="modal-overlay" id="payment-modal"><div class="modal"><div class="modal-header"><h3>Payment Details</h3><button class="close-modal" onclick="closeModal('payment-modal')">&times;</button></div><div id="payment-details-content"></div></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -292,7 +299,7 @@
     async function loadDashboardStats(){ const u=await get(ref(db,'users')), p=await get(ref(db,'panels')), pay=await get(ref(db,'payments')), purchases=await get(ref(db,'purchases')); let tu=0, tp=0, pp=0, pk=0; if(u.exists()) tu=Object.keys(u.val()).length; if(p.exists()) Object.values(p.val()).forEach(pn=>{ if(pn.status==='active') tp++; }); if(pay.exists()) Object.values(pay.val()).forEach(paym=>{ if(paym.status==='pending') pp++; }); if(purchases.exists()){ Object.values(purchases.val()).forEach(uidPurchases=>{ Object.values(uidPurchases).forEach(pur=>{ if(pur.keyStatus==='pending') pk++; }); }); } document.getElementById('total-users').innerText=tu; document.getElementById('total-panels').innerText=tp; document.getElementById('pending-payments').innerText=pp; document.getElementById('pending-keys').innerText=pk; }
     
     // ============================================================
-    // LOAD KEY DELIVERY REQUESTS - FIXED VERSION
+    // LOAD KEY DELIVERY REQUESTS
     // ============================================================
     async function loadKeyDelivery(){ 
         const tbody = document.getElementById('key-delivery-list'); 
@@ -371,7 +378,6 @@
         document.getElementById('kd-plan').value=plan; 
         document.getElementById('kd-purchase-id').value=pid; 
         document.getElementById('kd-key').value=''; 
-        // Store uid for delivery
         document.getElementById('kd-confirm-btn').dataset.uid = uid;
         openModal('key-delivery-modal'); 
     };
@@ -415,9 +421,101 @@
     document.getElementById('save-promo-btn').onclick=async()=>{ const id=document.getElementById('edit-promo-id').value; const data={title:document.getElementById('promo-title').value,image:document.getElementById('promo-image').value,link:document.getElementById('promo-link').value,status:document.getElementById('promo-status').value==='true'}; if(id){ await update(ref(db,`promotions/${id}`),data); showToast('Updated!'); } else{ await push(ref(db,'promotions'),data); showToast('Added!'); } closeModal('promo-modal'); loadPromotions(); };
     document.getElementById('add-promo-btn').onclick=()=>{ document.getElementById('promo-modal-title').innerText='Add Promotion'; document.getElementById('promo-title').value=''; document.getElementById('promo-image').value=''; document.getElementById('promo-link').value=''; document.getElementById('promo-status').value='true'; document.getElementById('edit-promo-id').value=''; openModal('promo-modal'); };
     
-    async function loadPayments(){ const snap=await get(ref(db,'payments')); const tbody=document.getElementById('payments-list'); tbody.innerHTML=''; if(!snap.exists()) return; const payments=Object.entries(snap.val()).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0)); for(let [id,payment] of payments){ const row=document.createElement('tr'); row.innerHTML=`<td>${payment.email||payment.uid?.substring(0,8)}</td><td>₹${payment.amount}</td><td><small>${payment.utr||'-'}</small></td><td>${payment.phone||'-'}</td><td class="status-${payment.status||'pending'}">${payment.status||'pending'}</td><td>${payment.status==='pending'?`<button class="btn btn-success btn-sm" onclick="approvePayment('${id}',${payment.amount},'${payment.uid}')"><i class="fas fa-check"></i> Approve</button><button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>`:'-'}</td>`; tbody.appendChild(row); } }
-    window.approvePayment=async(id,amt,uid)=>{ if(confirm(`Approve ₹${amt}?`)){ await update(ref(db,`payments/${id}`),{status:'approved'}); const balRef=ref(db,`users/${uid}/balance`); const snap=await get(balRef); await set(balRef,(snap.val()||0)+amt); showToast(`₹${amt} added!`); loadPayments(); loadDashboardStats(); } };
-    window.rejectPayment=async(id)=>{ if(confirm('Reject?')){ await update(ref(db,`payments/${id}`),{status:'rejected'}); showToast('Rejected!'); loadPayments(); loadDashboardStats(); } };
+    // ============================================================
+    // LOAD PAYMENTS - UPDATED WITH SCREENSHOT
+    // ============================================================
+    async function loadPayments(){ 
+        const snap=await get(ref(db,'payments')); 
+        const tbody=document.getElementById('payments-list'); 
+        tbody.innerHTML=''; 
+        if(!snap.exists()){ 
+            tbody.innerHTML='<tr><td colspan="6">No payment requests</td></tr>'; 
+            return; 
+        } 
+        
+        const payments = Object.entries(snap.val()).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0)); 
+        
+        for(let [id, payment] of payments){
+            const row = document.createElement('tr');
+            
+            let screenshotHtml = '-';
+            if(payment.screenshot) {
+                screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" onclick="window.open('${payment.screenshot}','_blank')" title="Click to view full image">`;
+            }
+            
+            let statusClass = payment.status || 'pending';
+            let statusText = payment.status || 'pending';
+            let actionsHtml = '';
+            
+            if(payment.status === 'pending') {
+                actionsHtml = `
+                    <button class="btn btn-success btn-sm" onclick="approvePayment('${id}')"><i class="fas fa-check"></i> Approve</button>
+                    <button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>
+                `;
+            } else {
+                actionsHtml = `<span class="status-${statusClass}">${statusText}</span>`;
+            }
+            
+            row.innerHTML = `
+                <td><strong>${payment.email || payment.uid?.substring(0,8)}</strong></td>
+                <td>₹${payment.amount}</td>
+                <td>${payment.phone || '-'}</td>
+                <td>${screenshotHtml}</td>
+                <td class="status-${statusClass}">${statusText}</td>
+                <td>${actionsHtml}</td>
+            `;
+            tbody.appendChild(row);
+        }
+    }
+    
+    // ============================================================
+    // APPROVE PAYMENT
+    // ============================================================
+    window.approvePayment = async (id) => {
+        if(!confirm(`Approve this payment?`)) return;
+        try {
+            const snap = await get(ref(db, `payments/${id}`));
+            const payment = snap.val();
+            if(!payment) return showToast("Payment not found", "error");
+            
+            // Add balance to user
+            const balRef = ref(db, `users/${payment.uid}/balance`);
+            const balSnap = await get(balRef);
+            await set(balRef, (balSnap.val() || 0) + payment.amount);
+            
+            // Update payment status
+            await update(ref(db, `payments/${id}`), { 
+                status: 'approved',
+                approvedAt: serverTimestamp(),
+                approvedBy: currentAdmin?.email || 'admin'
+            });
+            
+            showToast(`✅ ₹${payment.amount} added to user balance!`);
+            loadPayments();
+            loadDashboardStats();
+        } catch(e) {
+            showToast("Error: " + e.message, "error");
+        }
+    };
+    
+    // ============================================================
+    // REJECT PAYMENT
+    // ============================================================
+    window.rejectPayment = async (id) => {
+        if(!confirm(`⚠️ Are you sure you want to REJECT this payment? This will NOT refund any amount.`)) return;
+        try {
+            await update(ref(db, `payments/${id}`), { 
+                status: 'rejected',
+                rejectedAt: serverTimestamp(),
+                rejectedBy: currentAdmin?.email || 'admin'
+            });
+            showToast("❌ Payment rejected!");
+            loadPayments();
+            loadDashboardStats();
+        } catch(e) {
+            showToast("Error: " + e.message, "error");
+        }
+    };
     
     async function loadUsers(){ const snap=await get(ref(db,'users')); const tbody=document.getElementById('users-list'); tbody.innerHTML=''; if(!snap.exists()) return; for(let [uid,user] of Object.entries(snap.val())){ const purchasesSnap=await get(ref(db,`purchases/${uid}`)); let purchaseCount=purchasesSnap.exists()?Object.keys(purchasesSnap.val()).length:0; const row=document.createElement('tr'); row.innerHTML=`<td>${user.email}</td><td style="color:var(--success);">₹${user.balance||0}</td><td>${purchaseCount}</td><td><small>${user.createdAt?new Date(user.createdAt).toLocaleDateString():'-'}</small></td><td><button class="btn btn-primary btn-sm" onclick="addUserBalance('${uid}')"><i class="fas fa-plus"></i> Add ₹</button></td>`; tbody.appendChild(row); } }
     window.addUserBalance=async(uid)=>{ const amt=prompt('Enter amount to add:'); if(amt&&!isNaN(amt)&&amt>0){ const balRef=ref(db,`users/${uid}/balance`); const snap=await get(balRef); await set(balRef,(snap.val()||0)+parseFloat(amt)); showToast(`₹${amt} added!`); loadUsers(); loadDashboardStats(); } };

@@ -340,8 +340,7 @@
         projectId: "nexo-store-6d494",
         storageBucket: "nexo-store-6d494.firebasestorage.app",
         messagingSenderId: "1077591470608",
-        appId: "1:1077591470608:web:78022588f0fd1e4aa15095",
-        measurementId: "G-ECKWJSX1TB"    
+        appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -351,6 +350,7 @@
     let currentUser = null;
     let userData = { balance: 0 };
     let refreshInterval = null;
+    let balanceListenerUnsubscribe = null;
 
     function getVideoEmbedCode(url) {
         if (!url || url.trim() === '') return null;
@@ -414,34 +414,75 @@
         }
     });
 
-    // Signup
+    // ============================================================
+    // SIGNUP - FIXED VERSION (No logout issue)
+    // ============================================================
     document.getElementById('btn-signup').onclick = async () => {
         const email = document.getElementById('signup-email').value.trim();
         const pass = document.getElementById('signup-pass').value;
-        if(!email || pass.length < 6) return showToast("Invalid email/password", "error");
+        
+        if(!email || !email.includes('@')) {
+            return showToast("Valid email required", "error");
+        }
+        if(pass.length < 6) {
+            return showToast("Password must be at least 6 characters", "error");
+        }
+        
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, pass);
-            await set(ref(db, `users/${cred.user.uid}`), { email, balance: 0, createdAt: serverTimestamp() });
-            showToast("Account created! Please login.");
+            
+            await set(ref(db, `users/${cred.user.uid}`), {
+                email: email,
+                balance: 0,
+                createdAt: new Date().toISOString()
+            });
+            
+            showToast("✅ Account created! Please login.");
             document.getElementById('signup-box').classList.add('hidden');
             document.getElementById('login-box').classList.remove('hidden');
-        } catch(e) { showToast(e.message, "error"); }
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-pass').value = '';
+            
+        } catch(error) {
+            console.error("Signup error:", error);
+            if(error.code === 'auth/email-already-in-use') {
+                showToast("Email already registered. Please login.", "error");
+            } else if(error.code === 'auth/weak-password') {
+                showToast("Password too weak. Use at least 6 characters.", "error");
+            } else {
+                showToast(error.message || "Signup failed. Try again.", "error");
+            }
+        }
     };
 
-    // Login
+    // ============================================================
+    // LOGIN - FIXED
+    // ============================================================
     document.getElementById('btn-login').onclick = async () => {
         const email = document.getElementById('login-email').value.trim();
         const pass = document.getElementById('login-pass').value;
         if(!email || !pass) return showToast("Enter credentials", "error");
         try {
             await signInWithEmailAndPassword(auth, email, pass);
-            showToast("Welcome back!");
-        } catch(e) { showToast("Invalid credentials", "error"); }
+            showToast("Welcome back! 🎉");
+        } catch(e) {
+            if(e.code === 'auth/user-not-found') {
+                showToast("Account not found. Please sign up first.", "error");
+            } else if(e.code === 'auth/wrong-password') {
+                showToast("Wrong password. Try again.", "error");
+            } else {
+                showToast("Invalid credentials", "error");
+            }
+        }
     };
 
     // Logout
     document.getElementById('btn-logout').onclick = async () => { 
         if(refreshInterval) clearInterval(refreshInterval);
+        if(balanceListenerUnsubscribe) {
+            balanceListenerUnsubscribe();
+            balanceListenerUnsubscribe = null;
+        }
         await signOut(auth); 
     };
 
@@ -585,17 +626,21 @@
 
     async function loadProfile() {
         if(!currentUser) return;
-        const userSnap = await get(ref(db, `users/${currentUser.uid}`));
-        const purchaseSnap = await get(ref(db, `purchases/${currentUser.uid}`));
-        let count = 0, spent = 0;
-        if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
-        document.getElementById('prof-email').innerText = currentUser.email;
-        document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
-        document.getElementById('prof-purchases').innerText = count;
-        document.getElementById('prof-spent').innerText = spent.toFixed(2);
-        if(userSnap.val()?.createdAt) {
-            const date = userSnap.val().createdAt.toDate ? userSnap.val().createdAt.toDate() : new Date(userSnap.val().createdAt);
-            document.getElementById('prof-date').innerText = date.toLocaleDateString();
+        try {
+            const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+            const purchaseSnap = await get(ref(db, `purchases/${currentUser.uid}`));
+            let count = 0, spent = 0;
+            if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
+            document.getElementById('prof-email').innerText = currentUser.email;
+            document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
+            document.getElementById('prof-purchases').innerText = count;
+            document.getElementById('prof-spent').innerText = spent.toFixed(2);
+            if(userSnap.val()?.createdAt) {
+                const date = new Date(userSnap.val().createdAt);
+                document.getElementById('prof-date').innerText = date.toLocaleDateString();
+            }
+        } catch(e) {
+            console.error("Profile load error:", e);
         }
     }
 
@@ -734,6 +779,9 @@
         } catch(e) { showToast("Error: " + e.message, "error"); }
     };
 
+    // ============================================================
+    // AUTH STATE - FIXED (No logout on rule errors)
+    // ============================================================
     onAuthStateChanged(auth, (user) => {
         const loader = document.getElementById('loader');
         const authScreen = document.getElementById('auth-screen');
@@ -741,29 +789,52 @@
         
         if(user) {
             currentUser = user;
-            if(authScreen) authScreen.style.display = 'none';
-            if(mainApp) mainApp.style.display = 'block';
-            if(loader) loader.style.display = 'none';
+            authScreen.style.display = 'none';
+            mainApp.style.display = 'block';
+            loader.style.display = 'none';
             
-            onValue(ref(db, `users/${user.uid}/balance`), (snap) => {
-                const balance = snap.val() || 0;
-                userData.balance = balance;
-                const balSpan = document.getElementById('nav-balance');
-                if(balSpan) balSpan.innerText = balance.toFixed(2);
-            });
+            // Balance listener with error handling - NO LOGOUT
+            try {
+                if (balanceListenerUnsubscribe) {
+                    balanceListenerUnsubscribe();
+                    balanceListenerUnsubscribe = null;
+                }
+                
+                const balanceRef = ref(db, `users/${user.uid}/balance`);
+                balanceListenerUnsubscribe = onValue(balanceRef, (snap) => {
+                    const balance = snap.val() || 0;
+                    userData.balance = balance;
+                    const balSpan = document.getElementById('nav-balance');
+                    if(balSpan) balSpan.innerText = balance.toFixed(2);
+                }, (error) => {
+                    // ERROR HANDLER - Logout nahi hoga!
+                    console.warn("Balance listener error (ignored):", error);
+                    userData.balance = 0;
+                    const balSpan = document.getElementById('nav-balance');
+                    if(balSpan) balSpan.innerText = '0.00';
+                });
+            } catch(e) {
+                console.warn("Failed to setup balance listener:", e);
+                userData.balance = 0;
+            }
             
             fetchPanels();
             initPromotions();
             navigate('home');
         } else {
             if(refreshInterval) clearInterval(refreshInterval);
+            if(balanceListenerUnsubscribe) {
+                balanceListenerUnsubscribe();
+                balanceListenerUnsubscribe = null;
+            }
             currentUser = null;
-            if(authScreen) authScreen.style.display = 'flex';
-            if(mainApp) mainApp.style.display = 'none';
-            if(loader) loader.style.display = 'none';
+            authScreen.style.display = 'flex';
+            mainApp.style.display = 'none';
+            loader.style.display = 'none';
         }
     });
 
+    // Color cycler
     (function() {
         let hue = 0;
         setInterval(() => {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>SUKISU STORE OFFICIAL</title>
+<title>NEXO STORE OFFICIAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
@@ -224,7 +224,7 @@
 
 <div id="loader">
     <div class="spinner"></div>
-    <p style="margin-top: 20px; color: var(--neon-cyan); font-weight: 700;">LOADING SUKISU STORE...</p>
+    <p style="margin-top: 20px; color: var(--neon-cyan); font-weight: 700;">LOADING NEXO STORE...</p>
 </div>
 
 <div id="toast-container"></div>
@@ -232,7 +232,7 @@
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
     <div class="auth-card glass" id="login-box">
-        <h1>SUKISU TEAM <span>STORE</span></h1>
+        <h1>NEXO <span>STORE</span></h1>
         <p>Welcome back! Login to continue.</p>
         <div class="input-group"><input id="login-email" placeholder="Email Address" type="email"></div>
         <div class="input-group"><input id="login-pass" placeholder="Password" type="password"></div>
@@ -244,7 +244,7 @@
         </div>
     </div>
     <div class="auth-card glass hidden" id="signup-box">
-        <h1>JOIN <span>NOW</span></h1>
+        <h1>JOIN <span>NEXO</span></h1>
         <p>Create an account to get premium access.</p>
         <div class="input-group"><input id="signup-email" placeholder="Email Address" type="email"></div>
         <div class="input-group"><input id="signup-pass" placeholder="Password (Min 6 chars)" type="password"></div>
@@ -262,7 +262,7 @@
     <nav class="navbar glass">
         <div class="nav-left">
             <button class="menu-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-            <div class="logo"><span>SUKISU</span> TEAM</div>
+            <div class="logo"><span>NEXO</span> STORE</div>
         </div>
         <div class="balance-badge"><i class="fas fa-wallet"></i> ₹<span id="nav-balance">0.00</span></div>
         <div class="dropdown glass" id="dropdown-menu">
@@ -333,15 +333,15 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getDatabase, ref, set, get, onValue, push, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSgAQ9-l85GJdkxZzTGsB8p5bfyKGaum4",
-            authDomain: "sukisu-team-1552a.firebaseapp.com",
-            databaseURL: "https://sukisu-team-1552a-default-rtdb.firebaseio.com",
-            projectId: "sukisu-team-1552a",
-            storageBucket: "sukisu-team-1552a.firebasestorage.app",
-            messagingSenderId: "772242945680",
-            appId: "1:772242945680:android:02a3d42b02e7264e2d0a15"
-       };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDEs_57EvH2ao97UKgLkbuKQA71NXB5CM6",
+        authDomain: "nexo-store-6d494.firebaseapp.com",
+        databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
+        projectId: "nexo-store-6d494",
+        storageBucket: "nexo-store-6d494.firebasestorage.app",
+        messagingSenderId: "1077591470608",
+        appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -451,7 +451,6 @@
         document.getElementById('dropdown-menu').classList.remove('active');
         if(pageId === 'history') {
             loadHistory();
-            // Auto refresh every 10 seconds on history page
             if(refreshInterval) clearInterval(refreshInterval);
             refreshInterval = setInterval(() => {
                 const historyPage = document.getElementById('page-history');
@@ -467,7 +466,6 @@
         window.scrollTo(0,0);
     };
     
-    // Manual refresh function
     window.refreshKeys = () => {
         loadHistory();
         showToast("Keys refreshed!", "success");
@@ -518,7 +516,6 @@
         document.getElementById('add-phone').value = '';
     };
 
-    // LOAD HISTORY - Simple and Working
     async function loadHistory() {
         if(!currentUser) return;
         
@@ -537,7 +534,6 @@
             const purchases = [];
             snapshot.forEach(child => purchases.push({ id: child.key, ...child.val() }));
             
-            // Sort by date (newest first)
             purchases.sort((a,b) => {
                 const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
                 const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
@@ -602,7 +598,6 @@
         }
     }
 
-    // Promotions
     let autoScroll;
     function initPromotions() {
         onValue(ref(db, 'promotions'), (snap) => {
@@ -626,7 +621,6 @@
         });
     }
 
-    // FETCH PANELS
     function fetchPanels() {
         onValue(ref(db, 'panels'), (snapshot) => {
             const skeleton = document.getElementById('skeleton-container');
@@ -687,7 +681,6 @@
         });
     }
 
-    // Purchase handling
     window.currentCheckout = {};
     window.handlePurchase = (panelId, panelName, link) => {
         const select = document.getElementById(`plan-${panelId}`);
@@ -740,7 +733,6 @@
         } catch(e) { showToast("Error: " + e.message, "error"); }
     };
 
-    // Auth state
     onAuthStateChanged(auth, (user) => {
         const loader = document.getElementById('loader');
         const authScreen = document.getElementById('auth-screen');
@@ -752,7 +744,6 @@
             if(mainApp) mainApp.style.display = 'block';
             if(loader) loader.style.display = 'none';
             
-            // Real-time balance listener
             onValue(ref(db, `users/${user.uid}/balance`), (snap) => {
                 const balance = snap.val() || 0;
                 userData.balance = balance;
@@ -772,7 +763,6 @@
         }
     });
 
-    // Color cycler
     (function() {
         let hue = 0;
         setInterval(() => {

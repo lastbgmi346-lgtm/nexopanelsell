@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>SUKISU STORE OFFICIAL</title>
+<title>NEXO STORE ADMIN</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
@@ -155,14 +155,14 @@
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><p style="margin-top:20px;color:var(--neon-cyan);">LOADING ADMIN PANEL...</p></div>
+<div id="loader"><div class="spinner"></div><p style="margin-top:20px;color:var(--neon-cyan);">LOADING NEXO ADMIN PANEL...</p></div>
 <div id="toast-container"></div>
 
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
     <div class="auth-card glass">
         <div style="margin-bottom:20px;"><i class="fas fa-shield-alt" style="font-size:60px;color:var(--neon-cyan);text-shadow:0 0 20px var(--neon-cyan-dim);"></i></div>
-        <h1>ADMIN <span style="color:var(--neon-cyan);">PANEL</span></h1>
+        <h1>NEXO <span style="color:var(--neon-cyan);">ADMIN</span></h1>
         <p style="margin-bottom:20px;color:var(--text-muted);">Secure Administrator Access Only</p>
         <div class="input-group"><input id="admin-email" placeholder="Admin Email" type="email"></div>
         <div class="input-group"><input id="admin-pass" placeholder="Password" type="password"></div>
@@ -173,9 +173,9 @@
 <!-- ADMIN APP -->
 <div id="admin-app">
     <nav class="navbar">
-        <div class="logo"><span>SUKISU</span> ADMIN <small>PANEL</small></div>
+        <div class="logo"><span>NEXO</span> ADMIN <small>PANEL</small></div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <span class="admin-badge" id="admin-email-display">admin@example.com</span>
+            <span class="admin-badge" id="admin-email-display">admin@nexo.com</span>
             <button class="logout-btn" id="admin-logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </nav>
@@ -193,7 +193,7 @@
     <div class="main-content">
         <!-- DASHBOARD -->
         <div id="dashboard-page">
-            <h2 class="page-title">Admin <span>Dashboard</span></h2>
+            <h2 class="page-title">NEXO <span>Dashboard</span></h2>
             <div class="stats-grid">
                 <div class="stat-card glass"><h3 id="total-users">0</h3><p><i class="fas fa-users"></i> Total Users</p></div>
                 <div class="stat-card glass"><h3 id="total-panels">0</h3><p><i class="fas fa-box"></i> Active Panels</p></div>
@@ -214,7 +214,7 @@
             <div class="table-responsive"><table><thead><th>Title</th><th>Image</th><th>Status</th><th>Actions</th></thead><tbody id="promotions-list"></tbody></table></div>
         </div>
 
-        <!-- KEY DELIVERY PAGE - NEW -->
+        <!-- KEY DELIVERY PAGE -->
         <div id="key-delivery-page" class="hidden">
             <div class="card-header"><h3><i class="fas fa-key"></i> Key Delivery Requests</h3></div>
             <div class="table-responsive">
@@ -258,14 +258,23 @@
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getDatabase, ref, set, get, push, remove, update, serverTimestamp, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyDSgAQ9-l85GJdkxZzTGsB8p5bfyKGaum4", authDomain: "sukisu-team-1552a.firebaseapp.comm", databaseURL: "https://sukisu-team-1552a-default-rtdb.firebaseio.com", projectId: "sukisu-team-1552a", storageBucket: "sukisu-team-1552a.firebasestorage.app", messagingSenderId: "772242945680", appId: "1:772242945680:android:02a3d42b02e7264e2d0a15"};
+    const firebaseConfig = {
+        apiKey: "AIzaSyD5E_57EvH2ao97UKgLkbuKQA71NXB5CM0",
+        authDomain: "nexo-store-6d494.firebaseapp.com",
+        databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
+        projectId: "nexo-store-6d494",
+        storageBucket: "nexo-store-6d494.firebasestorage.app",
+        messagingSenderId: "1077591470608",
+        appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
     
     let currentAdmin = null;
     let plansCount = 1;
-    const adminEmails = ["sudhanshukumarevd@gmail.com", "your-email@gmail.com"];
+    const adminEmails = ["nexomodsss@gmail.com"];
     
     function showToast(msg, type='success') { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=`<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
     window.closeModal = (id) => document.getElementById(id).classList.remove('active');

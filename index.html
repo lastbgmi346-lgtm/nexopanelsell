@@ -282,12 +282,22 @@
         .history-actions {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 15px;
             flex-wrap: wrap;
         }
         .history-actions .btn {
             flex: 1;
             min-width: 100px;
+        }
+        .history-plan-badge {
+            display: inline-block;
+            background: rgba(188,19,254,0.2);
+            border: 1px solid var(--neon-purple);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--neon-purple);
+            margin-top: 5px;
         }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
@@ -314,6 +324,7 @@
             .promo-card { flex: 0 0 90%; height: 150px; }
             .coupon-box { flex-direction: column; }
             .checkout-actions { flex-direction: column; }
+            .history-actions .btn { min-width: 80px; font-size: 10px; }
         }
     </style>
 </head>
@@ -468,7 +479,6 @@
         if (!url || url.trim() === '') return null;
         const videoUrl = url.trim();
         
-        // YouTube
         if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
             let videoId = '';
             if (videoUrl.includes('youtu.be/')) videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
@@ -482,7 +492,6 @@
                 };
             }
         }
-        // YouTube Shorts
         if (videoUrl.includes('youtube.com/shorts/')) {
             const videoId = videoUrl.split('/shorts/')[1]?.split('?')[0];
             if (videoId) {
@@ -494,7 +503,6 @@
                 };
             }
         }
-        // Vimeo
         if (videoUrl.includes('vimeo.com/')) {
             const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
             if (videoId) {
@@ -506,7 +514,6 @@
                 };
             }
         }
-        // Direct MP4
         if (videoUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
             return {
                 type: 'mp4',
@@ -518,45 +525,14 @@
         return null;
     }
 
-    function createVideoHTML(videoData, panelId) {
-        if (!videoData) return null;
-        
-        const containerId = `video-${panelId}`;
-        const thumbId = `thumb-${panelId}`;
-        
-        let thumbHtml = '';
-        if (videoData.thumbnail) {
-            thumbHtml = `<img src="${videoData.thumbnail}" alt="Video thumbnail">`;
-        }
-        
-        return `
-            <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')">
-                <div class="video-thumbnail" id="${thumbId}">
-                    ${thumbHtml}
-                    <i class="fas fa-play-circle"></i>
-                    <span>▶ Click to Play</span>
-                </div>
-                <div class="video-fallback" style="display:none;">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Loading...</span>
-                </div>
-            </div>
-        `;
-    }
-
-    // Global play video function
     window.playVideo = function(containerId, thumbId) {
         const container = document.getElementById(containerId);
         const thumb = document.getElementById(thumbId);
         if (!container) return;
-        
-        // Hide thumbnail
         if (thumb) thumb.style.display = 'none';
         
-        // Get video data from container attribute
         const videoUrl = container.getAttribute('data-video-url');
         const videoType = container.getAttribute('data-video-type');
-        
         if (!videoUrl) return;
         
         let iframeHtml = '';
@@ -565,7 +541,6 @@
         } else if (videoType === 'mp4') {
             iframeHtml = `<video controls autoplay><source src="${videoUrl}" type="video/mp4"></video>`;
         }
-        
         container.innerHTML = iframeHtml;
     };
 
@@ -586,7 +561,6 @@
 
     window.closeModal = (id) => document.getElementById(id).classList.remove('active');
     
-    // Auth toggles
     document.getElementById('go-to-signup')?.addEventListener('click', () => {
         document.getElementById('login-box').classList.add('hidden');
         document.getElementById('signup-box').classList.remove('hidden');
@@ -596,7 +570,6 @@
         document.getElementById('login-box').classList.remove('hidden');
     });
 
-    // Contact links
     onValue(ref(db, 'support_links'), (snap) => {
         const data = snap.val();
         if(data) {
@@ -608,9 +581,6 @@
         }
     });
 
-    // ============================================================
-    // Convert File to Base64
-    // ============================================================
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -620,70 +590,36 @@
         });
     }
 
-    // ============================================================
-    // AUTO-VERIFY FUNCTION - OCR using Tesseract.js
-    // ============================================================
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
             showToast("🔍 Verifying screenshot...", "success");
-            
-            const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', {
-                logger: (m) => {
-                    if (m.status === 'recognizing text') {
-                        // Progress
-                    }
-                }
-            });
-            
+            const result = await Tesseract.recognize(imageDataUrl, 'hin+eng');
             const text = result.data.text;
             console.log("OCR Text:", text);
             
             const nameVariants = ['punam devi', 'punamdevi', 'punam', 'punaṃ devi'];
-            const hasPunamDevi = nameVariants.some(name => 
-                text.toLowerCase().includes(name.toLowerCase())
-            );
-            
+            const hasPunamDevi = nameVariants.some(name => text.toLowerCase().includes(name.toLowerCase()));
             const amountStr = expectedAmount.toString();
-            const amountMatch = text.includes(amountStr);
-            const amountWithRupee = text.includes('₹' + amountStr) || text.includes('₹ ' + amountStr);
+            const amountMatch = text.includes(amountStr) || text.includes('₹' + amountStr) || text.includes('₹ ' + amountStr);
             
-            if (hasPunamDevi && (amountMatch || amountWithRupee)) {
-                return { 
-                    verified: true, 
-                    reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added',
-                    nameFound: hasPunamDevi,
-                    amountFound: amountMatch || amountWithRupee
-                };
+            if (hasPunamDevi && amountMatch) {
+                return { verified: true, reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added', nameFound: true, amountFound: true };
             } else {
-                return { 
-                    verified: false, 
-                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking',
-                    nameFound: false,
-                    amountFound: false
-                };
+                return { verified: false, reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking', nameFound: false, amountFound: false };
             }
         } catch(error) {
             console.error("OCR Error:", error);
-            return { 
-                verified: false, 
-                reason: '⚠️ OCR failed, manual verification needed',
-                nameFound: false,
-                amountFound: false
-            };
+            return { verified: false, reason: '⚠️ OCR failed, manual verification needed', nameFound: false, amountFound: false };
         }
     }
 
-    // ============================================================
-    // SCREENSHOT UPLOAD
-    // ============================================================
     document.getElementById('screenshot-input').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if(file) {
             selectedFile = file;
             try {
                 screenshotBase64 = await fileToBase64(file);
-                const preview = document.getElementById('screenshot-preview');
-                preview.innerHTML = `<img src="${screenshotBase64}" class="preview-img" alt="Screenshot preview">`;
+                document.getElementById('screenshot-preview').innerHTML = `<img src="${screenshotBase64}" class="preview-img">`;
                 showToast("✅ Screenshot loaded!", "success");
             } catch(err) {
                 showToast("Error loading image", "error");
@@ -691,50 +627,25 @@
         }
     });
 
-    // ============================================================
-    // SIGNUP
-    // ============================================================
     document.getElementById('btn-signup').onclick = async () => {
         const email = document.getElementById('signup-email').value.trim();
         const pass = document.getElementById('signup-pass').value;
-        
-        if(!email || !email.includes('@')) {
-            return showToast("Valid email required", "error");
-        }
-        if(pass.length < 6) {
-            return showToast("Password must be at least 6 characters", "error");
-        }
-        
+        if(!email || !email.includes('@')) return showToast("Valid email required", "error");
+        if(pass.length < 6) return showToast("Password must be at least 6 characters", "error");
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, pass);
-            
-            await set(ref(db, `users/${cred.user.uid}`), {
-                email: email,
-                balance: 0,
-                createdAt: new Date().toISOString()
-            });
-            
+            await set(ref(db, `users/${cred.user.uid}`), { email, balance: 0, createdAt: new Date().toISOString() });
             showToast("✅ Account created! Please login.");
             document.getElementById('signup-box').classList.add('hidden');
             document.getElementById('login-box').classList.remove('hidden');
             document.getElementById('signup-email').value = '';
             document.getElementById('signup-pass').value = '';
-            
         } catch(error) {
-            console.error("Signup error:", error);
-            if(error.code === 'auth/email-already-in-use') {
-                showToast("Email already registered. Please login.", "error");
-            } else if(error.code === 'auth/weak-password') {
-                showToast("Password too weak. Use at least 6 characters.", "error");
-            } else {
-                showToast(error.message || "Signup failed. Try again.", "error");
-            }
+            if(error.code === 'auth/email-already-in-use') showToast("Email already registered. Please login.", "error");
+            else showToast(error.message || "Signup failed. Try again.", "error");
         }
     };
 
-    // ============================================================
-    // LOGIN
-    // ============================================================
     document.getElementById('btn-login').onclick = async () => {
         const email = document.getElementById('login-email').value.trim();
         const pass = document.getElementById('login-pass').value;
@@ -743,27 +654,18 @@
             await signInWithEmailAndPassword(auth, email, pass);
             showToast("Welcome back! 🎉");
         } catch(e) {
-            if(e.code === 'auth/user-not-found') {
-                showToast("Account not found. Please sign up first.", "error");
-            } else if(e.code === 'auth/wrong-password') {
-                showToast("Wrong password. Try again.", "error");
-            } else {
-                showToast("Invalid credentials", "error");
-            }
+            if(e.code === 'auth/user-not-found') showToast("Account not found. Please sign up first.", "error");
+            else if(e.code === 'auth/wrong-password') showToast("Wrong password. Try again.", "error");
+            else showToast("Invalid credentials", "error");
         }
     };
 
-    // Logout
     document.getElementById('btn-logout').onclick = async () => { 
         if(refreshInterval) clearInterval(refreshInterval);
-        if(balanceListenerUnsubscribe) {
-            balanceListenerUnsubscribe();
-            balanceListenerUnsubscribe = null;
-        }
+        if(balanceListenerUnsubscribe) { balanceListenerUnsubscribe(); balanceListenerUnsubscribe = null; }
         await signOut(auth); 
     };
 
-    // Navigation
     window.navigate = (pageId) => {
         document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
         document.getElementById(`page-${pageId}`).classList.remove('hidden');
@@ -772,8 +674,7 @@
             loadHistory();
             if(refreshInterval) clearInterval(refreshInterval);
             refreshInterval = setInterval(() => {
-                const historyPage = document.getElementById('page-history');
-                if(historyPage && !historyPage.classList.contains('hidden')) {
+                if(document.getElementById('page-history') && !document.getElementById('page-history').classList.contains('hidden')) {
                     loadHistory();
                 }
             }, 10000);
@@ -790,7 +691,6 @@
         showToast("Keys refreshed!", "success");
     };
 
-    // Dropdown
     document.getElementById('menu-toggle').onclick = (e) => {
         e.stopPropagation();
         document.getElementById('dropdown-menu').classList.toggle('active');
@@ -806,7 +706,6 @@
         item.addEventListener('click', () => navigate(item.dataset.page));
     });
 
-    // Load Payment Settings
     onValue(ref(db, 'settings/payment'), (snap) => {
         if(snap.exists()) {
             document.getElementById('display-upi').innerText = snap.val().upiId || 'Not set';
@@ -816,48 +715,24 @@
         }
     });
 
-    // ============================================================
-    // SUBMIT PAYMENT WITH AUTO-VERIFY
-    // ============================================================
     document.getElementById('btn-submit-payment').onclick = async () => {
-        if(!currentUser) {
-            showToast("Please login first", "error");
-            return;
-        }
-        
+        if(!currentUser) return showToast("Please login first", "error");
         const amount = document.getElementById('add-amount').value;
         const phone = document.getElementById('add-phone').value.trim();
-        
-        if(!amount || amount <= 0) {
-            showToast("Enter amount", "error");
-            return;
-        }
-        if(!phone) {
-            showToast("Phone number required", "error");
-            return;
-        }
-        if(!screenshotBase64) {
-            showToast("Please upload screenshot", "error");
-            return;
-        }
+        if(!amount || amount <= 0) return showToast("Enter amount", "error");
+        if(!phone) return showToast("Phone number required", "error");
+        if(!screenshotBase64) return showToast("Please upload screenshot", "error");
         
         try {
             const verifyResult = await autoVerifyScreenshot(screenshotBase64, parseFloat(amount));
-            
-            let autoVerified = verifyResult.verified;
-            let verificationStatus = autoVerified ? 'approved' : 'pending';
-            let autoVerifyNote = verifyResult.reason;
+            const autoVerified = verifyResult.verified;
+            const verificationStatus = autoVerified ? 'approved' : 'pending';
             
             const paymentRef = await push(ref(db, 'payments'), {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                amount: parseFloat(amount),
-                phone: phone,
-                screenshot: screenshotBase64,
-                status: verificationStatus,
-                type: 'screenshot_base64',
-                autoVerified: autoVerified,
-                autoVerifyNote: autoVerifyNote,
+                uid: currentUser.uid, email: currentUser.email,
+                amount: parseFloat(amount), phone, screenshot: screenshotBase64,
+                status: verificationStatus, type: 'screenshot_base64',
+                autoVerified, autoVerifyNote: verifyResult.reason,
                 expectedAmount: parseFloat(amount),
                 nameFound: verifyResult.nameFound || false,
                 amountFound: verifyResult.amountFound || false,
@@ -868,14 +743,8 @@
                 const balRef = ref(db, `users/${currentUser.uid}/balance`);
                 const balSnap = await get(balRef);
                 await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
-                
                 showToast("✅ Payment verified! ₹" + amount + " added to balance!");
-                
-                await update(ref(db, `payments/${paymentRef.key}`), {
-                    status: 'approved',
-                    approvedAt: serverTimestamp(),
-                    approvedBy: 'Auto-Verify System'
-                });
+                await update(ref(db, `payments/${paymentRef.key}`), { status: 'approved', approvedAt: serverTimestamp(), approvedBy: 'Auto-Verify System' });
             } else {
                 showToast("📤 " + verifyResult.reason);
             }
@@ -890,15 +759,13 @@
             const balRef = ref(db, `users/${currentUser.uid}/balance`);
             const balSnap = await get(balRef);
             userData.balance = balSnap.val() || 0;
-            
         } catch(error) {
-            console.error("Payment submission error:", error);
             showToast("Error submitting payment: " + error.message, "error");
         }
     };
 
     // ============================================================
-    // LOAD HISTORY - WITH CHECK UPDATE & VIDEO/FEEDBACK BUTTONS
+    // LOAD HISTORY - FIXED: ACCESS FILES HATAYA, BUTTONS NICHE
     // ============================================================
     async function loadHistory() {
         if(!currentUser) return;
@@ -942,8 +809,7 @@
                             <button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button>
                         </div>
                         <div class="history-actions">
-                            <button class="btn btn-warning-custom btn-sm" onclick="window.open('${p.link || '#'}', '_blank')"><i class="fas fa-download"></i> ACCESS FILES</button>
-                            <button class="btn btn-success-custom btn-sm" onclick="showToast('✅ Latest version available!')"><i class="fas fa-sync-alt"></i> CHECK UPDATE</button>
+                            <button class="btn btn-warning-custom btn-sm" onclick="showToast('✅ Latest version available! Contact admin for details.')"><i class="fas fa-sync-alt"></i> CHECK UPDATE</button>
                             <button class="btn btn-primary btn-sm" onclick="window.open('${p.link || '#'}', '_blank')"><i class="fas fa-video"></i> VIDEO/FEEDBACK</button>
                         </div>
                     `;
@@ -960,7 +826,7 @@
                 }
                 
                 div.innerHTML = `
-                    <div><strong>${p.panelName}</strong> - ${p.label || p.plan}</div>
+                    <div><strong>${p.panelName}</strong> <span class="history-plan-badge">${p.label || p.plan}</span></div>
                     <div>Amount: ₹${p.price}</div>
                     <div class="${statusColor}">${statusText}</div>
                     ${keyHtml}
@@ -975,10 +841,7 @@
     
     window.copyKey = (id) => {
         const text = document.getElementById(id)?.innerText;
-        if(text) {
-            navigator.clipboard.writeText(text);
-            showToast('Key copied!');
-        }
+        if(text) { navigator.clipboard.writeText(text); showToast('Key copied!'); }
     };
 
     async function loadProfile() {
@@ -996,9 +859,7 @@
                 const date = new Date(userSnap.val().createdAt);
                 document.getElementById('prof-date').innerText = date.toLocaleDateString();
             }
-        } catch(e) {
-            console.error("Profile load error:", e);
-        }
+        } catch(e) { console.error("Profile load error:", e); }
     }
 
     let autoScroll;
@@ -1024,9 +885,6 @@
         });
     }
 
-    // ============================================================
-    // FETCH PANELS - WITH CLICK TO PLAY VIDEO
-    // ============================================================
     function fetchPanels() {
         onValue(ref(db, 'panels'), (snapshot) => {
             const skeleton = document.getElementById('skeleton-container');
@@ -1064,11 +922,7 @@
                 if(videoData) {
                     const containerId = `video-${panelId}`;
                     const thumbId = `thumb-${panelId}`;
-                    
-                    let thumbImg = '';
-                    if (videoData.thumbnail) {
-                        thumbImg = `<img src="${videoData.thumbnail}" alt="Video thumbnail">`;
-                    }
+                    let thumbImg = videoData.thumbnail ? `<img src="${videoData.thumbnail}" alt="Video thumbnail">` : '';
                     
                     videoHtml = `
                         <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${videoData.embedUrl}" data-video-type="${videoData.type}">
@@ -1171,9 +1025,6 @@
         } catch(e) { showToast("Error: " + e.message, "error"); }
     };
 
-    // ============================================================
-    // AUTH STATE - FIXED
-    // ============================================================
     onAuthStateChanged(auth, (user) => {
         const loader = document.getElementById('loader');
         const authScreen = document.getElementById('auth-screen');
@@ -1186,11 +1037,7 @@
             loader.style.display = 'none';
             
             try {
-                if (balanceListenerUnsubscribe) {
-                    balanceListenerUnsubscribe();
-                    balanceListenerUnsubscribe = null;
-                }
-                
+                if (balanceListenerUnsubscribe) { balanceListenerUnsubscribe(); balanceListenerUnsubscribe = null; }
                 const balanceRef = ref(db, `users/${user.uid}/balance`);
                 balanceListenerUnsubscribe = onValue(balanceRef, (snap) => {
                     const balance = snap.val() || 0;
@@ -1203,20 +1050,14 @@
                     const balSpan = document.getElementById('nav-balance');
                     if(balSpan) balSpan.innerText = '0.00';
                 });
-            } catch(e) {
-                console.warn("Failed to setup balance listener:", e);
-                userData.balance = 0;
-            }
+            } catch(e) { console.warn("Failed to setup balance listener:", e); userData.balance = 0; }
             
             fetchPanels();
             initPromotions();
             navigate('home');
         } else {
             if(refreshInterval) clearInterval(refreshInterval);
-            if(balanceListenerUnsubscribe) {
-                balanceListenerUnsubscribe();
-                balanceListenerUnsubscribe = null;
-            }
+            if(balanceListenerUnsubscribe) { balanceListenerUnsubscribe(); balanceListenerUnsubscribe = null; }
             currentUser = null;
             authScreen.style.display = 'flex';
             mainApp.style.display = 'none';
@@ -1224,7 +1065,6 @@
         }
     });
 
-    // Color cycler
     (function() {
         let hue = 0;
         setInterval(() => {

@@ -91,17 +91,15 @@
             border: 1px solid var(--warning);
             color: var(--warning);
         }
-        .btn-success-custom {
-            background: var(--success);
-            border: 1px solid var(--success);
-            color: #000;
-        }
         .btn-sm { padding: 6px 12px; font-size: 11px; height: auto; width: auto; }
 
+        /* ============================================================
+           CHECK UPDATE FILE - FULL GREEN (No Color Change)
+           ============================================================ */
         .btn-check-update {
-            background: #000;
-            border: 2px solid var(--neon-cyan);
-            color: #fff;
+            background: #00cc44 !important;
+            border: 2px solid #00cc44 !important;
+            color: #fff !important;
             padding: 8px 16px;
             border-radius: 8px;
             font-size: 12px;
@@ -115,15 +113,46 @@
             flex: 1;
             min-width: 120px;
             height: 38px;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 204, 68, 0.3);
         }
         .btn-check-update:hover {
-            box-shadow: 0 0 30px var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 204, 68, 0.6);
             transform: scale(1.03);
-            border-color: var(--neon-cyan);
+            border-color: #00cc44 !important;
         }
         .btn-check-update i {
-            color: var(--neon-cyan);
+            color: #fff;
+        }
+
+        /* ============================================================
+           CHECK VIDEO / FEEDBACK - FULL RED (No Color Change)
+           ============================================================ */
+        .btn-video-feedback {
+            background: #ff2a2a !important;
+            border: 2px solid #ff2a2a !important;
+            color: #fff !important;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 120px;
+            height: 38px;
+            box-shadow: 0 0 15px rgba(255, 42, 42, 0.3);
+        }
+        .btn-video-feedback:hover {
+            box-shadow: 0 0 30px rgba(255, 42, 42, 0.6);
+            transform: scale(1.03);
+            border-color: #ff2a2a !important;
+        }
+        .btn-video-feedback i {
+            color: #fff;
         }
 
         .input-group input {
@@ -316,13 +345,17 @@
         .profile-stat { display: flex; justify-content: space-between; padding: 18px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
 
+        /* ============================================================
+           DASHBOARD ACTIONS - Buttons with gap and proper spacing
+           ============================================================ */
         .dashboard-actions {
             display: flex;
-            gap: 10px;
-            margin: 10px 0;
+            gap: 12px;
+            margin: 12px 0 10px 0;
             flex-wrap: wrap;
         }
-        .dashboard-actions .btn-check-update {
+        .dashboard-actions .btn-check-update,
+        .dashboard-actions .btn-video-feedback {
             flex: 1;
             min-width: 100px;
         }
@@ -351,7 +384,8 @@
             .promo-card { flex: 0 0 90%; height: 150px; }
             .coupon-box { flex-direction: column; }
             .checkout-actions { flex-direction: column; }
-            .dashboard-actions .btn-check-update { min-width: 80px; font-size: 10px; padding: 6px 10px; }
+            .dashboard-actions .btn-check-update,
+            .dashboard-actions .btn-video-feedback { min-width: 80px; font-size: 10px; padding: 6px 10px; }
         }
     </style>
 </head>
@@ -499,55 +533,31 @@
     let selectedFile = null;
     let screenshotBase64 = null;
 
-    // ============================================================
-    // VIDEO EMBED - NO AUTOPLAY, CLICK TO PLAY
-    // ============================================================
     function getVideoEmbedCode(url) {
         if (!url || url.trim() === '') return null;
         const videoUrl = url.trim();
-        
         if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
             let videoId = '';
             if (videoUrl.includes('youtu.be/')) videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
             else videoId = videoUrl.split('v=')[1]?.split('&')[0];
             if (videoId) {
-                return {
-                    type: 'youtube',
-                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`,
-                    thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                    videoId: videoId
-                };
+                return { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`, thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, videoId: videoId };
             }
         }
         if (videoUrl.includes('youtube.com/shorts/')) {
             const videoId = videoUrl.split('/shorts/')[1]?.split('?')[0];
             if (videoId) {
-                return {
-                    type: 'youtube',
-                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`,
-                    thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                    videoId: videoId
-                };
+                return { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`, thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, videoId: videoId };
             }
         }
         if (videoUrl.includes('vimeo.com/')) {
             const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
             if (videoId) {
-                return {
-                    type: 'vimeo',
-                    embedUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1`,
-                    thumbnail: null,
-                    videoId: videoId
-                };
+                return { type: 'vimeo', embedUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1`, thumbnail: null, videoId: videoId };
             }
         }
         if (videoUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
-            return {
-                type: 'mp4',
-                embedUrl: videoUrl,
-                thumbnail: null,
-                videoId: null
-            };
+            return { type: 'mp4', embedUrl: videoUrl, thumbnail: null, videoId: null };
         }
         return null;
     }
@@ -557,11 +567,9 @@
         const thumb = document.getElementById(thumbId);
         if (!container) return;
         if (thumb) thumb.style.display = 'none';
-        
         const videoUrl = container.getAttribute('data-video-url');
         const videoType = container.getAttribute('data-video-type');
         if (!videoUrl) return;
-        
         let iframeHtml = '';
         if (videoType === 'youtube' || videoType === 'vimeo') {
             iframeHtml = `<iframe src="${videoUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
@@ -623,12 +631,10 @@
             const result = await Tesseract.recognize(imageDataUrl, 'hin+eng');
             const text = result.data.text;
             console.log("OCR Text:", text);
-            
             const nameVariants = ['punam devi', 'punamdevi', 'punam', 'punaṃ devi'];
             const hasPunamDevi = nameVariants.some(name => text.toLowerCase().includes(name.toLowerCase()));
             const amountStr = expectedAmount.toString();
             const amountMatch = text.includes(amountStr) || text.includes('₹' + amountStr) || text.includes('₹ ' + amountStr);
-            
             if (hasPunamDevi && amountMatch) {
                 return { verified: true, reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added', nameFound: true, amountFound: true };
             } else {
@@ -791,46 +797,31 @@
         }
     };
 
-    // ============================================================
-    // LOAD HISTORY - CLEAN (Sirf Key Copy, No Extra Buttons)
-    // ============================================================
     async function loadHistory() {
         if(!currentUser) return;
-        
         const container = document.getElementById('history-container');
         container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading keys...</p></div>';
-        
         try {
             const snapshot = await get(ref(db, `purchases/${currentUser.uid}`));
             container.innerHTML = '';
-            
             if(!snapshot.exists()) {
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-key"></i><p>No purchases yet</p></div>';
                 return;
             }
-            
             const purchases = [];
-            snapshot.forEach((child) => {
-                purchases.push({ id: child.key, ...child.val() });
-            });
-            
+            snapshot.forEach((child) => { purchases.push({ id: child.key, ...child.val() }); });
             purchases.sort((a,b) => {
                 const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
                 const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
                 return dateB - dateA;
             });
-            
             for(const p of purchases) {
                 const div = document.createElement('div');
                 div.className = 'history-card';
-                
                 const isDelivered = p.keyStatus === 'delivered' && p.key && p.key !== 'PENDING';
                 const statusText = isDelivered ? '✅ DELIVERED' : '⏳ PENDING';
                 const statusColor = isDelivered ? 'status-delivered' : 'status-pending';
-                
                 const planBadge = p.label || p.plan || 'N/A';
-                
-                // Features chips
                 let featuresHtml = '';
                 if(p.description) {
                     const features = p.description.split(/\n|-/).filter(f => f.trim()).slice(0,4);
@@ -842,32 +833,13 @@
                         featuresHtml += `</div>`;
                     }
                 }
-                
                 let keyHtml = '';
                 if(isDelivered) {
-                    keyHtml = `
-                        <div class="key-box" style="margin-top:8px;">
-                            <span class="key-text-delivered" id="key-${p.id}">${p.key}</span>
-                            <button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button>
-                        </div>
-                    `;
+                    keyHtml = `<div class="key-box" style="margin-top:8px;"><span class="key-text-delivered" id="key-${p.id}">${p.key}</span><button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button></div>`;
                 } else {
-                    keyHtml = `
-                        <div class="key-box" style="margin-top:8px;">
-                            <span class="key-text-pending"><i class="fas fa-clock"></i> Key Pending - Admin will deliver within 24 hours</span>
-                        </div>
-                    `;
+                    keyHtml = `<div class="key-box" style="margin-top:8px;"><span class="key-text-pending"><i class="fas fa-clock"></i> Key Pending - Admin will deliver within 24 hours</span></div>`;
                 }
-                
-                div.innerHTML = `
-                    <div><strong>${p.panelName}</strong></div>
-                    ${featuresHtml}
-                    <div style="margin:8px 0;">
-                        <span class="history-plan-badge">${planBadge}</span> - ₹${p.price}
-                    </div>
-                    <div class="${statusColor}" style="margin-bottom:5px;">${statusText}</div>
-                    ${keyHtml}
-                `;
+                div.innerHTML = `<div><strong>${p.panelName}</strong></div>${featuresHtml}<div style="margin:8px 0;"><span class="history-plan-badge">${planBadge}</span> - ₹${p.price}</div><div class="${statusColor}" style="margin-bottom:5px;">${statusText}</div>${keyHtml}`;
                 container.appendChild(div);
             }
         } catch(error) {
@@ -923,7 +895,7 @@
     }
 
     // ============================================================
-    // FETCH PANELS - DASHBOARD WITH CHECK UPDATE & VIDEO/FEEDBACK
+    // FETCH PANELS - With GREEN and RED fixed color buttons
     // ============================================================
     function fetchPanels() {
         onValue(ref(db, 'panels'), (snapshot) => {
@@ -963,7 +935,6 @@
                     const containerId = `video-${panelId}`;
                     const thumbId = `thumb-${panelId}`;
                     let thumbImg = videoData.thumbnail ? `<img src="${videoData.thumbnail}" alt="Video thumbnail">` : '';
-                    
                     videoHtml = `
                         <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${videoData.embedUrl}" data-video-type="${videoData.type}">
                             <div class="video-thumbnail" id="${thumbId}">
@@ -986,14 +957,18 @@
                 card.setAttribute('data-search', `${p.name} ${p.description || ''}`);
                 
                 // ============================================================
-                // DASHBOARD BUTTONS: CHECK UPDATE & VIDEO/FEEDBACK (Plan ke niche)
+                // BUTTONS: GREEN (CHECK UPDATE) & RED (VIDEO/FEEDBACK)
+                // Links from admin panel
                 // ============================================================
+                const checkUpdateLink = p.checkUpdateLink || '#';
+                const videoFeedbackLink = p.videoFeedbackLink || '#';
+                
                 const dashboardButtons = `
                     <div class="dashboard-actions">
-                        <button class="btn-check-update" onclick="showToast('✅ Latest version available! Contact admin for details.')">
+                        <button class="btn-check-update" onclick="window.open('${checkUpdateLink}', '_blank')">
                             <i class="fas fa-sync-alt"></i> CHECK UPDATE FILE
                         </button>
-                        <button class="btn-check-update" onclick="window.open('${p.link || '#'}', '_blank')">
+                        <button class="btn-video-feedback" onclick="window.open('${videoFeedbackLink}', '_blank')">
                             <i class="fas fa-video"></i> CHECK VIDEO / FEEDBACK
                         </button>
                     </div>
@@ -1121,24 +1096,7 @@
         }
     });
 
-    // Color cycler for neon cyan
-    (function() {
-        let hue = 0;
-        setInterval(() => {
-            const r = Math.sin(hue) * 127 + 128;
-            const g = Math.sin(hue + 2.094) * 127 + 128;
-            const b = Math.sin(hue + 4.188) * 127 + 128;
-            const color = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
-            document.documentElement.style.setProperty('--neon-cyan', color);
-            // Also update button borders
-            document.querySelectorAll('.btn-check-update').forEach(btn => {
-                btn.style.borderColor = color;
-                btn.style.boxShadow = `0 0 15px ${color}33`;
-            });
-            hue += 0.105;
-            if(hue > Math.PI * 2) hue -= Math.PI * 2;
-        }, 1000);
-    })();
+    // No color cycler for buttons - fixed colors GREEN & RED
 </script>
 </body>
 </html>

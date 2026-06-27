@@ -240,7 +240,7 @@
             </div>
         </div>
 
-        <!-- PAYMENTS - UPDATED WITH SCREENSHOT -->
+        <!-- PAYMENTS -->
         <div id="payments-page" class="hidden">
             <div class="card-header"><h3>Payment Requests</h3></div>
             <div class="table-responsive">
@@ -266,14 +266,26 @@
 </div>
 
 <!-- MODALS -->
-<div class="modal-overlay" id="panel-modal"><div class="modal"><div class="modal-header"><h3 id="panel-modal-title">Add Panel</h3><button class="close-modal" onclick="closeModal('panel-modal')">&times;</button></div><div class="input-group"><label>Panel Name</label><input id="panel-name" placeholder="e.g., VIP Panel Pro"></div><div class="input-group"><label>Description</label><textarea id="panel-desc" rows="2" placeholder="Aimbot, ESP, Wallhack"></textarea></div><div class="input-group"><label>Video Link</label><input id="panel-video" placeholder="https://youtu.be/..."></div><div class="input-group"><label>Access Link</label><input id="panel-link" placeholder="https://t.me/..."></div><div class="input-group"><label>Status</label><select id="panel-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="input-group"><label>Plans</label></div><div id="plans-container"><div class="plan-item"><input placeholder="Plan Label" id="plan-label-0"><input placeholder="Price" type="number" id="plan-price-0"><button class="btn btn-danger btn-sm" onclick="removePlan(0)">Remove</button></div></div><button class="btn btn-primary" id="add-plan-btn">Add Plan</button><button class="btn btn-primary" id="save-panel-btn" style="margin-top:15px;">Save Panel</button><input type="hidden" id="edit-panel-id"></div></div>
+<div class="modal-overlay" id="panel-modal"><div class="modal"><div class="modal-header"><h3 id="panel-modal-title">Add Panel</h3><button class="close-modal" onclick="closeModal('panel-modal')">&times;</button></div>
+    <div class="input-group"><label>Panel Name</label><input id="panel-name" placeholder="e.g., VIP Panel Pro"></div>
+    <div class="input-group"><label>Description</label><textarea id="panel-desc" rows="2" placeholder="Aimbot, ESP, Wallhack"></textarea></div>
+    <div class="input-group"><label>Video Link</label><input id="panel-video" placeholder="https://youtu.be/..."></div>
+    <div class="input-group"><label>CHECK UPDATE Link</label><input id="panel-check-update" placeholder="https://..."></div>
+    <div class="input-group"><label>VIDEO/FEEDBACK Link</label><input id="panel-video-feedback" placeholder="https://..."></div>
+    <div class="input-group"><label>Status</label><select id="panel-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <div class="input-group"><label>Plans</label></div>
+    <div id="plans-container"><div class="plan-item"><input placeholder="Plan Label" id="plan-label-0"><input placeholder="Price" type="number" id="plan-price-0"><button class="btn btn-danger btn-sm" onclick="removePlan(0)">Remove</button></div></div>
+    <button class="btn btn-primary" id="add-plan-btn">Add Plan</button>
+    <button class="btn btn-primary" id="save-panel-btn" style="margin-top:15px;">Save Panel</button>
+    <input type="hidden" id="edit-panel-id">
+</div></div>
 
 <div class="modal-overlay" id="promo-modal"><div class="modal"><div class="modal-header"><h3 id="promo-modal-title">Add Promotion</h3><button class="close-modal" onclick="closeModal('promo-modal')">&times;</button></div><div class="input-group"><label>Title</label><input id="promo-title" placeholder="Special Offer"></div><div class="input-group"><label>Image URL</label><input id="promo-image" placeholder="https://..."></div><div class="input-group"><label>Link</label><input id="promo-link" placeholder="https://..."></div><div class="input-group"><label>Status</label><select id="promo-status"><option value="true">Active</option><option value="false">Inactive</option></select></div><button class="btn btn-primary" id="save-promo-btn">Save</button><input type="hidden" id="edit-promo-id"></div></div>
 
 <!-- KEY DELIVERY MODAL -->
 <div class="modal-overlay" id="key-delivery-modal"><div class="modal"><div class="modal-header"><h3>Deliver License Key</h3><button class="close-modal" onclick="closeModal('key-delivery-modal')">&times;</button></div><div class="input-group"><label>User Email</label><input id="kd-user-email" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Panel</label><input id="kd-panel-name" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Plan</label><input id="kd-plan" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>License Key</label><input id="kd-key" placeholder="Enter real license key (e.g., ABC12-XYZ34-MNOP5)"></div><button class="btn btn-success" id="kd-confirm-btn">Deliver Key</button><input type="hidden" id="kd-purchase-id"></div></div>
 
-<!-- SCREENSHOT MODAL - FULL SIZE -->
+<!-- SCREENSHOT MODAL -->
 <div class="modal-overlay" id="screenshot-modal">
     <div class="modal">
         <div class="modal-header">
@@ -323,122 +335,58 @@
     
     async function loadDashboardStats(){ const u=await get(ref(db,'users')), p=await get(ref(db,'panels')), pay=await get(ref(db,'payments')), purchases=await get(ref(db,'purchases')); let tu=0, tp=0, pp=0, pk=0; if(u.exists()) tu=Object.keys(u.val()).length; if(p.exists()) Object.values(p.val()).forEach(pn=>{ if(pn.status==='active') tp++; }); if(pay.exists()) Object.values(pay.val()).forEach(paym=>{ if(paym.status==='pending') pp++; }); if(purchases.exists()){ Object.values(purchases.val()).forEach(uidPurchases=>{ Object.values(uidPurchases).forEach(pur=>{ if(pur.keyStatus==='pending') pk++; }); }); } document.getElementById('total-users').innerText=tu; document.getElementById('total-panels').innerText=tp; document.getElementById('pending-payments').innerText=pp; document.getElementById('pending-keys').innerText=pk; }
     
-    // ============================================================
-    // LOAD KEY DELIVERY REQUESTS
-    // ============================================================
     async function loadKeyDelivery(){ 
         const tbody = document.getElementById('key-delivery-list'); 
         tbody.innerHTML = '<tr><td colspan="7"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>'; 
-        
         try {
             const usersSnap = await get(ref(db, 'users'));
-            if(!usersSnap.exists()) {
-                tbody.innerHTML = '<tr><td colspan="7">No users found</td></tr>';
-                return;
-            }
-            
+            if(!usersSnap.exists()) { tbody.innerHTML = '<tr><td colspan="7">No users found</td></tr>'; return; }
             const requests = [];
-            
             for(const [uid, userData] of Object.entries(usersSnap.val())) {
                 const purchasesSnap = await get(ref(db, `purchases/${uid}`));
                 if(purchasesSnap.exists()) {
                     for(const [pid, purchase] of Object.entries(purchasesSnap.val())) {
                         if(purchase.keyStatus === 'pending') {
-                            requests.push({
-                                uid: uid,
-                                pid: pid,
-                                userEmail: userData.email || uid,
-                                panelName: purchase.panelName || 'Unknown',
-                                label: purchase.label || purchase.plan || 'N/A',
-                                price: purchase.price || 0,
-                                date: purchase.date || Date.now(),
-                                ...purchase
-                            });
+                            requests.push({ uid, pid, userEmail: userData.email || uid, panelName: purchase.panelName || 'Unknown', label: purchase.label || purchase.plan || 'N/A', price: purchase.price || 0, date: purchase.date || Date.now(), ...purchase });
                         }
                     }
                 }
             }
-            
-            if(requests.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7">✅ All keys delivered! No pending requests.</td></tr>';
-                return;
-            }
-            
-            requests.sort((a,b) => {
-                const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
-                const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
-                return dateB - dateA;
-            });
-            
+            if(requests.length === 0) { tbody.innerHTML = '<tr><td colspan="7">✅ All keys delivered! No pending requests.</td></tr>'; return; }
+            requests.sort((a,b) => { const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date); const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date); return dateB - dateA; });
             tbody.innerHTML = '';
             for(const req of requests) {
                 const row = document.createElement('tr');
-                const dateStr = req.date?.toDate ? req.date.toDate().toLocaleDateString() : 
-                               req.date ? new Date(req.date).toLocaleDateString() : 'N/A';
-                
-                row.innerHTML = `
-                    <td><strong>${req.userEmail}</strong></td>
-                    <td>${req.panelName}</td>
-                    <td>${req.label}</td>
-                    <td>₹${req.price}</td>
-                    <td><small>${dateStr}</small></td>
-                    <td class="status-pending">⏳ Pending</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.userEmail}','${req.panelName}','${req.label}')">
-                            <i class="fas fa-key"></i> Deliver Key
-                        </button>
-                    </td>
-                `;
+                const dateStr = req.date?.toDate ? req.date.toDate().toLocaleDateString() : req.date ? new Date(req.date).toLocaleDateString() : 'N/A';
+                row.innerHTML = `<td><strong>${req.userEmail}</strong></td><td>${req.panelName}</td><td>${req.label}</td><td>₹${req.price}</td><td><small>${dateStr}</small></td><td class="status-pending">⏳ Pending</td><td><button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.userEmail}','${req.panelName}','${req.label}')"><i class="fas fa-key"></i> Deliver Key</button></td>`;
                 tbody.appendChild(row);
             }
-        } catch(error) {
-            console.error("Error loading key delivery:", error);
-            tbody.innerHTML = '<tr><td colspan="7">❌ Error loading requests. Refresh the page.</td></tr>';
-        }
+        } catch(error) { console.error("Error loading key delivery:", error); tbody.innerHTML = '<tr><td colspan="7">❌ Error loading requests. Refresh the page.</td></tr>'; }
     }
     
-    window.openKeyDeliveryModal = (uid,pid,email,panelName,plan)=>{ 
-        document.getElementById('kd-user-email').value=email; 
-        document.getElementById('kd-panel-name').value=panelName; 
-        document.getElementById('kd-plan').value=plan; 
-        document.getElementById('kd-purchase-id').value=pid; 
-        document.getElementById('kd-key').value=''; 
-        document.getElementById('kd-confirm-btn').dataset.uid = uid;
-        openModal('key-delivery-modal'); 
-    };
+    window.openKeyDeliveryModal = (uid,pid,email,panelName,plan)=>{ document.getElementById('kd-user-email').value=email; document.getElementById('kd-panel-name').value=panelName; document.getElementById('kd-plan').value=plan; document.getElementById('kd-purchase-id').value=pid; document.getElementById('kd-key').value=''; document.getElementById('kd-confirm-btn').dataset.uid = uid; openModal('key-delivery-modal'); };
     
     document.getElementById('kd-confirm-btn').onclick = async ()=>{
         const pid = document.getElementById('kd-purchase-id').value;
         const uid = document.getElementById('kd-confirm-btn').dataset.uid;
         const key = document.getElementById('kd-key').value.trim();
         if(!key) return showToast("Enter license key","error");
-        try {
-            await update(ref(db, `purchases/${uid}/${pid}`), { 
-                key: key, 
-                keyStatus: 'delivered' 
-            });
-            showToast("✅ Key delivered successfully!");
-            closeModal('key-delivery-modal');
-            loadKeyDelivery();
-            loadDashboardStats();
-        } catch(e) {
-            showToast("Error: " + e.message, "error");
-        }
+        try { await update(ref(db, `purchases/${uid}/${pid}`), { key: key, keyStatus: 'delivered' }); showToast("✅ Key delivered successfully!"); closeModal('key-delivery-modal'); loadKeyDelivery(); loadDashboardStats(); } catch(e) { showToast("Error: " + e.message, "error"); }
     };
     
     async function loadPanels(){ const snap=await get(ref(db,'panels')); const tbody=document.getElementById('panels-list'); tbody.innerHTML=''; if(!snap.exists()) return; Object.entries(snap.val()).forEach(([id,panel])=>{ const row=document.createElement('tr'); row.innerHTML=`<td><i class="fas fa-cube"></i> ${panel.name}</td><td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td><td>${panel.plans?Object.keys(panel.plans).length:0} plans</td><td><button class="btn btn-sm" onclick="editPanel('${id}')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-sm" onclick="deletePanel('${id}')"><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(row); }); }
     
-    window.editPanel=async(id)=>{ const snap=await get(ref(db,`panels/${id}`)); const p=snap.val(); if(!p) return; document.getElementById('panel-modal-title').innerText='Edit Panel'; document.getElementById('panel-name').value=p.name||''; document.getElementById('panel-desc').value=p.description||''; document.getElementById('panel-video').value=p.video||''; document.getElementById('panel-link').value=p.link||''; document.getElementById('panel-status').value=p.status||'active'; document.getElementById('edit-panel-id').value=id; document.getElementById('plans-container').innerHTML=''; if(p.plans){ let idx=0; Object.entries(p.plans).forEach(([key,plan])=>{ const div=document.createElement('div'); div.className='plan-item'; div.innerHTML=`<input placeholder="Plan Label" value="${plan.label}" id="plan-label-${idx}"><input placeholder="Price" type="number" value="${plan.price}" id="plan-price-${idx}"><button class="btn btn-danger btn-sm" onclick="removePlan(${idx})">Remove</button>`; document.getElementById('plans-container').appendChild(div); idx++; }); plansCount=idx; } else addPlanField(); openModal('panel-modal'); };
+    window.editPanel=async(id)=>{ const snap=await get(ref(db,`panels/${id}`)); const p=snap.val(); if(!p) return; document.getElementById('panel-modal-title').innerText='Edit Panel'; document.getElementById('panel-name').value=p.name||''; document.getElementById('panel-desc').value=p.description||''; document.getElementById('panel-video').value=p.video||''; document.getElementById('panel-check-update').value=p.checkUpdateLink||''; document.getElementById('panel-video-feedback').value=p.videoFeedbackLink||''; document.getElementById('panel-status').value=p.status||'active'; document.getElementById('edit-panel-id').value=id; document.getElementById('plans-container').innerHTML=''; if(p.plans){ let idx=0; Object.entries(p.plans).forEach(([key,plan])=>{ const div=document.createElement('div'); div.className='plan-item'; div.innerHTML=`<input placeholder="Plan Label" value="${plan.label}" id="plan-label-${idx}"><input placeholder="Price" type="number" value="${plan.price}" id="plan-price-${idx}"><button class="btn btn-danger btn-sm" onclick="removePlan(${idx})">Remove</button>`; document.getElementById('plans-container').appendChild(div); idx++; }); plansCount=idx; } else addPlanField(); openModal('panel-modal'); };
     
     window.deletePanel=async(id)=>{ if(confirm('Delete?')){ await remove(ref(db,`panels/${id}`)); showToast('Panel deleted!'); loadPanels(); loadDashboardStats(); } };
     
     function addPlanField(){ const div=document.createElement('div'); div.className='plan-item'; div.innerHTML=`<input placeholder="Plan Label" id="plan-label-${plansCount}"><input placeholder="Price" type="number" id="plan-price-${plansCount}"><button class="btn btn-danger btn-sm" onclick="removePlan(${plansCount})">Remove</button>`; document.getElementById('plans-container').appendChild(div); plansCount++; }
     window.removePlan=(idx)=>{ const el=document.querySelector(`.plan-item:has(#plan-label-${idx})`); if(el) el.remove(); };
     document.getElementById('add-plan-btn').onclick=()=>addPlanField();
-    document.getElementById('save-panel-btn').onclick=async()=>{ const id=document.getElementById('edit-panel-id').value, name=document.getElementById('panel-name').value; if(!name) return showToast("Name required","error"); const plans={}; for(let i=0;i<plansCount;i++){ const l=document.getElementById(`plan-label-${i}`), p=document.getElementById(`plan-price-${i}`); if(l&&p&&l.value&&p.value) plans[`plan_${i}`]={label:l.value,price:parseFloat(p.value)}; } const data={name,description:document.getElementById('panel-desc').value,video:document.getElementById('panel-video').value,link:document.getElementById('panel-link').value,status:document.getElementById('panel-status').value,plans,updatedAt:serverTimestamp()}; if(id){ await update(ref(db,`panels/${id}`),data); showToast('Updated!'); } else{ await push(ref(db,'panels'),data); showToast('Added!'); } closeModal('panel-modal'); loadPanels(); loadDashboardStats(); resetPanelForm(); };
+    document.getElementById('save-panel-btn').onclick=async()=>{ const id=document.getElementById('edit-panel-id').value, name=document.getElementById('panel-name').value; if(!name) return showToast("Name required","error"); const plans={}; for(let i=0;i<plansCount;i++){ const l=document.getElementById(`plan-label-${i}`), p=document.getElementById(`plan-price-${i}`); if(l&&p&&l.value&&p.value) plans[`plan_${i}`]={label:l.value,price:parseFloat(p.value)}; } const data={name,description:document.getElementById('panel-desc').value,video:document.getElementById('panel-video').value,checkUpdateLink:document.getElementById('panel-check-update').value,videoFeedbackLink:document.getElementById('panel-video-feedback').value,status:document.getElementById('panel-status').value,plans,updatedAt:serverTimestamp()}; if(id){ await update(ref(db,`panels/${id}`),data); showToast('Updated!'); } else{ await push(ref(db,'panels'),data); showToast('Added!'); } closeModal('panel-modal'); loadPanels(); loadDashboardStats(); resetPanelForm(); };
     
     document.getElementById('add-panel-btn').onclick=()=>{ resetPanelForm(); openModal('panel-modal'); };
-    function resetPanelForm(){ document.getElementById('panel-modal-title').innerText='Add Panel'; document.getElementById('panel-name').value=''; document.getElementById('panel-desc').value=''; document.getElementById('panel-video').value=''; document.getElementById('panel-link').value=''; document.getElementById('panel-status').value='active'; document.getElementById('edit-panel-id').value=''; document.getElementById('plans-container').innerHTML='<div class="plan-item"><input placeholder="Plan Label" id="plan-label-0"><input placeholder="Price" type="number" id="plan-price-0"><button class="btn btn-danger btn-sm" onclick="removePlan(0)">Remove</button></div>'; plansCount=1; }
+    function resetPanelForm(){ document.getElementById('panel-modal-title').innerText='Add Panel'; document.getElementById('panel-name').value=''; document.getElementById('panel-desc').value=''; document.getElementById('panel-video').value=''; document.getElementById('panel-check-update').value=''; document.getElementById('panel-video-feedback').value=''; document.getElementById('panel-status').value='active'; document.getElementById('edit-panel-id').value=''; document.getElementById('plans-container').innerHTML='<div class="plan-item"><input placeholder="Plan Label" id="plan-label-0"><input placeholder="Price" type="number" id="plan-price-0"><button class="btn btn-danger btn-sm" onclick="removePlan(0)">Remove</button></div>'; plansCount=1; }
     
     async function loadPromotions(){ const snap=await get(ref(db,'promotions')); const tbody=document.getElementById('promotions-list'); tbody.innerHTML=''; if(!snap.exists()) return; Object.entries(snap.val()).forEach(([id,p])=>{ const row=document.createElement('tr'); row.innerHTML=`<td>${p.title||'-'}</td><td>${p.image?'<img src="'+p.image+'" style="width:40px;height:30px;object-fit:cover;">':'-'}</td><td><span style="color:${p.status?'#0f0':'#f00'}">● ${p.status?'Active':'Inactive'}</span></td><td><button class="btn btn-sm" onclick="editPromo('${id}')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deletePromo('${id}')"><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(row); }); }
     window.editPromo=async(id)=>{ const snap=await get(ref(db,`promotions/${id}`)); const p=snap.val(); document.getElementById('promo-modal-title').innerText='Edit Promotion'; document.getElementById('promo-title').value=p.title||''; document.getElementById('promo-image').value=p.image||''; document.getElementById('promo-link').value=p.link||''; document.getElementById('promo-status').value=p.status?'true':'false'; document.getElementById('edit-promo-id').value=id; openModal('promo-modal'); };
@@ -446,192 +394,17 @@
     document.getElementById('save-promo-btn').onclick=async()=>{ const id=document.getElementById('edit-promo-id').value; const data={title:document.getElementById('promo-title').value,image:document.getElementById('promo-image').value,link:document.getElementById('promo-link').value,status:document.getElementById('promo-status').value==='true'}; if(id){ await update(ref(db,`promotions/${id}`),data); showToast('Updated!'); } else{ await push(ref(db,'promotions'),data); showToast('Added!'); } closeModal('promo-modal'); loadPromotions(); };
     document.getElementById('add-promo-btn').onclick=()=>{ document.getElementById('promo-modal-title').innerText='Add Promotion'; document.getElementById('promo-title').value=''; document.getElementById('promo-image').value=''; document.getElementById('promo-link').value=''; document.getElementById('promo-status').value='true'; document.getElementById('edit-promo-id').value=''; openModal('promo-modal'); };
     
-    // ============================================================
-    // OPEN SCREENSHOT FULL SIZE - FIXED
-    // ============================================================
-    window.openScreenshot = (screenshotUrl, paymentData) => {
-        if(!screenshotUrl || screenshotUrl === '-') return showToast("No screenshot available", "error");
-        document.getElementById('screenshot-modal-img').src = screenshotUrl;
-        document.getElementById('screenshot-modal-title').innerText = '📸 Screenshot Preview';
-        
-        let infoHtml = `
-            <p><strong>User:</strong> ${paymentData?.email || 'N/A'}</p>
-            <p><strong>Amount:</strong> ₹${paymentData?.amount || 0}</p>
-            <p><strong>Phone:</strong> ${paymentData?.phone || 'N/A'}</p>
-            <p><strong>Status:</strong> <span class="status-${paymentData?.status || 'pending'}">${paymentData?.status || 'pending'}</span></p>
-            ${paymentData?.autoVerifyNote ? `<p><strong>Verify Note:</strong> ${paymentData.autoVerifyNote}</p>` : ''}
-            ${paymentData?.autoVerified ? `<p><strong>🤖 Auto-Verified:</strong> ✅ Yes</p>` : ''}
-        `;
-        document.getElementById('screenshot-modal-info').innerHTML = infoHtml;
-        openModal('screenshot-modal');
-    };
-
-    // ============================================================
-    // OPEN SCREENSHOT FROM ELEMENT - FIXED
-    // ============================================================
-    window.openScreenshotFromElement = (element) => {
-        const screenshotUrl = element.getAttribute('data-screenshot');
-        const paymentDataStr = element.getAttribute('data-payment');
-        try {
-            const paymentData = JSON.parse(paymentDataStr);
-            window.openScreenshot(screenshotUrl, paymentData);
-        } catch(e) {
-            window.openScreenshot(screenshotUrl, {});
-        }
-    };
-
-    // ============================================================
-    // LOAD PAYMENTS - WITH AUTO-APPROVED STATUS - FIXED
-    // ============================================================
-    async function loadPayments(){ 
-        const snap=await get(ref(db,'payments')); 
-        const tbody=document.getElementById('payments-list'); 
-        tbody.innerHTML=''; 
-        if(!snap.exists()){ 
-            tbody.innerHTML='<tr><td colspan="6">No payment requests</td></tr>'; 
-            return; 
-        } 
-        
-        const payments = Object.entries(snap.val()).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0)); 
-        
-        for(let [id, payment] of payments){
-            const row = document.createElement('tr');
-            
-            let screenshotHtml = '-';
-            if(payment.screenshot) {
-                // ✅ FIXED: Using data attributes to avoid escape issues
-                const paymentData = { ...payment, id };
-                const paymentDataStr = JSON.stringify(paymentData).replace(/'/g, "&#39;");
-                screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" data-screenshot="${payment.screenshot}" data-payment='${paymentDataStr}' onclick="openScreenshotFromElement(this)" title="Click to view full image">`;
-            }
-            
-            // Status display
-            let statusClass = payment.status || 'pending';
-            let statusText = payment.status || 'pending';
-            
-            // Auto-approved badge
-            if(payment.autoVerified === true && payment.status === 'approved') {
-                statusText = '🤖 Auto-Approved';
-                statusClass = 'auto-approved';
-            } else if(payment.status === 'approved') {
-                statusText = '✅ Approved';
-                statusClass = 'approved';
-            } else if(payment.status === 'rejected') {
-                statusText = '❌ Rejected';
-                statusClass = 'rejected';
-            } else {
-                statusText = '⏳ Pending';
-                statusClass = 'pending';
-            }
-            
-            let actionsHtml = '';
-            
-            if(payment.status === 'pending') {
-                actionsHtml = `
-                    <button class="btn btn-success btn-sm" onclick="approvePayment('${id}')"><i class="fas fa-check"></i> Approve</button>
-                    <button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>
-                `;
-            } else if(payment.status === 'approved') {
-                actionsHtml = `
-                    <button class="btn btn-danger btn-sm" onclick="rejectApprovedPayment('${id}')"><i class="fas fa-times"></i> Reject & Deduct</button>
-                `;
-            } else if(payment.status === 'rejected') {
-                actionsHtml = `<span class="status-rejected">❌ Rejected</span>`;
-            }
-            
-            row.innerHTML = `
-                <td><strong>${payment.email || payment.uid?.substring(0,8)}</strong></td>
-                <td>₹${payment.amount}</td>
-                <td>${payment.phone || '-'}</td>
-                <td>${screenshotHtml}</td>
-                <td class="status-${statusClass}">${statusText}</td>
-                <td>${actionsHtml}</td>
-            `;
-            tbody.appendChild(row);
-        }
-    }
+    window.openScreenshot = (screenshotUrl, paymentData) => { if(!screenshotUrl || screenshotUrl === '-') return showToast("No screenshot available", "error"); document.getElementById('screenshot-modal-img').src = screenshotUrl; document.getElementById('screenshot-modal-title').innerText = '📸 Screenshot Preview'; let infoHtml = `<p><strong>User:</strong> ${paymentData?.email || 'N/A'}</p><p><strong>Amount:</strong> ₹${paymentData?.amount || 0}</p><p><strong>Phone:</strong> ${paymentData?.phone || 'N/A'}</p><p><strong>Status:</strong> <span class="status-${paymentData?.status || 'pending'}">${paymentData?.status || 'pending'}</span></p>${paymentData?.autoVerifyNote ? `<p><strong>Verify Note:</strong> ${paymentData.autoVerifyNote}</p>` : ''}${paymentData?.autoVerified ? `<p><strong>🤖 Auto-Verified:</strong> ✅ Yes</p>` : ''}`; document.getElementById('screenshot-modal-info').innerHTML = infoHtml; openModal('screenshot-modal'); };
     
-    // ============================================================
-    // APPROVE PAYMENT
-    // ============================================================
-    window.approvePayment = async (id) => {
-        if(!confirm(`Approve this payment?`)) return;
-        try {
-            const snap = await get(ref(db, `payments/${id}`));
-            const payment = snap.val();
-            if(!payment) return showToast("Payment not found", "error");
-            
-            const balRef = ref(db, `users/${payment.uid}/balance`);
-            const balSnap = await get(balRef);
-            await set(balRef, (balSnap.val() || 0) + payment.amount);
-            
-            await update(ref(db, `payments/${id}`), { 
-                status: 'approved',
-                approvedAt: serverTimestamp(),
-                approvedBy: currentAdmin?.email || 'admin'
-            });
-            
-            showToast(`✅ ₹${payment.amount} added to user balance!`);
-            loadPayments();
-            loadDashboardStats();
-        } catch(e) {
-            showToast("Error: " + e.message, "error");
-        }
-    };
+    window.openScreenshotFromElement = (element) => { const screenshotUrl = element.getAttribute('data-screenshot'); const paymentDataStr = element.getAttribute('data-payment'); try { const paymentData = JSON.parse(paymentDataStr); window.openScreenshot(screenshotUrl, paymentData); } catch(e) { window.openScreenshot(screenshotUrl, {}); } };
     
-    // ============================================================
-    // REJECT PAYMENT (For Pending Payments)
-    // ============================================================
-    window.rejectPayment = async (id) => {
-        if(!confirm(`⚠️ Are you sure you want to REJECT this payment?`)) return;
-        try {
-            await update(ref(db, `payments/${id}`), { 
-                status: 'rejected',
-                rejectedAt: serverTimestamp(),
-                rejectedBy: currentAdmin?.email || 'admin'
-            });
-            showToast("❌ Payment rejected!");
-            loadPayments();
-            loadDashboardStats();
-        } catch(e) {
-            showToast("Error: " + e.message, "error");
-        }
-    };
+    async function loadPayments(){ const snap=await get(ref(db,'payments')); const tbody=document.getElementById('payments-list'); tbody.innerHTML=''; if(!snap.exists()){ tbody.innerHTML='<tr><td colspan="6">No payment requests</td></tr>'; return; } const payments = Object.entries(snap.val()).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0)); for(let [id, payment] of payments){ const row = document.createElement('tr'); let screenshotHtml = '-'; if(payment.screenshot) { const paymentData = { ...payment, id }; const paymentDataStr = JSON.stringify(paymentData).replace(/'/g, "&#39;"); screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" data-screenshot="${payment.screenshot}" data-payment='${paymentDataStr}' onclick="openScreenshotFromElement(this)" title="Click to view full image">`; } let statusClass = payment.status || 'pending'; let statusText = payment.status || 'pending'; if(payment.autoVerified === true && payment.status === 'approved') { statusText = '🤖 Auto-Approved'; statusClass = 'auto-approved'; } else if(payment.status === 'approved') { statusText = '✅ Approved'; statusClass = 'approved'; } else if(payment.status === 'rejected') { statusText = '❌ Rejected'; statusClass = 'rejected'; } else { statusText = '⏳ Pending'; statusClass = 'pending'; } let actionsHtml = ''; if(payment.status === 'pending') { actionsHtml = `<button class="btn btn-success btn-sm" onclick="approvePayment('${id}')"><i class="fas fa-check"></i> Approve</button><button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>`; } else if(payment.status === 'approved') { actionsHtml = `<button class="btn btn-danger btn-sm" onclick="rejectApprovedPayment('${id}')"><i class="fas fa-times"></i> Reject & Deduct</button>`; } else if(payment.status === 'rejected') { actionsHtml = `<span class="status-rejected">❌ Rejected</span>`; } row.innerHTML = `<td><strong>${payment.email || payment.uid?.substring(0,8)}</strong></td><td>₹${payment.amount}</td><td>${payment.phone || '-'}</td><td>${screenshotHtml}</td><td class="status-${statusClass}">${statusText}</td><td>${actionsHtml}</td>`; tbody.appendChild(row); } }
     
-    // ============================================================
-    // REJECT APPROVED PAYMENT - DEDUCT BALANCE
-    // ============================================================
-    window.rejectApprovedPayment = async (id) => {
-        if(!confirm(`⚠️ Are you sure? This will DEDUCT the amount from user balance!`)) return;
-        
-        try {
-            const snap = await get(ref(db, `payments/${id}`));
-            const payment = snap.val();
-            if(!payment) return showToast("Payment not found", "error");
-            
-            const balRef = ref(db, `users/${payment.uid}/balance`);
-            const balSnap = await get(balRef);
-            const currentBalance = balSnap.val() || 0;
-            const newBalance = Math.max(0, currentBalance - payment.amount);
-            
-            await set(balRef, newBalance);
-            
-            await update(ref(db, `payments/${id}`), { 
-                status: 'rejected',
-                rejectedAt: serverTimestamp(),
-                rejectedBy: currentAdmin?.email || 'admin',
-                balanceDeducted: true,
-                previousBalance: currentBalance,
-                newBalance: newBalance
-            });
-            
-            showToast(`❌ Payment rejected! ₹${payment.amount} deducted from user balance.`);
-            loadPayments();
-            loadDashboardStats();
-        } catch(e) {
-            showToast("Error: " + e.message, "error");
-        }
-    };
+    window.approvePayment = async (id) => { if(!confirm(`Approve this payment?`)) return; try { const snap = await get(ref(db, `payments/${id}`)); const payment = snap.val(); if(!payment) return showToast("Payment not found", "error"); const balRef = ref(db, `users/${payment.uid}/balance`); const balSnap = await get(balRef); await set(balRef, (balSnap.val() || 0) + payment.amount); await update(ref(db, `payments/${id}`), { status: 'approved', approvedAt: serverTimestamp(), approvedBy: currentAdmin?.email || 'admin' }); showToast(`✅ ₹${payment.amount} added to user balance!`); loadPayments(); loadDashboardStats(); } catch(e) { showToast("Error: " + e.message, "error"); } };
+    
+    window.rejectPayment = async (id) => { if(!confirm(`⚠️ Are you sure you want to REJECT this payment?`)) return; try { await update(ref(db, `payments/${id}`), { status: 'rejected', rejectedAt: serverTimestamp(), rejectedBy: currentAdmin?.email || 'admin' }); showToast("❌ Payment rejected!"); loadPayments(); loadDashboardStats(); } catch(e) { showToast("Error: " + e.message, "error"); } };
+    
+    window.rejectApprovedPayment = async (id) => { if(!confirm(`⚠️ Are you sure? This will DEDUCT the amount from user balance!`)) return; try { const snap = await get(ref(db, `payments/${id}`)); const payment = snap.val(); if(!payment) return showToast("Payment not found", "error"); const balRef = ref(db, `users/${payment.uid}/balance`); const balSnap = await get(balRef); const currentBalance = balSnap.val() || 0; const newBalance = Math.max(0, currentBalance - payment.amount); await set(balRef, newBalance); await update(ref(db, `payments/${id}`), { status: 'rejected', rejectedAt: serverTimestamp(), rejectedBy: currentAdmin?.email || 'admin', balanceDeducted: true, previousBalance: currentBalance, newBalance: newBalance }); showToast(`❌ Payment rejected! ₹${payment.amount} deducted from user balance.`); loadPayments(); loadDashboardStats(); } catch(e) { showToast("Error: " + e.message, "error"); } };
     
     async function loadUsers(){ const snap=await get(ref(db,'users')); const tbody=document.getElementById('users-list'); tbody.innerHTML=''; if(!snap.exists()) return; for(let [uid,user] of Object.entries(snap.val())){ const purchasesSnap=await get(ref(db,`purchases/${uid}`)); let purchaseCount=purchasesSnap.exists()?Object.keys(purchasesSnap.val()).length:0; const row=document.createElement('tr'); row.innerHTML=`<td>${user.email}</td><td style="color:var(--success);">₹${user.balance||0}</td><td>${purchaseCount}</td><td><small>${user.createdAt?new Date(user.createdAt).toLocaleDateString():'-'}</small></td><td><button class="btn btn-primary btn-sm" onclick="addUserBalance('${uid}')"><i class="fas fa-plus"></i> Add ₹</button></td>`; tbody.appendChild(row); } }
     window.addUserBalance=async(uid)=>{ const amt=prompt('Enter amount to add:'); if(amt&&!isNaN(amt)&&amt>0){ const balRef=ref(db,`users/${uid}/balance`); const snap=await get(balRef); await set(balRef,(snap.val()||0)+parseFloat(amt)); showToast(`₹${amt} added!`); loadUsers(); loadDashboardStats(); } };

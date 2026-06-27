@@ -447,7 +447,7 @@
     document.getElementById('add-promo-btn').onclick=()=>{ document.getElementById('promo-modal-title').innerText='Add Promotion'; document.getElementById('promo-title').value=''; document.getElementById('promo-image').value=''; document.getElementById('promo-link').value=''; document.getElementById('promo-status').value='true'; document.getElementById('edit-promo-id').value=''; openModal('promo-modal'); };
     
     // ============================================================
-    // OPEN SCREENSHOT FULL SIZE
+    // OPEN SCREENSHOT FULL SIZE - FIXED
     // ============================================================
     window.openScreenshot = (screenshotUrl, paymentData) => {
         if(!screenshotUrl || screenshotUrl === '-') return showToast("No screenshot available", "error");
@@ -467,7 +467,21 @@
     };
 
     // ============================================================
-    // LOAD PAYMENTS - WITH AUTO-APPROVED STATUS
+    // OPEN SCREENSHOT FROM ELEMENT - FIXED
+    // ============================================================
+    window.openScreenshotFromElement = (element) => {
+        const screenshotUrl = element.getAttribute('data-screenshot');
+        const paymentDataStr = element.getAttribute('data-payment');
+        try {
+            const paymentData = JSON.parse(paymentDataStr);
+            window.openScreenshot(screenshotUrl, paymentData);
+        } catch(e) {
+            window.openScreenshot(screenshotUrl, {});
+        }
+    };
+
+    // ============================================================
+    // LOAD PAYMENTS - WITH AUTO-APPROVED STATUS - FIXED
     // ============================================================
     async function loadPayments(){ 
         const snap=await get(ref(db,'payments')); 
@@ -485,9 +499,10 @@
             
             let screenshotHtml = '-';
             if(payment.screenshot) {
-                // Create clickable thumbnail
+                // ✅ FIXED: Using data attributes to avoid escape issues
                 const paymentData = { ...payment, id };
-                screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" onclick="window.openScreenshot('${payment.screenshot}', ${JSON.stringify(paymentData).replace(/'/g, "\\'")})" title="Click to view full image">`;
+                const paymentDataStr = JSON.stringify(paymentData).replace(/'/g, "&#39;");
+                screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" data-screenshot="${payment.screenshot}" data-payment='${paymentDataStr}' onclick="openScreenshotFromElement(this)" title="Click to view full image">`;
             }
             
             // Status display
@@ -517,7 +532,6 @@
                     <button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>
                 `;
             } else if(payment.status === 'approved') {
-                // ✅ Approved me bhi Reject button rahega (balance deduct ke liye)
                 actionsHtml = `
                     <button class="btn btn-danger btn-sm" onclick="rejectApprovedPayment('${id}')"><i class="fas fa-times"></i> Reject & Deduct</button>
                 `;
@@ -547,12 +561,10 @@
             const payment = snap.val();
             if(!payment) return showToast("Payment not found", "error");
             
-            // Add balance to user
             const balRef = ref(db, `users/${payment.uid}/balance`);
             const balSnap = await get(balRef);
             await set(balRef, (balSnap.val() || 0) + payment.amount);
             
-            // Update payment status
             await update(ref(db, `payments/${id}`), { 
                 status: 'approved',
                 approvedAt: serverTimestamp(),
@@ -590,14 +602,13 @@
     // REJECT APPROVED PAYMENT - DEDUCT BALANCE
     // ============================================================
     window.rejectApprovedPayment = async (id) => {
-        if(!confirm(`⚠️ Are you sure? This will DEDUCT ₹${id} from user balance!`)) return;
+        if(!confirm(`⚠️ Are you sure? This will DEDUCT the amount from user balance!`)) return;
         
         try {
             const snap = await get(ref(db, `payments/${id}`));
             const payment = snap.val();
             if(!payment) return showToast("Payment not found", "error");
             
-            // Deduct balance from user
             const balRef = ref(db, `users/${payment.uid}/balance`);
             const balSnap = await get(balRef);
             const currentBalance = balSnap.val() || 0;
@@ -605,7 +616,6 @@
             
             await set(balRef, newBalance);
             
-            // Update payment status
             await update(ref(db, `payments/${id}`), { 
                 status: 'rejected',
                 rejectedAt: serverTimestamp(),

@@ -6,6 +6,8 @@
 <title>NEXO STORE OFFICIAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- Tesseract.js for OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
         :root {
             --bg-color: #050508;
@@ -452,6 +454,78 @@
     }
 
     // ============================================================
+    // AUTO-VERIFY FUNCTION - OCR using Tesseract.js
+    // ============================================================
+    async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
+        try {
+            showToast("🔍 Verifying screenshot...", "success");
+            
+            // OCR se text extract karein
+            const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', {
+                logger: (m) => {
+                    if (m.status === 'recognizing text') {
+                        // Progress show kar sakte hain
+                    }
+                }
+            });
+            
+            const text = result.data.text;
+            console.log("OCR Text:", text);
+            
+            // Check: "PUNAM DEVI" (case insensitive)
+            const nameVariants = ['punam devi', 'punamdevi', 'punam', 'punaṃ devi'];
+            const hasPunamDevi = nameVariants.some(name => 
+                text.toLowerCase().includes(name.toLowerCase())
+            );
+            
+            // Check: Amount match
+            const amountStr = expectedAmount.toString();
+            const amountMatch = text.includes(amountStr);
+            
+            // Extra: Amount with ₹ symbol
+            const amountWithRupee = text.includes('₹' + amountStr) || text.includes('₹ ' + amountStr);
+            
+            if (hasPunamDevi && (amountMatch || amountWithRupee)) {
+                return { 
+                    verified: true, 
+                    reason: '✅ Auto-verified! Name: PUNAM DEVI, Amount: ₹' + expectedAmount,
+                    nameFound: hasPunamDevi,
+                    amountFound: amountMatch || amountWithRupee
+                };
+            } else if (hasPunamDevi && !amountMatch && !amountWithRupee) {
+                return { 
+                    verified: false, 
+                    reason: '⚠️ Name verified (PUNAM DEVI), but amount mismatch! Expected: ₹' + expectedAmount,
+                    nameFound: hasPunamDevi,
+                    amountFound: false
+                };
+            } else if (!hasPunamDevi && (amountMatch || amountWithRupee)) {
+                return { 
+                    verified: false, 
+                    reason: '⚠️ Amount verified (₹' + expectedAmount + '), but name mismatch! Expected: PUNAM DEVI',
+                    nameFound: false,
+                    amountFound: true
+                };
+            } else {
+                return { 
+                    verified: false, 
+                    reason: '❌ Name (PUNAM DEVI) and Amount (₹' + expectedAmount + ') both not found! Manual verification needed.',
+                    nameFound: false,
+                    amountFound: false
+                };
+            }
+        } catch(error) {
+            console.error("OCR Error:", error);
+            return { 
+                verified: false, 
+                reason: '⚠️ OCR failed, manual verification needed',
+                nameFound: false,
+                amountFound: false
+            };
+        }
+    }
+
+    // ============================================================
     // SCREENSHOT UPLOAD - Gallery/File selector
     // ============================================================
     document.getElementById('screenshot-input').addEventListener('change', async (e) => {
@@ -595,7 +669,7 @@
     });
 
     // ============================================================
-    // SUBMIT PAYMENT WITH BASE64 SCREENSHOT - NO STORAGE NEEDED!
+    // SUBMIT PAYMENT WITH AUTO-VERIFY
     // ============================================================
     document.getElementById('btn-submit-payment').onclick = async () => {
         if(!currentUser) {
@@ -621,34 +695,49 @@
         
         try {
             // ============================================================
-            // AUTO-VERIFY: Check if screenshot contains "PUNAM DEVI" and amount
-            // For now, we'll mark as pending and admin will verify manually
+            // AUTO-VERIFY: OCR se screenshot check karein
             // ============================================================
-            let autoVerified = false;
-            let verificationStatus = 'pending';
-            let autoVerifyNote = 'Waiting for admin verification';
+            const verifyResult = await autoVerifyScreenshot(screenshotBase64, parseFloat(amount));
             
-            // NOTE: For real auto-verify with OCR, you'd need to use:
-            // - Tesseract.js (client-side OCR)
-            // - Google Cloud Vision API (paid)
-            // For now, admin will manually verify
+            let autoVerified = verifyResult.verified;
+            let verificationStatus = autoVerified ? 'approved' : 'pending';
+            let autoVerifyNote = verifyResult.reason;
             
-            // Save payment request with Base64 screenshot directly in DB
-            await push(ref(db, 'payments'), {
+            // Save payment request
+            const paymentRef = await push(ref(db, 'payments'), {
                 uid: currentUser.uid,
                 email: currentUser.email,
                 amount: parseFloat(amount),
                 phone: phone,
-                screenshot: screenshotBase64, // ✅ Base64 string directly in DB
+                screenshot: screenshotBase64,
                 status: verificationStatus,
                 type: 'screenshot_base64',
                 autoVerified: autoVerified,
                 autoVerifyNote: autoVerifyNote,
                 expectedAmount: parseFloat(amount),
+                nameFound: verifyResult.nameFound || false,
+                amountFound: verifyResult.amountFound || false,
                 timestamp: serverTimestamp()
             });
             
-            showToast("📤 Payment proof submitted! Admin will verify.");
+            if(autoVerified) {
+                // ✅ Auto-verified! Balance add karein
+                const balRef = ref(db, `users/${currentUser.uid}/balance`);
+                const balSnap = await get(balRef);
+                await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
+                
+                showToast("✅ Payment auto-verified! ₹" + amount + " added to balance!");
+                
+                // Update payment status
+                await update(ref(db, `payments/${paymentRef.key}`), {
+                    status: 'approved',
+                    approvedAt: serverTimestamp(),
+                    approvedBy: 'Auto-Verify System'
+                });
+            } else {
+                // ❌ Auto-verify failed - manual verification required
+                showToast("📤 " + verifyResult.reason);
+            }
             
             // Clear form
             document.getElementById('add-amount').value = '';

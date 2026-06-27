@@ -488,28 +488,28 @@
             if (hasPunamDevi && (amountMatch || amountWithRupee)) {
                 return { 
                     verified: true, 
-                    reason: '✅ Auto-verified! Name: PUNAM DEVI, Amount: ₹' + expectedAmount,
+                    reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added'
                     nameFound: hasPunamDevi,
                     amountFound: amountMatch || amountWithRupee
                 };
             } else if (hasPunamDevi && !amountMatch && !amountWithRupee) {
                 return { 
                     verified: false, 
-                    reason: '⚠️ Name verified (PUNAM DEVI), but amount mismatch! Expected: ₹' + expectedAmount,
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking'
                     nameFound: hasPunamDevi,
                     amountFound: false
                 };
             } else if (!hasPunamDevi && (amountMatch || amountWithRupee)) {
                 return { 
                     verified: false, 
-                    reason: '⚠️ Amount verified (₹' + expectedAmount + '), but name mismatch! Expected: PUNAM DEVI',
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking'
                     nameFound: false,
                     amountFound: true
                 };
             } else {
                 return { 
                     verified: false, 
-                    reason: '❌ Name (PUNAM DEVI) and Amount (₹' + expectedAmount + ') both not found! Manual verification needed.',
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking'
                     nameFound: false,
                     amountFound: false
                 };

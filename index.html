@@ -55,13 +55,32 @@
         .skeleton-btn { height: 48px; margin: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; }
 
         .btn {
-            background: transparent; color: var(--neon-cyan); border: 1px solid var(--neon-cyan);
-            padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; width: 100%;
-            display: inline-flex; justify-content: center; align-items: center; gap: 8px;
-            font-size: 13px; height: 48px;
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            height: 48px;
+            color: var(--text-main);
+            background: #000;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
         }
-        .btn-primary { background: var(--neon-cyan); color: #000; font-weight: 800; }
+        .btn:hover {
+            box-shadow: 0 0 30px var(--neon-cyan);
+            transform: scale(1.02);
+            border-color: var(--neon-cyan);
+        }
+        .btn-primary { background: var(--neon-cyan); color: #000; font-weight: 800; border-color: var(--neon-cyan); }
+        .btn-primary:hover { background: #fff; border-color: #fff; box-shadow: 0 0 20px var(--neon-cyan); }
         .btn-purchase {
             background: linear-gradient(90deg, var(--neon-purple), #0073ff);
             border: none; color: white; font-weight: 800;
@@ -77,17 +96,35 @@
             border: 1px solid var(--success);
             color: #000;
         }
-        .btn-warning-custom {
-            background: var(--warning);
-            border: 1px solid var(--warning);
-            color: #000;
+        .btn-sm { padding: 6px 12px; font-size: 11px; height: auto; width: auto; }
+
+        .btn-check-update {
+            background: #000;
+            border: 2px solid var(--neon-cyan);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 120px;
+            height: 38px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
         }
-        .btn-outline-custom {
-            background: transparent;
-            border: 1px solid var(--neon-cyan);
+        .btn-check-update:hover {
+            box-shadow: 0 0 30px var(--neon-cyan);
+            transform: scale(1.03);
+            border-color: var(--neon-cyan);
+        }
+        .btn-check-update i {
             color: var(--neon-cyan);
         }
-        .btn-sm { padding: 6px 12px; font-size: 11px; height: auto; width: auto; }
 
         .input-group input {
             width: 100%; padding: 0 18px; height: 50px; background: rgba(0,0,0,0.5);
@@ -285,11 +322,9 @@
             margin: 10px 0;
             flex-wrap: wrap;
         }
-        .dashboard-actions .btn {
+        .dashboard-actions .btn-check-update {
             flex: 1;
             min-width: 100px;
-            height: 40px;
-            font-size: 12px;
         }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
@@ -316,7 +351,7 @@
             .promo-card { flex: 0 0 90%; height: 150px; }
             .coupon-box { flex-direction: column; }
             .checkout-actions { flex-direction: column; }
-            .dashboard-actions .btn { min-width: 80px; font-size: 10px; }
+            .dashboard-actions .btn-check-update { min-width: 80px; font-size: 10px; padding: 6px 10px; }
         }
     </style>
 </head>
@@ -644,7 +679,7 @@
         if(!email || !pass) return showToast("Enter credentials", "error");
         try {
             await signInWithEmailAndPassword(auth, email, pass);
-            showToast("Welcome back! 🎉");
+            showToast("Welcome back!");
         } catch(e) {
             if(e.code === 'auth/user-not-found') showToast("Account not found. Please sign up first.", "error");
             else if(e.code === 'auth/wrong-password') showToast("Wrong password. Try again.", "error");
@@ -955,8 +990,12 @@
                 // ============================================================
                 const dashboardButtons = `
                     <div class="dashboard-actions">
-                        <button class="btn btn-warning-custom btn-sm" onclick="showToast('✅ Latest version available! Contact admin for details.')"><i class="fas fa-sync-alt"></i> CHECK UPDATE</button>
-                        <button class="btn btn-primary btn-sm" onclick="window.open('${p.link || '#'}', '_blank')"><i class="fas fa-video"></i> VIDEO/FEEDBACK</button>
+                        <button class="btn-check-update" onclick="showToast('✅ Latest version available! Contact admin for details.')">
+                            <i class="fas fa-sync-alt"></i> CHECK UPDATE FILE
+                        </button>
+                        <button class="btn-check-update" onclick="window.open('${p.link || '#'}', '_blank')">
+                            <i class="fas fa-video"></i> CHECK VIDEO / FEEDBACK
+                        </button>
                     </div>
                 `;
                 
@@ -966,7 +1005,7 @@
                         <div class="panel-title">${p.name}</div>
                         <div class="features-list">${featuresHtml || '<span class="feature-chip">Premium Quality</span>'}</div>
                         ${plansHtml}
-                        ${dashboardButtons}   // ✅ CHECK UPDATE & VIDEO/FEEDBACK PLAN KE NICHE
+                        ${dashboardButtons}
                         <button class="btn btn-purchase" onclick="handlePurchase('${panelId}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')">PURCHASE NOW</button>
                     </div>
                 `;
@@ -1082,13 +1121,20 @@
         }
     });
 
+    // Color cycler for neon cyan
     (function() {
         let hue = 0;
         setInterval(() => {
             const r = Math.sin(hue) * 127 + 128;
             const g = Math.sin(hue + 2.094) * 127 + 128;
             const b = Math.sin(hue + 4.188) * 127 + 128;
-            document.documentElement.style.setProperty('--neon-cyan', `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`);
+            const color = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+            document.documentElement.style.setProperty('--neon-cyan', color);
+            // Also update button borders
+            document.querySelectorAll('.btn-check-update').forEach(btn => {
+                btn.style.borderColor = color;
+                btn.style.boxShadow = `0 0 15px ${color}33`;
+            });
             hue += 0.105;
             if(hue > Math.PI * 2) hue -= Math.PI * 2;
         }, 1000);

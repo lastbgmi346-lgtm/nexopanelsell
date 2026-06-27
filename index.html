@@ -488,7 +488,7 @@
             if (hasPunamDevi && (amountMatch || amountWithRupee)) {
                 return { 
                     verified: true, 
-                    reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added'
+                    reason: '✅ Verified! Name: PUNAM DEVI Amount: ₹' + expectedAmount + ', Added'
                     nameFound: hasPunamDevi,
                     amountFound: amountMatch || amountWithRupee
                 };
@@ -726,7 +726,7 @@
                 const balSnap = await get(balRef);
                 await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
                 
-                showToast("✅ Payment auto-verified! ₹" + amount + " added to balance!");
+                showToast("✅ Payment verified! ₹" + amount + " added to balance!");
                 
                 // Update payment status
                 await update(ref(db, `payments/${paymentRef.key}`), {

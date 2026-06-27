@@ -488,28 +488,28 @@
             if (hasPunamDevi && (amountMatch || amountWithRupee)) {
                 return { 
                     verified: true, 
-                    reason: '✅ Verified! Name: PUNAM DEVI Amount: ₹' + expectedAmount + ', Added'
+                    reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added',
                     nameFound: hasPunamDevi,
                     amountFound: amountMatch || amountWithRupee
                 };
             } else if (hasPunamDevi && !amountMatch && !amountWithRupee) {
                 return { 
                     verified: false, 
-                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking'
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking',
                     nameFound: hasPunamDevi,
                     amountFound: false
                 };
             } else if (!hasPunamDevi && (amountMatch || amountWithRupee)) {
                 return { 
                     verified: false, 
-                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking'
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking',
                     nameFound: false,
                     amountFound: true
                 };
             } else {
                 return { 
                     verified: false, 
-                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking'
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking',
                     nameFound: false,
                     amountFound: false
                 };

@@ -355,7 +355,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getDatabase, ref, set, get, onValue, push, runTransaction, serverTimestamp, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
@@ -370,13 +369,13 @@
     const app = initializeApp(firebaseConfig, 'userApp');
     const auth = getAuth(app);
     const db = getDatabase(app);
-    const storage = getStorage(app);
     
     let currentUser = null;
     let userData = { balance: 0 };
     let refreshInterval = null;
     let balanceListenerUnsubscribe = null;
     let selectedFile = null;
+    let screenshotBase64 = null;
 
     function getVideoEmbedCode(url) {
         if (!url || url.trim() === '') return null;
@@ -441,18 +440,32 @@
     });
 
     // ============================================================
-    // SCREENSHOT UPLOAD - Gallery/File selector (Camera nahi)
+    // Convert File to Base64
     // ============================================================
-    document.getElementById('screenshot-input').addEventListener('change', (e) => {
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    // ============================================================
+    // SCREENSHOT UPLOAD - Gallery/File selector
+    // ============================================================
+    document.getElementById('screenshot-input').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if(file) {
             selectedFile = file;
-            const reader = new FileReader();
-            reader.onload = (event) => {
+            try {
+                screenshotBase64 = await fileToBase64(file);
                 const preview = document.getElementById('screenshot-preview');
-                preview.innerHTML = `<img src="${event.target.result}" class="preview-img" alt="Screenshot preview">`;
-            };
-            reader.readAsDataURL(file);
+                preview.innerHTML = `<img src="${screenshotBase64}" class="preview-img" alt="Screenshot preview">`;
+                showToast("✅ Screenshot loaded!", "success");
+            } catch(err) {
+                showToast("Error loading image", "error");
+            }
         }
     });
 
@@ -582,7 +595,7 @@
     });
 
     // ============================================================
-    // SUBMIT PAYMENT WITH SCREENSHOT - AUTO VERIFY
+    // SUBMIT PAYMENT WITH BASE64 SCREENSHOT - NO STORAGE NEEDED!
     // ============================================================
     document.getElementById('btn-submit-payment').onclick = async () => {
         if(!currentUser) {
@@ -601,78 +614,49 @@
             showToast("Phone number required", "error");
             return;
         }
-        if(!selectedFile) {
+        if(!screenshotBase64) {
             showToast("Please upload screenshot", "error");
             return;
         }
         
         try {
-            // Upload screenshot to Firebase Storage
-            const storagePath = `payments/${currentUser.uid}/${Date.now()}_${selectedFile.name}`;
-            const fileRef = storageRef(storage, storagePath);
-            await uploadBytes(fileRef, selectedFile);
-            const screenshotUrl = await getDownloadURL(fileRef);
-            
             // ============================================================
             // AUTO-VERIFY: Check if screenshot contains "PUNAM DEVI" and amount
+            // For now, we'll mark as pending and admin will verify manually
             // ============================================================
             let autoVerified = false;
             let verificationStatus = 'pending';
-            let autoVerifyNote = '';
+            let autoVerifyNote = 'Waiting for admin verification';
             
-            try {
-                // Convert image to text using OCR (Tesseract.js)
-                // For now, we'll do a simple check - in production, use proper OCR
-                // Since we can't do actual OCR in browser easily, we'll mark as pending
-                // and admin will verify manually
-                
-                // For demo: Check if amount matches and we'll auto-verify if admin approved
-                // Actually we'll let admin verify manually since OCR is complex
-                
-                autoVerified = false;
-                verificationStatus = 'pending';
-                autoVerifyNote = 'Waiting for admin verification';
-                
-                // NOTE: For real auto-verify, you'd need to implement OCR
-                // using Tesseract.js or Google Cloud Vision API
-                
-            } catch(ocrError) {
-                console.warn("OCR check failed:", ocrError);
-                autoVerified = false;
-                verificationStatus = 'pending';
-                autoVerifyNote = 'Manual verification required';
-            }
+            // NOTE: For real auto-verify with OCR, you'd need to use:
+            // - Tesseract.js (client-side OCR)
+            // - Google Cloud Vision API (paid)
+            // For now, admin will manually verify
             
-            // Save payment request with auto-verify info
+            // Save payment request with Base64 screenshot directly in DB
             await push(ref(db, 'payments'), {
                 uid: currentUser.uid,
                 email: currentUser.email,
                 amount: parseFloat(amount),
                 phone: phone,
-                screenshot: screenshotUrl,
+                screenshot: screenshotBase64, // ✅ Base64 string directly in DB
                 status: verificationStatus,
-                type: 'screenshot',
+                type: 'screenshot_base64',
                 autoVerified: autoVerified,
                 autoVerifyNote: autoVerifyNote,
                 expectedAmount: parseFloat(amount),
                 timestamp: serverTimestamp()
             });
             
-            if(autoVerified) {
-                showToast("✅ Payment auto-verified! Balance added.");
-                // Add balance automatically
-                const balRef = ref(db, `users/${currentUser.uid}/balance`);
-                const balSnap = await get(balRef);
-                await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
-            } else {
-                showToast("📤 Payment proof submitted! Admin will verify.");
-            }
+            showToast("📤 Payment proof submitted! Admin will verify.");
             
+            // Clear form
             document.getElementById('add-amount').value = '';
             document.getElementById('add-phone').value = '';
             document.getElementById('screenshot-input').value = '';
             document.getElementById('screenshot-preview').innerHTML = '';
             selectedFile = null;
+            screenshotBase64 = null;
             
             // Refresh balance
             const balRef = ref(db, `users/${currentUser.uid}/balance`);

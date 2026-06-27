@@ -574,7 +574,9 @@
             }
             
             const purchases = [];
-            snapshot.forEach(child => purchases.push({ id: child.key, ...child.val() }));
+            snapshot.forEach((child) => {
+                purchases.push({ id: child.key, ...child.val() });
+            });
             
             purchases.sort((a,b) => {
                 const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);

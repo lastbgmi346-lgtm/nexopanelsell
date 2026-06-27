@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>SUKISU STORE OFFICIAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+        :root {
+            --bg-color: #050508;
+            --card-bg: rgba(15, 18, 25, 0.6);
+            --card-border: rgba(0, 240, 255, 0.15);
+            --neon-cyan: #00f0ff;
+            --neon-cyan-dim: rgba(0, 240, 255, 0.4);
+            --neon-purple: #bc13fe;
+            --text-main: #ffffff;
+            --text-muted: #a0a5b5;
+            --error: #ff2a5f;
+            --success: #00ff66;
+            --warning: #ffb800;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-color); color: var(--text-main); overflow-x: hidden; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 40%, rgba(188,19,254,0.08), transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(0,240,255,0.08), transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+            animation: bgPulse 8s ease-in-out infinite;
+        }
+        @keyframes bgPulse { 0%,100%{opacity:0.5;}50%{opacity:1;} }
+
+        .hidden { display: none !important; }
+        
+        .glass { background: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid var(--card-border); border-radius: 16px; transition: all 0.3s ease; }
+        .glass:hover { border-color: var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan-dim); }
+
+        .btn {
+            background: transparent; color: var(--neon-cyan); border: 1px solid var(--neon-cyan);
+            padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+            font-size: 13px; position: relative; overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            border-radius: 50%;
+            background: rgba(0,240,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        .btn:hover::before { width: 200px; height: 200px; }
+        .btn:hover { background: rgba(0,240,255,0.1); box-shadow: 0 0 15px var(--neon-cyan-dim); transform: translateY(-2px); }
+        .btn-primary { background: var(--neon-cyan); color: #000; font-weight: 800; }
+        .btn-primary:hover { background: #fff; border-color: #fff; box-shadow: 0 0 20px var(--neon-cyan); }
+        .btn-success { background: var(--success); border-color: var(--success); color: #000; }
+        .btn-warning { background: var(--warning); border-color: var(--warning); color: #000; }
+        .btn-danger { background: var(--error); border-color: var(--error); color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 11px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white;
+            outline: none; font-size: 14px; transition: all 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan-dim);
+        }
+
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,5,8,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(0,240,255,0.1); border-top-color: var(--neon-cyan); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #toast-container { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 400px; }
+        .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; font-size: 13px; background: var(--card-bg); backdrop-filter: blur(10px); border-left: 4px solid var(--neon-cyan); animation: slideUp 0.3s forwards; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        #auth-screen { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 420px; padding: 40px 30px; text-align: center; border-top: 2px solid var(--neon-cyan); animation: fadeInScale 0.5s ease; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        #admin-app { display: none; width: 100%; }
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 65px; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 1000; background: rgba(10,12,18,0.95); backdrop-filter: blur(15px); border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-image-slice: 1; }
+        .logo { font-weight: 800; font-size: 22px; }
+        .logo span { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan-dim); }
+        .logo small { font-size: 10px; color: var(--warning); margin-left: 5px; }
+        .admin-badge { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .logout-btn { background: rgba(255,42,95,0.2); border: 1px solid var(--error); color: var(--error); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s; }
+        .logout-btn:hover { background: var(--error); color: white; box-shadow: 0 0 15px var(--error); }
+
+        .sidebar { position: fixed; top: 65px; left: 0; width: 260px; height: calc(100% - 65px); background: rgba(10,12,18,0.95); backdrop-filter: blur(15px); border-right: 1px solid rgba(255,255,255,0.05); padding: 20px 0; overflow-y: auto; z-index: 99; }
+        .sidebar-item { padding: 14px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s; color: var(--text-muted); border-left: 3px solid transparent; position: relative; }
+        .sidebar-item::before { content: '▶'; position: absolute; left: -20px; opacity: 0; transition: all 0.3s; font-size: 10px; color: var(--neon-cyan); }
+        .sidebar-item:hover::before { left: 10px; opacity: 1; }
+        .sidebar-item:hover, .sidebar-item.active { background: rgba(0,240,255,0.08); color: var(--neon-cyan); border-left-color: var(--neon-cyan); padding-left: 28px; }
+        .sidebar-item i { width: 24px; font-size: 18px; }
+
+        .main-content { margin-left: 260px; padding: 85px 25px 40px; min-height: 100vh; }
+        .page-title { font-size: 26px; font-weight: 800; margin-bottom: 25px; }
+        .page-title span { color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { padding: 20px; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); transform: scaleX(0); transition: transform 0.3s; }
+        .stat-card:hover::after { transform: scaleX(1); }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,240,255,0.2); }
+        .stat-card h3 { font-size: 32px; font-weight: 800; color: var(--neon-cyan); text-shadow: 0 0 15px var(--neon-cyan-dim); }
+        .stat-card p { font-size: 13px; color: var(--text-muted); margin-top: 5px; }
+
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 25px; transition: all 0.3s; }
+        .card:hover { border-color: var(--neon-cyan-dim); box-shadow: 0 5px 20px rgba(0,240,255,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .card-header h3 { font-size: 18px; font-weight: 700; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; font-size: 13px; }
+        th { color: var(--neon-cyan); font-weight: 600; border-bottom: 2px solid var(--neon-cyan-dim); }
+        tr { border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; }
+        tr:hover { background: rgba(0,240,255,0.05); transform: scale(1.01); }
+        .status-pending { color: var(--warning); font-weight: 600; }
+        .status-approved { color: var(--success); font-weight: 600; }
+        .status-delivered { color: var(--success); font-weight: 600; }
+
+        .key-input { width: 100%; padding: 10px; background: rgba(0,0,0,0.6); border: 1px solid var(--neon-cyan-dim); border-radius: 8px; color: white; font-family: monospace; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal { background: rgba(20,24,34,0.98); border: 1px solid var(--neon-cyan); width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 25px; border-radius: 20px; animation: modalPop 0.3s ease; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .close-modal { background: none; border: none; color: white; font-size: 24px; cursor: pointer; transition: all 0.3s; }
+        .close-modal:hover { color: var(--error); transform: rotate(90deg); }
+
+        .plan-item { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .plan-item input { flex: 1; min-width: 120px; }
+
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-item span { display: none; } .sidebar-item i { width: auto; font-size: 20px; } .main-content { margin-left: 70px; } }
+        @media (max-width: 480px) { .main-content { padding: 75px 15px 30px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .stat-card h3 { font-size: 24px; } .navbar { padding: 0 15px; } .logo { font-size: 16px; } }
+    </style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div><p style="margin-top:20px;color:var(--neon-cyan);">LOADING ADMIN PANEL...</p></div>
+<div id="toast-container"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+    <div class="auth-card glass">
+        <div style="margin-bottom:20px;"><i class="fas fa-shield-alt" style="font-size:60px;color:var(--neon-cyan);text-shadow:0 0 20px var(--neon-cyan-dim);"></i></div>
+        <h1>ADMIN <span style="color:var(--neon-cyan);">PANEL</span></h1>
+        <p style="margin-bottom:20px;color:var(--text-muted);">Secure Administrator Access Only</p>
+        <div class="input-group"><input id="admin-email" placeholder="Admin Email" type="email"></div>
+        <div class="input-group"><input id="admin-pass" placeholder="Password" type="password"></div>
+        <button class="btn btn-primary" id="admin-login-btn"><i class="fas fa-shield-alt"></i> Admin Login</button>
+    </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+    <nav class="navbar">
+        <div class="logo"><span>SUKISU</span> ADMIN <small>PANEL</small></div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <span class="admin-badge" id="admin-email-display">admin@example.com</span>
+            <button class="logout-btn" id="admin-logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </nav>
+
+    <div class="sidebar">
+        <div class="sidebar-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i><span> Dashboard</span></div>
+        <div class="sidebar-item" data-page="panels"><i class="fas fa-box"></i><span> Panel Management</span></div>
+        <div class="sidebar-item" data-page="promotions"><i class="fas fa-sliders-h"></i><span> Promotions</span></div>
+        <div class="sidebar-item" data-page="key-delivery"><i class="fas fa-key"></i><span> Key Delivery</span></div>
+        <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
+        <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
+        <div class="sidebar-item" data-page="users"><i class="fas fa-users"></i><span> Users</span></div>
+    </div>
+
+    <div class="main-content">
+        <!-- DASHBOARD -->
+        <div id="dashboard-page">
+            <h2 class="page-title">Admin <span>Dashboard</span></h2>
+            <div class="stats-grid">
+                <div class="stat-card glass"><h3 id="total-users">0</h3><p><i class="fas fa-users"></i> Total Users</p></div>
+                <div class="stat-card glass"><h3 id="total-panels">0</h3><p><i class="fas fa-box"></i> Active Panels</p></div>
+                <div class="stat-card glass"><h3 id="pending-keys">0</h3><p><i class="fas fa-key"></i> Pending Keys</p></div>
+                <div class="stat-card glass"><h3 id="pending-payments">0</h3><p><i class="fas fa-clock"></i> Pending Payments</p></div>
+            </div>
+        </div>
+
+        <!-- PANELS MANAGEMENT -->
+        <div id="panels-page" class="hidden">
+            <div class="card-header"><h3>Panel Management</h3><button class="btn btn-primary" id="add-panel-btn"><i class="fas fa-plus"></i> Add Panel</button></div>
+            <div class="table-responsive"><table id="panels-table"><thead><th>Name</th><th>Status</th><th>Plans</th><th>Actions</th></thead><tbody id="panels-list"></tbody></table></div>
+        </div>
+
+        <!-- PROMOTIONS -->
+        <div id="promotions-page" class="hidden">
+            <div class="card-header"><h3>Promotions</h3><button class="btn btn-primary" id="add-promo-btn"><i class="fas fa-plus"></i> Add Promotion</button></div>
+            <div class="table-responsive"><table><thead><th>Title</th><th>Image</th><th>Status</th><th>Actions</th></thead><tbody id="promotions-list"></tbody></table></div>
+        </div>
+
+        <!-- KEY DELIVERY PAGE - NEW -->
+        <div id="key-delivery-page" class="hidden">
+            <div class="card-header"><h3><i class="fas fa-key"></i> Key Delivery Requests</h3></div>
+            <div class="table-responsive">
+                <table>
+                    <thead><th>User</th><th>Panel</th><th>Plan</th><th>Amount</th><th>Purchase Date</th><th>Status</th><th>Action</th></thead>
+                    <tbody id="key-delivery-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PAYMENTS -->
+        <div id="payments-page" class="hidden">
+            <div class="card-header"><h3>Payment Requests</h3></div>
+            <div class="table-responsive"><table><thead><th>User</th><th>Amount</th><th>UTR</th><th>Phone</th><th>Status</th><th>Actions</th></thead><tbody id="payments-list"></tbody></table></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settings-page" class="hidden">
+            <div class="card"><div class="card-header"><h3>Payment Settings</h3></div><div class="input-group"><label>UPI ID</label><input id="setting-upi" placeholder="Enter UPI ID"></div><div class="input-group"><label>QR Image URL</label><input id="setting-qr" placeholder="https://..."></div><button class="btn btn-primary" id="save-payment-settings">Save</button></div>
+            <div class="card"><div class="card-header"><h3>Support Links</h3></div><div class="input-group"><label>WhatsApp</label><input id="setting-wa" placeholder="https://wa.me/..."></div><div class="input-group"><label>Telegram (Login)</label><input id="setting-tg-login" placeholder="https://t.me/..."></div><div class="input-group"><label>Telegram (Dashboard)</label><input id="setting-tg-dash" placeholder="https://t.me/..."></div><button class="btn btn-primary" id="save-support-links">Save</button></div>
+        </div>
+
+        <!-- USERS -->
+        <div id="users-page" class="hidden">
+            <div class="card-header"><h3>Users</h3></div>
+            <div class="table-responsive"><table><thead><th>Email</th><th>Balance</th><th>Purchases</th><th>Joined</th><th>Actions</th></thead><tbody id="users-list"></tbody></table></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="panel-modal"><div class="modal"><div class="modal-header"><h3 id="panel-modal-title">Add Panel</h3><button class="close-modal" onclick="closeModal('panel-modal')">&times;</button></div><div class="input-group"><label>Panel Name</label><input id="panel-name" placeholder="e.g., VIP Panel Pro"></div><div class="input-group"><label>Description</label><textarea id="panel-desc" rows="2" placeholder="Aimbot, ESP, Wallhack"></textarea></div><div class="input-group"><label>Video Link</label><input id="panel-video" placeholder="https://youtu.be/..."></div><div class="input-group"><label>Access Link</label><input id="panel-link" placeholder="https://t.me/..."></div><div class="input-group"><label>Status</label><select id="panel-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="input-group"><label>Plans</label></div><div id="plans-container"><div class="plan-item"><input placeholder="Plan Label" id="plan-label-0"><input placeholder="Price" type="number" id="plan-price-0"><button class="btn btn-danger btn-sm" onclick="removePlan(0)">Remove</button></div></div><button class="btn btn-primary" id="add-plan-btn">Add Plan</button><button class="btn btn-primary" id="save-panel-btn" style="margin-top:15px;">Save Panel</button><input type="hidden" id="edit-panel-id"></div></div>
+
+<div class="modal-overlay" id="promo-modal"><div class="modal"><div class="modal-header"><h3 id="promo-modal-title">Add Promotion</h3><button class="close-modal" onclick="closeModal('promo-modal')">&times;</button></div><div class="input-group"><label>Title</label><input id="promo-title" placeholder="Special Offer"></div><div class="input-group"><label>Image URL</label><input id="promo-image" placeholder="https://..."></div><div class="input-group"><label>Link</label><input id="promo-link" placeholder="https://..."></div><div class="input-group"><label>Status</label><select id="promo-status"><option value="true">Active</option><option value="false">Inactive</option></select></div><button class="btn btn-primary" id="save-promo-btn">Save</button><input type="hidden" id="edit-promo-id"></div></div>
+
+<!-- KEY DELIVERY MODAL -->
+<div class="modal-overlay" id="key-delivery-modal"><div class="modal"><div class="modal-header"><h3>Deliver License Key</h3><button class="close-modal" onclick="closeModal('key-delivery-modal')">&times;</button></div><div class="input-group"><label>User Email</label><input id="kd-user-email" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Panel</label><input id="kd-panel-name" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Plan</label><input id="kd-plan" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>License Key</label><input id="kd-key" placeholder="Enter real license key (e.g., ABC12-XYZ34-MNOP5)"></div><button class="btn btn-success" id="kd-confirm-btn">Deliver Key</button><input type="hidden" id="kd-purchase-id"></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, push, remove, update, serverTimestamp, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyDSgAQ9-l85GJdkxZzTGsB8p5bfyKGaum4", authDomain: "sukisu-team-1552a.firebaseapp.comm", databaseURL: "https://sukisu-team-1552a-default-rtdb.firebaseio.com", projectId: "sukisu-team-1552a", storageBucket: "sukisu-team-1552a.firebasestorage.app", messagingSenderId: "772242945680", appId: "1:772242945680:android:02a3d42b02e7264e2d0a15"};
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    
+    let currentAdmin = null;
+    let plansCount = 1;
+    const adminEmails = ["sudhanshukumarevd@gmail.com", "your-email@gmail.com"];
+    
+    function showToast(msg, type='success') { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=`<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    
+    document.getElementById('admin-login-btn').onclick = async () => { const e=document.getElementById('admin-email').value.trim(), p=document.getElementById('admin-pass').value; if(!e||!p) return showToast("Enter credentials","error"); if(!adminEmails.includes(e)) return showToast("Not Authorized","error"); try{ await signInWithEmailAndPassword(auth,e,p); showToast("Login Successful!"); } catch(e){ showToast("Invalid credentials","error"); } };
+    document.getElementById('admin-logout-btn').onclick = async () => { await signOut(auth); };
+    
+    onAuthStateChanged(auth, async (user) => { const l=document.getElementById('loader'), as=document.getElementById('auth-screen'), aa=document.getElementById('admin-app'); if(user && adminEmails.includes(user.email)){ currentAdmin=user; document.getElementById('admin-email-display').innerText=user.email; as.style.display='none'; aa.style.display='block'; l.style.display='none'; loadDashboardStats(); loadPanels(); loadPromotions(); loadPayments(); loadUsers(); loadKeyDelivery(); loadSettings(); navigateAdmin('dashboard'); } else if(user && !adminEmails.includes(user.email)){ await signOut(auth); showToast("Not authorized","error"); as.style.display='flex'; aa.style.display='none'; l.style.display='none'; } else { as.style.display='flex'; aa.style.display='none'; l.style.display='none'; } });
+    
+    function navigateAdmin(page){ document.querySelectorAll('.main-content > div').forEach(d=>d.classList.add('hidden')); document.getElementById(`${page}-page`).classList.remove('hidden'); document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); document.querySelector(`.sidebar-item[data-page="${page}"]`).classList.add('active'); }
+    document.querySelectorAll('.sidebar-item').forEach(i=>{ i.addEventListener('click',()=>navigateAdmin(i.dataset.page)); });
+    
+    async function loadDashboardStats(){ const u=await get(ref(db,'users')), p=await get(ref(db,'panels')), pay=await get(ref(db,'payments')), purchases=await get(ref(db,'purchases')); let tu=0, tp=0, pp=0, pk=0; if(u.exists()) tu=Object.keys(u.val()).length; if(p.exists()) Object.values(p.val()).forEach(pn=>{ if(pn.status==='active') tp++; }); if(pay.exists()) Object.values(pay.val()).forEach(paym=>{ if(paym.status==='pending') pp++; }); if(purchases.exists()){ Object.values(purchases.val()).forEach(uidPurchases=>{ Object.values(uidPurchases).forEach(pur=>{ if(pur.keyStatus==='pending') pk++; }); }); } document.getElementById('total-users').innerText=tu; document.getElementById('total-panels').innerText=tp; document.getElementById('pending-payments').innerText=pp; document.getElementById('pending-keys').innerText=pk; }
+    
+    // LOAD KEY DELIVERY REQUESTS
+    async function loadKeyDelivery(){ const snap=await get(ref(db,'purchases')); const tbody=document.getElementById('key-delivery-list'); tbody.innerHTML=''; if(!snap.exists()){ tbody.innerHTML='<tr><td colspan="7">No pending requests</td></tr>'; return; } const requests=[]; for(const [uid,userPurchases] of Object.entries(snap.val())){ for(const [pid,purchase] of Object.entries(userPurchases)){ if(purchase.keyStatus==='pending'){ const userSnap=await get(ref(db,`users/${uid}/email`)); requests.push({uid,pid,...purchase,userEmail:userSnap.val()||uid}); } } } if(requests.length===0){ tbody.innerHTML='<tr><td colspan="7">All keys delivered! No pending requests.</td></tr>'; return; } for(const req of requests){ const row=document.createElement('tr'); row.innerHTML=`<td>${req.userEmail}</td><td>${req.panelName}</td><td>${req.label||req.plan}</td><td>₹${req.price}</td><td><small>${new Date(req.date).toLocaleDateString()}</small></td><td class="status-pending">Pending</td><td><button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.userEmail}','${req.panelName}','${req.label||req.plan}')"><i class="fas fa-key"></i> Deliver Key</button></td>`; tbody.appendChild(row); } }
+    
+    window.openKeyDeliveryModal = (uid,pid,email,panelName,plan)=>{ document.getElementById('kd-user-email').value=email; document.getElementById('kd-panel-name').value=panelName; document.getElementById('kd-plan').value=plan; document.getElementById('kd-purchase-id').value=pid; document.getElementById('kd-key').value=''; openModal('key-delivery-modal'); };
+    
+    document.getElementById('kd-confirm-btn').onclick = async ()=>{ const pid=document.getElementById('kd-purchase-id').value; const key=document.getElementById('kd-key').value.trim(); if(!key) return showToast("Enter license key","error"); const uid=await getPurchaseUid(pid); await update(ref(db,`purchases/${uid}/${pid}`),{ key:key, keyStatus:'delivered' }); showToast("Key delivered successfully!"); closeModal('key-delivery-modal'); loadKeyDelivery(); loadDashboardStats(); };
+    
+    async function getPurchaseUid(pid){ const snap=await get(ref(db,'purchases')); if(snap.exists()){ for(const [uid,userPurchases] of Object.entries(snap.val())){ if(userPurchases[pid]) return uid; } } return null; }
+    
+    async function loadPanels(){ const snap=await get(ref(db,'panels')); const tbody=document.getElementById('panels-list'); tbody.innerHTML=''; if(!snap.exists()) return; Object.entries(snap.val()).forEach(([id,panel])=>{ const row=document.createElement('tr'); row.innerHTML=`<td><i class="fas fa-cube"></i> ${panel.name}</td><td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td><td>${panel.plans?Object.keys(panel.plans).length:0} plans</td><td><button class="btn btn-sm" onclick="editPanel('${id}')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-sm" onclick="deletePanel('${id}')"><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(row); }); }
+    
+    window.editPanel=async(id)=>{ const snap=await get(ref(db,`panels/${id}`)); const p=snap.val(); if(!p) return; document.getElementById('panel-modal-title').innerText='Edit Panel'; document.getElementById('panel-name').value=p.name||''; document.getElementById('panel-desc').value=p.description||''; document.getElementById('panel-video').value=p.video||''; document.getElementById('panel-link').value=p.link||''; document.getElementById('panel-status').value=p.status||'active'; document.getElementById('edit-panel-id').value=id; document.getElementById('plans-container').innerHTML=''; if(p.plans){ let idx=0; Object.entries(p.plans).forEach(([key,plan])=>{ const div=document.createElement('div'); div.className='plan-item'; div.innerHTML=`<input placeholder="Plan Label" value="${plan.label}" id="plan-label-${idx}"><input placeholder="Price" type="number" value="${plan.price}" id="plan-price-${idx}"><button class="btn btn-danger btn-sm" onclick="removePlan(${idx})">Remove</button>`; document.getElementById('plans-container').appendChild(div); idx++; }); plansCount=idx; } else addPlanField(); openModal('panel-modal'); };
+    
+    window.deletePanel=async(id)=>{ if(confirm('Delete?')){ await remove(ref(db,`panels/${id}`)); showToast('Panel deleted!'); loadPanels(); loadDashboardStats(); } };
+    
+    function addPlanField(){ const div=document.createElement('div'); div.className='plan-item'; div.innerHTML=`<input placeholder="Plan Label" id="plan-label-${plansCount}"><input placeholder="Price" type="number" id="plan-price-${plansCount}"><button class="btn btn-danger btn-sm" onclick="removePlan(${plansCount})">Remove</button>`; document.getElementById('plans-container').appendChild(div); plansCount++; }
+    window.removePlan=(idx)=>{ const el=document.querySelector(`.plan-item:has(#plan-label-${idx})`); if(el) el.remove(); };
+    document.getElementById('add-plan-btn').onclick=()=>addPlanField();
+    document.getElementById('save-panel-btn').onclick=async()=>{ const id=document.getElementById('edit-panel-id').value, name=document.getElementById('panel-name').value; if(!name) return showToast("Name required","error"); const plans={}; for(let i=0;i<plansCount;i++){ const l=document.getElementById(`plan-label-${i}`), p=document.getElementById(`plan-price-${i}`); if(l&&p&&l.value&&p.value) plans[`plan_${i}`]={label:l.value,price:parseFloat(p.value)}; } const data={name,description:document.getElementById('panel-desc').value,video:document.getElementById('panel-video').value,link:document.getElementById('panel-link').value,status:document.getElementById('panel-status').value,plans,updatedAt:serverTimestamp()}; if(id){ await update(ref(db,`panels/${id}`),data); showToast('Updated!'); } else{ await push(ref(db,'panels'),data); showToast('Added!'); } closeModal('panel-modal'); loadPanels(); loadDashboardStats(); resetPanelForm(); };
+    
+    document.getElementById('add-panel-btn').onclick=()=>{ resetPanelForm(); openModal('panel-modal'); };
+    function resetPanelForm(){ document.getElementById('panel-modal-title').innerText='Add Panel'; document.getElementById('panel-name').value=''; document.getElementById('panel-desc').value=''; document.getElementById('panel-video').value=''; document.getElementById('panel-link').value=''; document.getElementById('panel-status').value='active'; document.getElementById('edit-panel-id').value=''; document.getElementById('plans-container').innerHTML='<div class="plan-item"><input placeholder="Plan Label" id="plan-label-0"><input placeholder="Price" type="number" id="plan-price-0"><button class="btn btn-danger btn-sm" onclick="removePlan(0)">Remove</button></div>'; plansCount=1; }
+    
+    async function loadPromotions(){ const snap=await get(ref(db,'promotions')); const tbody=document.getElementById('promotions-list'); tbody.innerHTML=''; if(!snap.exists()) return; Object.entries(snap.val()).forEach(([id,p])=>{ const row=document.createElement('tr'); row.innerHTML=`<td>${p.title||'-'}</td><td>${p.image?'<img src="'+p.image+'" style="width:40px;height:30px;object-fit:cover;">':'-'}</td><td><span style="color:${p.status?'#0f0':'#f00'}">● ${p.status?'Active':'Inactive'}</span></td><td><button class="btn btn-sm" onclick="editPromo('${id}')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deletePromo('${id}')"><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(row); }); }
+    window.editPromo=async(id)=>{ const snap=await get(ref(db,`promotions/${id}`)); const p=snap.val(); document.getElementById('promo-modal-title').innerText='Edit Promotion'; document.getElementById('promo-title').value=p.title||''; document.getElementById('promo-image').value=p.image||''; document.getElementById('promo-link').value=p.link||''; document.getElementById('promo-status').value=p.status?'true':'false'; document.getElementById('edit-promo-id').value=id; openModal('promo-modal'); };
+    window.deletePromo=async(id)=>{ if(confirm('Delete?')){ await remove(ref(db,`promotions/${id}`)); showToast('Deleted!'); loadPromotions(); } };
+    document.getElementById('save-promo-btn').onclick=async()=>{ const id=document.getElementById('edit-promo-id').value; const data={title:document.getElementById('promo-title').value,image:document.getElementById('promo-image').value,link:document.getElementById('promo-link').value,status:document.getElementById('promo-status').value==='true'}; if(id){ await update(ref(db,`promotions/${id}`),data); showToast('Updated!'); } else{ await push(ref(db,'promotions'),data); showToast('Added!'); } closeModal('promo-modal'); loadPromotions(); };
+    document.getElementById('add-promo-btn').onclick=()=>{ document.getElementById('promo-modal-title').innerText='Add Promotion'; document.getElementById('promo-title').value=''; document.getElementById('promo-image').value=''; document.getElementById('promo-link').value=''; document.getElementById('promo-status').value='true'; document.getElementById('edit-promo-id').value=''; openModal('promo-modal'); };
+    
+    async function loadPayments(){ const snap=await get(ref(db,'payments')); const tbody=document.getElementById('payments-list'); tbody.innerHTML=''; if(!snap.exists()) return; const payments=Object.entries(snap.val()).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0)); for(let [id,payment] of payments){ const row=document.createElement('tr'); row.innerHTML=`<td>${payment.email||payment.uid?.substring(0,8)}</td><td>₹${payment.amount}</td><td><small>${payment.utr||'-'}</small></td><td>${payment.phone||'-'}</td><td class="status-${payment.status||'pending'}">${payment.status||'pending'}</td><td>${payment.status==='pending'?`<button class="btn btn-success btn-sm" onclick="approvePayment('${id}',${payment.amount},'${payment.uid}')"><i class="fas fa-check"></i> Approve</button><button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>`:'-'}</td>`; tbody.appendChild(row); } }
+    window.approvePayment=async(id,amt,uid)=>{ if(confirm(`Approve ₹${amt}?`)){ await update(ref(db,`payments/${id}`),{status:'approved'}); const balRef=ref(db,`users/${uid}/balance`); const snap=await get(balRef); await set(balRef,(snap.val()||0)+amt); showToast(`₹${amt} added!`); loadPayments(); loadDashboardStats(); } };
+    window.rejectPayment=async(id)=>{ if(confirm('Reject?')){ await update(ref(db,`payments/${id}`),{status:'rejected'}); showToast('Rejected!'); loadPayments(); loadDashboardStats(); } };
+    
+    async function loadUsers(){ const snap=await get(ref(db,'users')); const tbody=document.getElementById('users-list'); tbody.innerHTML=''; if(!snap.exists()) return; for(let [uid,user] of Object.entries(snap.val())){ const purchasesSnap=await get(ref(db,`purchases/${uid}`)); let purchaseCount=purchasesSnap.exists()?Object.keys(purchasesSnap.val()).length:0; const row=document.createElement('tr'); row.innerHTML=`<td>${user.email}</td><td style="color:var(--success);">₹${user.balance||0}</td><td>${purchaseCount}</td><td><small>${user.createdAt?new Date(user.createdAt).toLocaleDateString():'-'}</small></td><td><button class="btn btn-primary btn-sm" onclick="addUserBalance('${uid}')"><i class="fas fa-plus"></i> Add ₹</button></td>`; tbody.appendChild(row); } }
+    window.addUserBalance=async(uid)=>{ const amt=prompt('Enter amount to add:'); if(amt&&!isNaN(amt)&&amt>0){ const balRef=ref(db,`users/${uid}/balance`); const snap=await get(balRef); await set(balRef,(snap.val()||0)+parseFloat(amt)); showToast(`₹${amt} added!`); loadUsers(); loadDashboardStats(); } };
+    
+    async function loadSettings(){ const ps=await get(ref(db,'settings/payment')); if(ps.exists()){ document.getElementById('setting-upi').value=ps.val().upiId||''; document.getElementById('setting-qr').value=ps.val().qrImage||''; } const ss=await get(ref(db,'support_links')); if(ss.exists()){ document.getElementById('setting-wa').value=ss.val().whatsapp||''; document.getElementById('setting-tg-login').value=ss.val().telegram_login||''; document.getElementById('setting-tg-dash').value=ss.val().telegram_dashboard||''; } }
+    document.getElementById('save-payment-settings').onclick=async()=>{ await set(ref(db,'settings/payment'),{upiId:document.getElementById('setting-upi').value,qrImage:document.getElementById('setting-qr').value}); showToast('Saved!'); };
+    document.getElementById('save-support-links').onclick=async()=>{ await set(ref(db,'support_links'),{whatsapp:document.getElementById('setting-wa').value,telegram_login:document.getElementById('setting-tg-login').value,telegram_dashboard:document.getElementById('setting-tg-dash').value}); showToast('Saved!'); };
+    
+    window.addPlanField = addPlanField;
+    window.removePlan = removePlan;
+    window.openKeyDeliveryModal = openKeyDeliveryModal;
+</script>
+</body>
+</html>

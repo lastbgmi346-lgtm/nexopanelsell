@@ -214,7 +214,7 @@
             <div class="table-responsive"><table><thead><th>Title</th><th>Image</th><th>Status</th><th>Actions</th></thead><tbody id="promotions-list"></tbody></table></div>
         </div>
 
-        <!-- KEY DELIVERY PAGE -->
+        <!-- KEY DELIVERY PAGE - FIXED -->
         <div id="key-delivery-page" class="hidden">
             <div class="card-header"><h3><i class="fas fa-key"></i> Key Delivery Requests</h3></div>
             <div class="table-responsive">
@@ -291,14 +291,109 @@
     
     async function loadDashboardStats(){ const u=await get(ref(db,'users')), p=await get(ref(db,'panels')), pay=await get(ref(db,'payments')), purchases=await get(ref(db,'purchases')); let tu=0, tp=0, pp=0, pk=0; if(u.exists()) tu=Object.keys(u.val()).length; if(p.exists()) Object.values(p.val()).forEach(pn=>{ if(pn.status==='active') tp++; }); if(pay.exists()) Object.values(pay.val()).forEach(paym=>{ if(paym.status==='pending') pp++; }); if(purchases.exists()){ Object.values(purchases.val()).forEach(uidPurchases=>{ Object.values(uidPurchases).forEach(pur=>{ if(pur.keyStatus==='pending') pk++; }); }); } document.getElementById('total-users').innerText=tu; document.getElementById('total-panels').innerText=tp; document.getElementById('pending-payments').innerText=pp; document.getElementById('pending-keys').innerText=pk; }
     
-    // LOAD KEY DELIVERY REQUESTS
-    async function loadKeyDelivery(){ const snap=await get(ref(db,'purchases')); const tbody=document.getElementById('key-delivery-list'); tbody.innerHTML=''; if(!snap.exists()){ tbody.innerHTML='<tr><td colspan="7">No pending requests</td></tr>'; return; } const requests=[]; for(const [uid,userPurchases] of Object.entries(snap.val())){ for(const [pid,purchase] of Object.entries(userPurchases)){ if(purchase.keyStatus==='pending'){ const userSnap=await get(ref(db,`users/${uid}/email`)); requests.push({uid,pid,...purchase,userEmail:userSnap.val()||uid}); } } } if(requests.length===0){ tbody.innerHTML='<tr><td colspan="7">All keys delivered! No pending requests.</td></tr>'; return; } for(const req of requests){ const row=document.createElement('tr'); row.innerHTML=`<td>${req.userEmail}</td><td>${req.panelName}</td><td>${req.label||req.plan}</td><td>₹${req.price}</td><td><small>${new Date(req.date).toLocaleDateString()}</small></td><td class="status-pending">Pending</td><td><button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.userEmail}','${req.panelName}','${req.label||req.plan}')"><i class="fas fa-key"></i> Deliver Key</button></td>`; tbody.appendChild(row); } }
+    // ============================================================
+    // LOAD KEY DELIVERY REQUESTS - FIXED VERSION
+    // ============================================================
+    async function loadKeyDelivery(){ 
+        const tbody = document.getElementById('key-delivery-list'); 
+        tbody.innerHTML = '<tr><td colspan="7"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>'; 
+        
+        try {
+            const usersSnap = await get(ref(db, 'users'));
+            if(!usersSnap.exists()) {
+                tbody.innerHTML = '<tr><td colspan="7">No users found</td></tr>';
+                return;
+            }
+            
+            const requests = [];
+            
+            for(const [uid, userData] of Object.entries(usersSnap.val())) {
+                const purchasesSnap = await get(ref(db, `purchases/${uid}`));
+                if(purchasesSnap.exists()) {
+                    for(const [pid, purchase] of Object.entries(purchasesSnap.val())) {
+                        if(purchase.keyStatus === 'pending') {
+                            requests.push({
+                                uid: uid,
+                                pid: pid,
+                                userEmail: userData.email || uid,
+                                panelName: purchase.panelName || 'Unknown',
+                                label: purchase.label || purchase.plan || 'N/A',
+                                price: purchase.price || 0,
+                                date: purchase.date || Date.now(),
+                                ...purchase
+                            });
+                        }
+                    }
+                }
+            }
+            
+            if(requests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">✅ All keys delivered! No pending requests.</td></tr>';
+                return;
+            }
+            
+            requests.sort((a,b) => {
+                const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+                const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+                return dateB - dateA;
+            });
+            
+            tbody.innerHTML = '';
+            for(const req of requests) {
+                const row = document.createElement('tr');
+                const dateStr = req.date?.toDate ? req.date.toDate().toLocaleDateString() : 
+                               req.date ? new Date(req.date).toLocaleDateString() : 'N/A';
+                
+                row.innerHTML = `
+                    <td><strong>${req.userEmail}</strong></td>
+                    <td>${req.panelName}</td>
+                    <td>${req.label}</td>
+                    <td>₹${req.price}</td>
+                    <td><small>${dateStr}</small></td>
+                    <td class="status-pending">⏳ Pending</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.userEmail}','${req.panelName}','${req.label}')">
+                            <i class="fas fa-key"></i> Deliver Key
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        } catch(error) {
+            console.error("Error loading key delivery:", error);
+            tbody.innerHTML = '<tr><td colspan="7">❌ Error loading requests. Refresh the page.</td></tr>';
+        }
+    }
     
-    window.openKeyDeliveryModal = (uid,pid,email,panelName,plan)=>{ document.getElementById('kd-user-email').value=email; document.getElementById('kd-panel-name').value=panelName; document.getElementById('kd-plan').value=plan; document.getElementById('kd-purchase-id').value=pid; document.getElementById('kd-key').value=''; openModal('key-delivery-modal'); };
+    window.openKeyDeliveryModal = (uid,pid,email,panelName,plan)=>{ 
+        document.getElementById('kd-user-email').value=email; 
+        document.getElementById('kd-panel-name').value=panelName; 
+        document.getElementById('kd-plan').value=plan; 
+        document.getElementById('kd-purchase-id').value=pid; 
+        document.getElementById('kd-key').value=''; 
+        // Store uid for delivery
+        document.getElementById('kd-confirm-btn').dataset.uid = uid;
+        openModal('key-delivery-modal'); 
+    };
     
-    document.getElementById('kd-confirm-btn').onclick = async ()=>{ const pid=document.getElementById('kd-purchase-id').value; const key=document.getElementById('kd-key').value.trim(); if(!key) return showToast("Enter license key","error"); const uid=await getPurchaseUid(pid); await update(ref(db,`purchases/${uid}/${pid}`),{ key:key, keyStatus:'delivered' }); showToast("Key delivered successfully!"); closeModal('key-delivery-modal'); loadKeyDelivery(); loadDashboardStats(); };
-    
-    async function getPurchaseUid(pid){ const snap=await get(ref(db,'purchases')); if(snap.exists()){ for(const [uid,userPurchases] of Object.entries(snap.val())){ if(userPurchases[pid]) return uid; } } return null; }
+    document.getElementById('kd-confirm-btn').onclick = async ()=>{
+        const pid = document.getElementById('kd-purchase-id').value;
+        const uid = document.getElementById('kd-confirm-btn').dataset.uid;
+        const key = document.getElementById('kd-key').value.trim();
+        if(!key) return showToast("Enter license key","error");
+        try {
+            await update(ref(db, `purchases/${uid}/${pid}`), { 
+                key: key, 
+                keyStatus: 'delivered' 
+            });
+            showToast("✅ Key delivered successfully!");
+            closeModal('key-delivery-modal');
+            loadKeyDelivery();
+            loadDashboardStats();
+        } catch(e) {
+            showToast("Error: " + e.message, "error");
+        }
+    };
     
     async function loadPanels(){ const snap=await get(ref(db,'panels')); const tbody=document.getElementById('panels-list'); tbody.innerHTML=''; if(!snap.exists()) return; Object.entries(snap.val()).forEach(([id,panel])=>{ const row=document.createElement('tr'); row.innerHTML=`<td><i class="fas fa-cube"></i> ${panel.name}</td><td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td><td>${panel.plans?Object.keys(panel.plans).length:0} plans</td><td><button class="btn btn-sm" onclick="editPanel('${id}')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-sm" onclick="deletePanel('${id}')"><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(row); }); }
     

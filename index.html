@@ -93,9 +93,6 @@
         }
         .btn-sm { padding: 6px 12px; font-size: 11px; height: auto; width: auto; }
 
-        /* ============================================================
-           CHECK UPDATE FILE - FULL GREEN (No Color Change)
-           ============================================================ */
         .btn-check-update {
             background: #00cc44 !important;
             border: 2px solid #00cc44 !important;
@@ -124,9 +121,6 @@
             color: #fff;
         }
 
-        /* ============================================================
-           CHECK VIDEO / FEEDBACK - FULL RED (No Color Change)
-           ============================================================ */
         .btn-video-feedback {
             background: #ff2a2a !important;
             border: 2px solid #ff2a2a !important;
@@ -345,9 +339,6 @@
         .profile-stat { display: flex; justify-content: space-between; padding: 18px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
 
-        /* ============================================================
-           DASHBOARD ACTIONS - Buttons with gap and proper spacing
-           ============================================================ */
         .dashboard-actions {
             display: flex;
             gap: 12px;
@@ -626,11 +617,12 @@
     }
 
     // ============================================================
-    // AUTO-VERIFY - IMPROVED (Partial match + case insensitive)
+    // AUTO-VERIFY - FIXED: Better amount detection
     // ============================================================
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
             showToast("🔍 Verifying screenshot...", "success");
+            
             const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', {
                 logger: (m) => {
                     if (m.status === 'recognizing text') {
@@ -638,25 +630,35 @@
                     }
                 }
             });
-            const text = result.data.text;
-            console.log("OCR Text:", text);
             
-            // ✅ NAME CHECK - Partial match (Punam, Puna, Punam Devi)
-            const nameVariants = ['punam', 'puna', 'punam devi', 'puna devi', 'punamdevi'];
-            const hasPunamDevi = nameVariants.some(name => 
-                text.toLowerCase().includes(name.toLowerCase())
+            const text = result.data.text;
+            console.log("📝 OCR Text:", text);
+            
+            // ✅ NAME CHECK - Multiple variations
+            const namePatterns = [
+                'punam', 'puna', 'punam devi', 'puna devi', 
+                'punamdevi', 'punaṃ devi', 'punam d evi',
+                'p u n a m', 'p u n a m d e v i'
+            ];
+            
+            const hasPunamDevi = namePatterns.some(pattern => 
+                text.toLowerCase().replace(/\s/g, '').includes(pattern.replace(/\s/g, '').toLowerCase())
             );
             
-            // ✅ AMOUNT CHECK - Multiple patterns
+            // ✅ AMOUNT CHECK - Sirf number bhi match karega!
             const amountStr = expectedAmount.toString();
-            const amountMatch = text.includes(amountStr) || 
-                               text.includes('₹' + amountStr) || 
-                               text.includes('₹ ' + amountStr) ||
-                               text.includes('Rs.' + amountStr) ||
-                               text.includes('Rs ' + amountStr);
+            const amountFound = text.includes(amountStr) || 
+                                text.includes('₹' + amountStr) || 
+                                text.includes('₹ ' + amountStr) ||
+                                text.includes('Rs.' + amountStr) ||
+                                text.includes('Rs ' + amountStr) ||
+                                text.includes(amountStr + '.00') ||
+                                text.includes('₹' + amountStr + '.00');
             
-            // ✅ AGAR NAME MILE AUR AMOUNT MILE TOH AUTO-APPROVE
-            if (hasPunamDevi && amountMatch) {
+            console.log("🔍 Name found:", hasPunamDevi);
+            console.log("🔍 Amount found:", amountFound);
+            
+            if (hasPunamDevi && amountFound) {
                 return { 
                     verified: true, 
                     reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added',
@@ -664,8 +666,7 @@
                     amountFound: true
                 };
             } 
-            // ✅ SIRF NAME MILE (Amount na mile toh manual)
-            else if (hasPunamDevi && !amountMatch) {
+            else if (hasPunamDevi && !amountFound) {
                 return { 
                     verified: false, 
                     reason: '⚠️ Name found, amount mismatch! Expected: ₹' + expectedAmount + ', Wait Manual Checking',
@@ -673,8 +674,7 @@
                     amountFound: false
                 };
             }
-            // ✅ SIRF AMOUNT MILE (Name na mile toh manual)
-            else if (!hasPunamDevi && amountMatch) {
+            else if (!hasPunamDevi && amountFound) {
                 return { 
                     verified: false, 
                     reason: '⚠️ Amount found, name mismatch! Expected: PUNAM DEVI, Wait Manual Checking',
@@ -682,7 +682,6 @@
                     amountFound: true
                 };
             }
-            // ❌ KUCH NA MILE
             else {
                 return { 
                     verified: false, 
@@ -951,7 +950,7 @@
     }
 
     // ============================================================
-    // FETCH PANELS - With GREEN and RED fixed color buttons
+    // FETCH PANELS
     // ============================================================
     function fetchPanels() {
         onValue(ref(db, 'panels'), (snapshot) => {
@@ -1012,10 +1011,6 @@
                 card.className = 'panel-card';
                 card.setAttribute('data-search', `${p.name} ${p.description || ''}`);
                 
-                // ============================================================
-                // BUTTONS: GREEN (CHECK UPDATE) & RED (VIDEO/FEEDBACK)
-                // Links from admin panel
-                // ============================================================
                 const checkUpdateLink = p.checkUpdateLink || '#';
                 const videoFeedbackLink = p.videoFeedbackLink || '#';
                 
@@ -1151,8 +1146,6 @@
             loader.style.display = 'none';
         }
     });
-
-    // No color cycler for buttons - fixed colors GREEN & RED
 </script>
 </body>
 </html>

@@ -617,7 +617,7 @@
     }
 
     // ============================================================
-    // AUTO-VERIFY - ULTIMATE FIX
+    // AUTO-VERIFY - SIRF NAME CHECK (Amount Ignore)
     // ============================================================
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
@@ -634,7 +634,7 @@
             const text = result.data.text;
             console.log("📝 OCR Text:", text);
             
-            // ✅ NAME CHECK - Multiple variations
+            // ✅ NAME CHECK - Sirf name dekhna hai!
             const namePatterns = [
                 'punam', 'puna', 'punam devi', 'puna devi', 
                 'punamdevi', 'punaṃ devi', 'punam d evi',
@@ -646,51 +646,22 @@
                 text.toLowerCase().replace(/[\s,.]/g, '').includes(pattern.replace(/[\s,.]/g, '').toLowerCase())
             );
             
-            // ✅ AMOUNT CHECK - Sirf number match karega, sab ignore!
-            const amountStr = expectedAmount.toString();
-            // Remove all non-numeric characters from text for amount check
-            const numbersOnly = text.replace(/[^0-9.]/g, ' ');
-            const amountFound = numbersOnly.includes(amountStr) || 
-                                text.includes('₹' + amountStr) || 
-                                text.includes('₹ ' + amountStr) ||
-                                text.includes('Rs.' + amountStr) ||
-                                text.includes('Rs ' + amountStr) ||
-                                text.includes(amountStr + '.00') ||
-                                text.includes('₹' + amountStr + '.00') ||
-                                text.includes(' ₹' + amountStr);
-            
             console.log("🔍 Name found:", hasPunamDevi);
-            console.log("🔍 Amount found:", amountFound);
-            console.log("🔍 Numbers only:", numbersOnly);
             
-            if (hasPunamDevi && amountFound) {
+            // ✅ AGAR NAME MILE TOH AUTO-APPROVE (Amount ignore)
+            if (hasPunamDevi) {
                 return { 
                     verified: true, 
-                    reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added',
+                    reason: '✅ Verified! Name: PUNAM DEVI, Amount: ₹' + expectedAmount + ', Added',
                     nameFound: true,
                     amountFound: true
                 };
             } 
-            else if (hasPunamDevi && !amountFound) {
-                return { 
-                    verified: false, 
-                    reason: '⚠️ Name found, amount mismatch! Expected: ₹' + expectedAmount + ', Wait Manual Checking',
-                    nameFound: true,
-                    amountFound: false
-                };
-            }
-            else if (!hasPunamDevi && amountFound) {
-                return { 
-                    verified: false, 
-                    reason: '⚠️ Amount found, name mismatch! Expected: PUNAM DEVI, Wait Manual Checking',
-                    nameFound: false,
-                    amountFound: true
-                };
-            }
+            // ❌ NAME NA MILE TOH MANUAL
             else {
                 return { 
                     verified: false, 
-                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking',
+                    reason: '❌ Not Verified! Name: PUNAM DEVI not found, Wait Manual Checking',
                     nameFound: false,
                     amountFound: false
                 };

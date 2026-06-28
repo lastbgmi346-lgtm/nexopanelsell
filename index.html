@@ -92,6 +92,11 @@
             color: var(--warning);
         }
         .btn-sm { padding: 6px 12px; font-size: 11px; height: auto; width: auto; }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
 
         .btn-check-update {
             background: #00cc44 !important;
@@ -358,9 +363,6 @@
         .checkout-details { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .checkout-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .checkout-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; color: var(--success); border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px; margin-top: 15px; }
-        .coupon-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .coupon-box input { flex: 1; padding: 0 15px; height: 48px; background: rgba(0,0,0,0.5); border: 1px dashed rgba(188,19,254,0.5); border-radius: 8px; color: white; }
-        .coupon-box button { width: auto; padding: 0 20px; }
         .checkout-actions { display: flex; gap: 10px; }
         .strike-price { text-decoration: line-through; color: var(--text-muted); font-size: 14px; margin-right: 10px; }
         .empty-state { text-align: center; padding: 60px 20px; }
@@ -373,7 +375,6 @@
             .logo { font-size: 16px; }
             .page-title { font-size: 20px; }
             .promo-card { flex: 0 0 90%; height: 150px; }
-            .coupon-box { flex-direction: column; }
             .checkout-actions { flex-direction: column; }
             .dashboard-actions .btn-check-update,
             .dashboard-actions .btn-video-feedback { min-width: 80px; font-size: 10px; padding: 6px 10px; }
@@ -494,7 +495,20 @@
 </div>
 
 <!-- MODALS -->
-<div class="modal-overlay" id="modal-checkout"><div class="modal checkout-modal"><div class="checkout-details"><div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div><div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div><div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div><div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div></div><div class="coupon-box"><input id="chk-coupon-input" placeholder="Promo Code"><button class="btn btn-primary" onclick="applyCoupon()">APPLY</button></div><div class="checkout-actions"><button class="btn btn-outline" onclick="closeModal('modal-checkout')">CANCEL</button><button class="btn btn-purchase" id="confirm-purchase-btn">PAY NOW</button></div></div></div>
+<div class="modal-overlay" id="modal-checkout">
+    <div class="modal checkout-modal">
+        <div class="checkout-details">
+            <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
+            <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
+            <div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div>
+            <div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div>
+        </div>
+        <div class="checkout-actions">
+            <button class="btn btn-outline" onclick="closeModal('modal-checkout')">CANCEL</button>
+            <button class="btn btn-purchase" id="confirm-purchase-btn">PAY NOW</button>
+        </div>
+    </div>
+</div>
 
 <div class="modal-overlay" id="modal-success"><div class="modal" style="text-align:center;"><i class="fas fa-check-circle success-icon"></i><h2>PURCHASE SUCCESSFUL!</h2><div style="background:#00000055; padding:15px; border-radius:12px; margin:15px 0;"><i class="fas fa-clock" style="color:var(--warning); font-size:24px;"></i><p style="margin-top:10px;">Your order is pending!</p><p style="font-size:12px; color:var(--text-muted);">Admin will deliver the license key within 24 hours.<br>Check "My Keys" page for updates.</p></div><button class="btn btn-primary" onclick="closeModal('modal-success'); navigate('history')">VIEW MY KEYS</button><button class="btn btn-outline" onclick="closeModal('modal-success')" style="margin-top:10px;">CLOSE</button></div></div>
 
@@ -523,6 +537,7 @@
     let balanceListenerUnsubscribe = null;
     let selectedFile = null;
     let screenshotBase64 = null;
+    let isSubmitting = false; // ✅ Prevent double submission
 
     function getVideoEmbedCode(url) {
         if (!url || url.trim() === '') return null;
@@ -616,9 +631,6 @@
         });
     }
 
-    // ============================================================
-    // AUTO-VERIFY - SIRF NAME CHECK (Amount Ignore)
-    // ============================================================
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
             showToast("🔍 Verifying screenshot...", "success");
@@ -634,7 +646,6 @@
             const text = result.data.text;
             console.log("📝 OCR Text:", text);
             
-            // ✅ NAME CHECK - Sirf name dekhna hai!
             const namePatterns = [
                 'punam', 'puna', 'punam devi', 'puna devi', 
                 'punamdevi', 'punaṃ devi', 'punam d evi',
@@ -648,7 +659,6 @@
             
             console.log("🔍 Name found:", hasPunamDevi);
             
-            // ✅ AGAR NAME MILE TOH AUTO-APPROVE (Amount ignore)
             if (hasPunamDevi) {
                 return { 
                     verified: true, 
@@ -656,9 +666,7 @@
                     nameFound: true,
                     amountFound: true
                 };
-            } 
-            // ❌ NAME NA MILE TOH MANUAL
-            else {
+            } else {
                 return { 
                     verified: false, 
                     reason: '❌ Not Verified! Name: PUNAM DEVI not found, Wait Manual Checking',
@@ -779,13 +787,31 @@
         }
     });
 
-    document.getElementById('btn-submit-payment').onclick = async () => {
+    // ============================================================
+    // SUBMIT PAYMENT - WITH BUTTON DISABLE (30 seconds)
+    // ============================================================
+    document.getElementById('btn-submit-payment').onclick = async function() {
+        // ✅ Prevent multiple clicks
+        if (isSubmitting) {
+            showToast("⏳ Please wait, payment is being processed...", "warning");
+            return;
+        }
+        
         if(!currentUser) return showToast("Please login first", "error");
+        
         const amount = document.getElementById('add-amount').value;
         const phone = document.getElementById('add-phone').value.trim();
+        
         if(!amount || amount <= 0) return showToast("Enter amount", "error");
         if(!phone) return showToast("Phone number required", "error");
         if(!screenshotBase64) return showToast("Please upload screenshot", "error");
+        
+        // ✅ Disable button
+        isSubmitting = true;
+        const btn = this;
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
         
         try {
             const verifyResult = await autoVerifyScreenshot(screenshotBase64, parseFloat(amount));
@@ -813,6 +839,7 @@
                 showToast("📤 " + verifyResult.reason);
             }
             
+            // Clear form
             document.getElementById('add-amount').value = '';
             document.getElementById('add-phone').value = '';
             document.getElementById('screenshot-input').value = '';
@@ -823,9 +850,17 @@
             const balRef = ref(db, `users/${currentUser.uid}/balance`);
             const balSnap = await get(balRef);
             userData.balance = balSnap.val() || 0;
+            
         } catch(error) {
             showToast("Error submitting payment: " + error.message, "error");
         }
+        
+        // ✅ Re-enable button after 30 seconds
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            isSubmitting = false;
+        }, 30000);
     };
 
     async function loadHistory() {
@@ -1040,19 +1075,6 @@
         document.getElementById('chk-final-price').innerText = plan.price;
         document.getElementById('chk-strike-price').classList.add('hidden');
         document.getElementById('modal-checkout').classList.add('active');
-    };
-    
-    window.applyCoupon = () => {
-        const code = document.getElementById('chk-coupon-input').value.trim().toUpperCase();
-        const coupons = [{ code: "ROCKY20", discount: 20 }, { code: "WELCOME10", discount: 10 }];
-        const coupon = coupons.find(c => c.code === code);
-        if(!coupon) return showToast("Invalid coupon", "error");
-        const finalPrice = window.currentCheckout.price * (1 - coupon.discount/100);
-        window.currentCheckout.finalPrice = finalPrice;
-        document.getElementById('chk-final-price').innerText = finalPrice.toFixed(2);
-        document.getElementById('chk-strike-price').innerText = '₹' + window.currentCheckout.price;
-        document.getElementById('chk-strike-price').classList.remove('hidden');
-        showToast(`${coupon.discount}% applied!`, "success");
     };
     
     document.getElementById('confirm-purchase-btn').onclick = async () => {

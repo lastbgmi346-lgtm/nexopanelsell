@@ -617,7 +617,7 @@
     }
 
     // ============================================================
-    // AUTO-VERIFY - FIXED: Better amount detection
+    // AUTO-VERIFY - ULTIMATE FIX
     // ============================================================
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
@@ -638,25 +638,30 @@
             const namePatterns = [
                 'punam', 'puna', 'punam devi', 'puna devi', 
                 'punamdevi', 'punaṃ devi', 'punam d evi',
-                'p u n a m', 'p u n a m d e v i'
+                'p u n a m', 'p u n a m d e v i',
+                'punam d evi', 'punamdevi'
             ];
             
             const hasPunamDevi = namePatterns.some(pattern => 
-                text.toLowerCase().replace(/\s/g, '').includes(pattern.replace(/\s/g, '').toLowerCase())
+                text.toLowerCase().replace(/[\s,.]/g, '').includes(pattern.replace(/[\s,.]/g, '').toLowerCase())
             );
             
-            // ✅ AMOUNT CHECK - Sirf number bhi match karega!
+            // ✅ AMOUNT CHECK - Sirf number match karega, sab ignore!
             const amountStr = expectedAmount.toString();
-            const amountFound = text.includes(amountStr) || 
+            // Remove all non-numeric characters from text for amount check
+            const numbersOnly = text.replace(/[^0-9.]/g, ' ');
+            const amountFound = numbersOnly.includes(amountStr) || 
                                 text.includes('₹' + amountStr) || 
                                 text.includes('₹ ' + amountStr) ||
                                 text.includes('Rs.' + amountStr) ||
                                 text.includes('Rs ' + amountStr) ||
                                 text.includes(amountStr + '.00') ||
-                                text.includes('₹' + amountStr + '.00');
+                                text.includes('₹' + amountStr + '.00') ||
+                                text.includes(' ₹' + amountStr);
             
             console.log("🔍 Name found:", hasPunamDevi);
             console.log("🔍 Amount found:", amountFound);
+            console.log("🔍 Numbers only:", numbersOnly);
             
             if (hasPunamDevi && amountFound) {
                 return { 
@@ -949,9 +954,6 @@
         });
     }
 
-    // ============================================================
-    // FETCH PANELS
-    // ============================================================
     function fetchPanels() {
         onValue(ref(db, 'panels'), (snapshot) => {
             const skeleton = document.getElementById('skeleton-container');

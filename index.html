@@ -625,24 +625,80 @@
         });
     }
 
+    // ============================================================
+    // AUTO-VERIFY - IMPROVED (Partial match + case insensitive)
+    // ============================================================
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
             showToast("🔍 Verifying screenshot...", "success");
-            const result = await Tesseract.recognize(imageDataUrl, 'hin+eng');
+            const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', {
+                logger: (m) => {
+                    if (m.status === 'recognizing text') {
+                        // Progress
+                    }
+                }
+            });
             const text = result.data.text;
             console.log("OCR Text:", text);
-            const nameVariants = ['punam devi', 'punamdevi', 'punam', 'punaṃ devi'];
-            const hasPunamDevi = nameVariants.some(name => text.toLowerCase().includes(name.toLowerCase()));
+            
+            // ✅ NAME CHECK - Partial match (Punam, Puna, Punam Devi)
+            const nameVariants = ['punam', 'puna', 'punam devi', 'puna devi', 'punamdevi'];
+            const hasPunamDevi = nameVariants.some(name => 
+                text.toLowerCase().includes(name.toLowerCase())
+            );
+            
+            // ✅ AMOUNT CHECK - Multiple patterns
             const amountStr = expectedAmount.toString();
-            const amountMatch = text.includes(amountStr) || text.includes('₹' + amountStr) || text.includes('₹ ' + amountStr);
+            const amountMatch = text.includes(amountStr) || 
+                               text.includes('₹' + amountStr) || 
+                               text.includes('₹ ' + amountStr) ||
+                               text.includes('Rs.' + amountStr) ||
+                               text.includes('Rs ' + amountStr);
+            
+            // ✅ AGAR NAME MILE AUR AMOUNT MILE TOH AUTO-APPROVE
             if (hasPunamDevi && amountMatch) {
-                return { verified: true, reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added', nameFound: true, amountFound: true };
-            } else {
-                return { verified: false, reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking', nameFound: false, amountFound: false };
+                return { 
+                    verified: true, 
+                    reason: '✅ Verified! Amount: ₹' + expectedAmount + ', Added',
+                    nameFound: true,
+                    amountFound: true
+                };
+            } 
+            // ✅ SIRF NAME MILE (Amount na mile toh manual)
+            else if (hasPunamDevi && !amountMatch) {
+                return { 
+                    verified: false, 
+                    reason: '⚠️ Name found, amount mismatch! Expected: ₹' + expectedAmount + ', Wait Manual Checking',
+                    nameFound: true,
+                    amountFound: false
+                };
+            }
+            // ✅ SIRF AMOUNT MILE (Name na mile toh manual)
+            else if (!hasPunamDevi && amountMatch) {
+                return { 
+                    verified: false, 
+                    reason: '⚠️ Amount found, name mismatch! Expected: PUNAM DEVI, Wait Manual Checking',
+                    nameFound: false,
+                    amountFound: true
+                };
+            }
+            // ❌ KUCH NA MILE
+            else {
+                return { 
+                    verified: false, 
+                    reason: '❌ Not Verified! Amount: ₹' + expectedAmount + ', Wait Manual Checking',
+                    nameFound: false,
+                    amountFound: false
+                };
             }
         } catch(error) {
             console.error("OCR Error:", error);
-            return { verified: false, reason: '⚠️ OCR failed, manual verification needed', nameFound: false, amountFound: false };
+            return { 
+                verified: false, 
+                reason: '⚠️ OCR failed, manual verification needed',
+                nameFound: false,
+                amountFound: false
+            };
         }
     }
 

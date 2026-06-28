@@ -633,7 +633,7 @@
 
     async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
         try {
-            showToast("🔍 Verifying screenshot...", "success");
+            showToast("🔍 Verifying Payment...", "success");
             
             const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', {
                 logger: (m) => {
@@ -662,14 +662,14 @@
             if (hasPunamDevi) {
                 return { 
                     verified: true, 
-                    reason: '✅ Verified! Name: PUNAM DEVI, Amount: ₹' + expectedAmount + ', Added',
+                    reason: '✅ Verified!, Amount: ₹' + expectedAmount + ', Added',
                     nameFound: true,
                     amountFound: true
                 };
             } else {
                 return { 
                     verified: false, 
-                    reason: '❌ Not Verified! Name: PUNAM DEVI not found, Wait Manual Checking',
+                    reason: '❌ Not Verified!, Wait Manual Checking',
                     nameFound: false,
                     amountFound: false
                 };

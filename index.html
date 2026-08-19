@@ -1051,6 +1051,12 @@
                 <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
                 <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
                 <div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div>
+                
+                <div class="input-group" id="android-id-group" style="margin-top:15px; margin-bottom:0;">
+                    <label style="color: var(--neon-cyan);">Android ID (Device Bound Required)</label>
+                    <input id="chk-android-id" placeholder="e.g. 0b9b969bc2e7997b">
+                </div>
+
                 <div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div>
             </div>
             <div class="checkout-actions">
@@ -1065,9 +1071,9 @@
             <i class="fas fa-check-circle success-icon"></i>
             <h2 style="font-family:var(--font-tech); font-size:20px; margin-bottom:10px;">PURCHASE SUCCESSFUL!</h2>
             <div style="background:rgba(0,0,0,0.5); padding:18px; border-radius:14px; margin:18px 0; border:1px solid rgba(255,255,255,0.05);">
-                <i class="fas fa-clock" style="color:var(--warning); font-size:24px; margin-bottom:8px;"></i>
-                <p style="font-weight:700;">Order Received!</p>
-                <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Admin will deliver your license key shortly.<br>Check "My Keys" page for updates.</p>
+                <i class="fas fa-key" style="color:var(--neon-cyan); font-size:24px; margin-bottom:8px;"></i>
+                <p style="font-weight:700;">Key Generated!</p>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Your license key has been generated and sent to "My Keys".</p>
             </div>
             <button class="btn btn-primary" onclick="closeModal('modal-success'); navigate('history')">VIEW MY KEYS</button>
             <button class="btn btn-outline" onclick="closeModal('modal-success')" style="margin-top:10px;">CLOSE</button>
@@ -1101,6 +1107,37 @@
         let selectedFile = null;
         let screenshotBase64 = null;
         let isSubmitting = false;
+
+        // API Buy Integration Function
+        async function buyFromResellerApi(productId, duration, androidId) {
+            const formData = new URLSearchParams();
+            formData.append('api_key', '5e517a587e01bb849427efbb4fdd5bd3');
+            formData.append('action', 'buy');
+            formData.append('product_id', productId);
+            formData.append('duration', duration);
+            if (androidId) formData.append('android_id', androidId);
+
+            try {
+                const response = await fetch('https://xyzcheats.com/api/reseller_v1.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'x-master-key': 'a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8'
+                    },
+                    body: formData.toString()
+                });
+
+                const text = await response.text();
+                try {
+                    return JSON.parse(text);
+                } catch(e) {
+                    return { status: 'success', key: text };
+                }
+            } catch (err) {
+                console.error('API Error:', err);
+                return { status: 'error', message: err.message };
+            }
+        }
 
         function getVideoEmbedCode(url) {
             if (!url || typeof url !== 'string' || url.trim() === '') return null;
@@ -1425,7 +1462,7 @@
 
                     let keyHtml = isDelivered ? 
                         `<div class="key-box"><span class="key-text-delivered" id="key-${p.id}">${p.key}</span><button class="btn btn-sm btn-primary" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button></div>` :
-                        `<div class="key-box"><span class="key-text-pending"><i class="fas fa-clock"></i> Delivery Pending - Admin will fulfill within 24h</span></div>`;
+                        `<div class="key-box"><span class="key-text-pending"><i class="fas fa-clock"></i> Delivery Pending - Processing Key</span></div>`;
 
                     div.innerHTML = `
                         <div style="font-family:var(--font-tech); font-size:16px;"><strong>${p.panelName}</strong></div>
@@ -1515,7 +1552,6 @@
                     let featuresHtml = (p.description || 'Premium Tool').split(/\n|-/).filter(f => f.trim()).slice(0,4)
                         .map(f => `<span class="feature-chip"><i class="fas fa-bolt"></i> ${f.trim()}</span>`).join('');
 
-                    // Universal Plan Handling (Array + Object)
                     let plansHtml = '';
                     let plansList = [];
                     if (p.plans) {
@@ -1532,7 +1568,9 @@
                             const pKey = plan.key || plan.id || idx;
                             const pLabel = plan.label || plan.name || plan.title || 'Plan ' + (idx + 1);
                             const pPrice = plan.price || 0;
-                            const optVal = JSON.stringify({ key: pKey, label: pLabel, price: pPrice });
+                            const pDuration = plan.duration || '1 Day';
+                            const pProductId = plan.product_id || p.product_id || 'PRODUCT_PID_ID';
+                            const optVal = JSON.stringify({ key: pKey, label: pLabel, price: pPrice, duration: pDuration, product_id: pProductId });
                             plansHtml += `<option value='${optVal.replace(/'/g, "&apos;")}'>${pLabel} - ₹${pPrice}</option>`;
                         });
                         plansHtml += `</select>`;
@@ -1540,7 +1578,6 @@
                         plansHtml = `<select class="plan-select" disabled><option>No Plans Available</option></select>`;
                     }
 
-                    // Video extraction
                     let videoHtml = '';
                     const rawVideoUrl = p.video || p.youtube || p.videoUrl || p.demoVideo || '';
                     const videoData = getVideoEmbedCode(rawVideoUrl);
@@ -1614,20 +1651,51 @@
             if(!select || select.disabled) return showToast('No plans available to purchase', 'error');
             const plan = JSON.parse(select.value);
 
-            window.currentCheckout = { panelId, panelName, link, planKey: plan.key, label: plan.label, price: plan.price };
+            window.currentCheckout = { 
+                panelId, 
+                panelName, 
+                link, 
+                planKey: plan.key, 
+                label: plan.label, 
+                price: plan.price,
+                duration: plan.duration || '1 Day',
+                productId: plan.product_id || 'PRODUCT_PID_ID'
+            };
+            
             document.getElementById('chk-panel-name').innerText = panelName;
             document.getElementById('chk-plan-label').innerText = plan.label;
             document.getElementById('chk-orig-price').innerText = plan.price;
             document.getElementById('chk-final-price').innerText = plan.price;
+            document.getElementById('chk-android-id').value = '';
             document.getElementById('modal-checkout').classList.add('active');
         };
 
-        document.getElementById('confirm-purchase-btn').onclick = async () => {
+        document.getElementById('confirm-purchase-btn').onclick = async function() {
             if(!currentUser) return;
             const price = window.currentCheckout.price;
             if(userData.balance < price) return showToast(`Insufficient balance. Need ₹${price}`, "error");
 
+            const androidId = document.getElementById('chk-android-id').value.trim();
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING KEY...';
+
             try {
+                const apiRes = await buyFromResellerApi(window.currentCheckout.productId, window.currentCheckout.duration, androidId);
+
+                let generatedKey = "PENDING";
+                let keyStatus = "pending";
+
+                if (apiRes) {
+                    if (apiRes.key || apiRes.license || apiRes.data) {
+                        generatedKey = apiRes.key || apiRes.license || apiRes.data;
+                        keyStatus = "delivered";
+                    } else if (typeof apiRes === 'string') {
+                        generatedKey = apiRes;
+                        keyStatus = "delivered";
+                    }
+                }
+
                 const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
                 if(result.committed) {
                     await push(ref(db, `purchases/${currentUser.uid}`), {
@@ -1636,8 +1704,9 @@
                         plan: window.currentCheckout.planKey,
                         label: window.currentCheckout.label,
                         price: price,
-                        key: "PENDING",
-                        keyStatus: "pending",
+                        key: generatedKey,
+                        keyStatus: keyStatus,
+                        androidId: androidId || null,
                         link: window.currentCheckout.link,
                         date: serverTimestamp()
                     });
@@ -1648,6 +1717,9 @@
                 }
             } catch(e) {
                 showToast("Transaction Error: " + e.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'CONFIRM & PAY';
             }
         };
 

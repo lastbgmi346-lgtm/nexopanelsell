@@ -1,1248 +1,1700 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>NEXO STORE OFFICIAL</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<!-- Tesseract.js for OCR -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>NEXO STORE OFFICIAL - CYBER EDITION</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
         :root {
-            --bg-color: #050508;
-            --card-bg: rgba(15, 18, 25, 0.6);
-            --card-border: rgba(0, 240, 255, 0.15);
+            --bg-color: #030305;
+            --card-bg: rgba(12, 16, 26, 0.7);
+            --card-border: rgba(0, 240, 255, 0.2);
             --neon-cyan: #00f0ff;
-            --neon-cyan-dim: rgba(0, 240, 255, 0.4);
+            --neon-cyan-glow: rgba(0, 240, 255, 0.4);
             --neon-purple: #bc13fe;
+            --neon-purple-glow: rgba(188, 19, 254, 0.4);
             --text-main: #ffffff;
-            --text-muted: #a0a5b5;
+            --text-muted: #8b949e;
             --error: #ff2a5f;
             --success: #00ff66;
             --warning: #ffb800;
             --wa-color: #25D366;
             --tg-color: #0088cc;
+            --font-tech: 'Orbitron', sans-serif;
+            --font-body: 'Poppins', sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-body);
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
             background: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(188, 19, 254, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
             color: var(--text-main);
             overflow-x: hidden;
+            min-height: 100vh;
         }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan); }
 
         .hidden { display: none !important; }
-        
-        .glass {
+
+        /* Glassmorphism & Cyber Card Effects */
+        .glass-cyber {
             background: var(--card-bg);
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
-        }
-
-        .skeleton-card {
-            background: rgba(20,24,34,0.6);
-            border-radius: 20px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            position: relative;
             overflow: hidden;
-            animation: pulse 1.5s ease-in-out infinite;
         }
-        @keyframes pulse { 0%,100%{opacity:0.6;}50%{opacity:1;} }
-        .skeleton-video { height: 200px; background: rgba(0,0,0,0.4); }
-        .skeleton-title { height: 24px; width: 70%; margin: 15px; background: rgba(255,255,255,0.1); border-radius: 8px; }
-        .skeleton-chip { height: 28px; width: 80px; display: inline-block; margin: 5px; background: rgba(255,255,255,0.1); border-radius: 20px; }
-        .skeleton-btn { height: 48px; margin: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; }
 
+        .glass-cyber::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+
+        .glass-cyber:hover::before { left: 100%; }
+
+        /* Cyber Animated Buttons */
         .btn {
-            background: transparent;
+            background: rgba(5, 5, 8, 0.8);
             border: 1px solid var(--neon-cyan);
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: 600;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 13px;
             height: 48px;
             color: var(--text-main);
-            background: #000;
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
         }
+
         .btn:hover {
-            box-shadow: 0 0 30px var(--neon-cyan);
-            transform: scale(1.02);
-            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px var(--neon-cyan-glow);
+            transform: translateY(-2px);
+            border-color: #fff;
+            color: #fff;
         }
-        .btn-primary { background: var(--neon-cyan); color: #000; font-weight: 800; border-color: var(--neon-cyan); }
-        .btn-primary:hover { background: #fff; border-color: #fff; box-shadow: 0 0 20px var(--neon-cyan); }
+
+        .btn:active { transform: translateY(0); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--neon-cyan), #0088ff);
+            color: #000;
+            font-weight: 800;
+            border: none;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ffffff, var(--neon-cyan));
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.7);
+            color: #000;
+        }
+
         .btn-purchase {
-            background: linear-gradient(90deg, var(--neon-purple), #0073ff);
-            border: none; color: white; font-weight: 800;
-            box-shadow: 0 0 15px rgba(188, 19, 254, 0.4);
+            background: linear-gradient(135deg, var(--neon-purple), #6a11cb);
+            border: none;
+            color: white;
+            font-weight: 800;
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.4);
         }
-        .btn-pending {
-            background: rgba(255,184,0,0.2);
-            border: 1px solid var(--warning);
-            color: var(--warning);
+
+        .btn-purchase:hover {
+            background: linear-gradient(135deg, #e052ff, var(--neon-purple));
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.8);
         }
-        .btn-sm { padding: 6px 12px; font-size: 11px; height: auto; width: auto; }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 11px;
+            height: auto;
+            width: auto;
+            border-radius: 8px;
+        }
+
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Action Buttons Inside Panel */
+        .btn-check-update, .btn-video-feedback {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 120px;
+            height: 40px;
+            text-transform: uppercase;
         }
 
         .btn-check-update {
-            background: #00cc44 !important;
-            border: 2px solid #00cc44 !important;
-            color: #fff !important;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 120px;
-            height: 38px;
-            box-shadow: 0 0 15px rgba(0, 204, 68, 0.3);
+            background: rgba(0, 204, 68, 0.15);
+            border: 1px solid #00ff66;
+            color: #00ff66;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
         }
+
         .btn-check-update:hover {
-            box-shadow: 0 0 30px rgba(0, 204, 68, 0.6);
-            transform: scale(1.03);
-            border-color: #00cc44 !important;
-        }
-        .btn-check-update i {
-            color: #fff;
+            background: #00ff66;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.5);
+            transform: translateY(-2px);
         }
 
         .btn-video-feedback {
-            background: #ff2a2a !important;
-            border: 2px solid #ff2a2a !important;
-            color: #fff !important;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 120px;
-            height: 38px;
-            box-shadow: 0 0 15px rgba(255, 42, 42, 0.3);
+            background: rgba(255, 42, 95, 0.15);
+            border: 1px solid var(--error);
+            color: var(--error);
+            box-shadow: 0 0 10px rgba(255, 42, 95, 0.2);
         }
+
         .btn-video-feedback:hover {
-            box-shadow: 0 0 30px rgba(255, 42, 42, 0.6);
-            transform: scale(1.03);
-            border-color: #ff2a2a !important;
-        }
-        .btn-video-feedback i {
+            background: var(--error);
             color: #fff;
+            box-shadow: 0 0 20px rgba(255, 42, 95, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Input Styling */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .input-group input {
-            width: 100%; padding: 0 18px; height: 50px; background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white;
+            width: 100%;
+            padding: 0 18px;
+            height: 52px;
+            background: rgba(5, 7, 12, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: white;
             outline: none;
+            font-size: 14px;
+            transition: all 0.3s;
         }
+
+        .input-group input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan-glow);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
         .input-group input[type="file"] {
             padding: 12px 18px;
             height: auto;
+            cursor: pointer;
         }
 
-        /* MODERN & CYBERPUNK LOADER */
+        /* Skeleton Loading Screen Animations */
+        .skeleton-card {
+            background: rgba(15, 20, 30, 0.6);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            animation: skeletonPulse 1.5s infinite linear;
+        }
+
+        @keyframes skeletonPulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.4; }
+        }
+
+        .skeleton-video { height: 200px; background: rgba(255, 255, 255, 0.05); }
+        .skeleton-title { height: 24px; width: 70%; margin: 20px 15px 10px; background: rgba(255, 255, 255, 0.08); border-radius: 8px; }
+        .skeleton-chip { height: 24px; width: 70px; display: inline-block; margin: 5px 5px 15px 15px; background: rgba(255, 255, 255, 0.08); border-radius: 20px; }
+        .skeleton-btn { height: 48px; margin: 15px; background: rgba(255, 255, 255, 0.08); border-radius: 12px; }
+
+        /* Modern Cyberpunk Loader */
         #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #0d111a 0%, #050508 100%);
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #0a0e17 0%, #030305 100%);
             z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(20px);
             transition: opacity 0.5s ease;
         }
+
         .loader-box {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .ring {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             border-radius: 50%;
             border: 3px solid transparent;
             border-top-color: var(--neon-cyan);
-            animation: spinRing 1.5s linear infinite;
+            border-bottom-color: var(--neon-cyan);
+            animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
         }
+
         .ring::before {
             content: '';
             position: absolute;
-            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
             border-radius: 50%;
             border: 3px solid transparent;
-            border-top-color: var(--neon-purple);
+            border-left-color: var(--neon-purple);
+            border-right-color: var(--neon-purple);
             animation: spinRing 1s linear infinite reverse;
+            filter: drop-shadow(0 0 10px var(--neon-purple));
         }
+
         .loader-logo {
-            font-size: 38px;
+            font-size: 42px;
             color: #fff;
-            filter: drop-shadow(0 0 10px var(--neon-cyan));
-            animation: pulseLogo 1.5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 15px var(--neon-cyan));
+            animation: pulseLogo 1.2s ease-in-out infinite alternate;
         }
+
         .loader-title {
-            margin-top: 25px;
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: 2px;
+            margin-top: 30px;
+            font-family: var(--font-tech);
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 3px;
             background: linear-gradient(90deg, var(--neon-cyan), #ffffff, var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
         }
+
         .dots-animated::after {
             content: '';
             animation: dots 1.5s steps(4, end) infinite;
         }
+
         @keyframes spinRing { 100% { transform: rotate(360deg); } }
-        @keyframes pulseLogo { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; } }
+        @keyframes pulseLogo { 0% { transform: scale(0.85); opacity: 0.7; } 100% { transform: scale(1.15); opacity: 1; } }
         @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
 
+        /* Animated Toast Messages */
         #toast-container {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            z-index: 10000; width: 90%; max-width: 400px;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            width: 90%;
+            max-width: 420px;
+            pointer-events: none;
         }
+
         .toast {
-            padding: 14px 20px; border-radius: 12px; color: white; font-weight: 600;
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            border-left: 4px solid var(--neon-cyan);
-            animation: slideUp 0.3s forwards;
-            margin-bottom: 10px;
-            display: flex; align-items: center; gap: 12px;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        #auth-screen { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 420px; padding: 40px 30px; text-align: center; border-top: 2px solid var(--neon-cyan); }
-
-        #main-app { display: none; width: 100%; }
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 75px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 25px; z-index: 1000;
-            background: rgba(10,12,18,0.85);
+            padding: 16px 22px;
+            border-radius: 14px;
+            color: white;
+            font-weight: 600;
+            background: rgba(10, 14, 23, 0.95);
             backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px var(--neon-cyan-glow);
+            animation: toastSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
         }
+
+        .toast.error { border-color: var(--error); box-shadow: 0 0 15px rgba(255, 42, 95, 0.4); }
+        .toast.warning { border-color: var(--warning); box-shadow: 0 0 15px rgba(255, 184, 0, 0.4); }
+
+        @keyframes toastSlideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Auth Screen */
+        #auth-screen {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 45px 32px;
+            text-align: center;
+            border-top: 3px solid var(--neon-cyan);
+            border-bottom: 3px solid var(--neon-purple);
+        }
+
+        .auth-card h1 {
+            font-family: var(--font-tech);
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .auth-card h1 span { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan-glow); }
+        .auth-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; }
+        .auth-toggle { margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+
+        /* Main App & Navbar */
+        #main-app { display: none; width: 100%; }
+
+        .navbar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 75px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            z-index: 1000;
+            background: rgba(5, 7, 12, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+        }
+
         .nav-left { display: flex; align-items: center; gap: 15px; }
-        .menu-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; width: 45px; height: 45px; border-radius: 12px; }
-        .menu-btn:hover { background: rgba(0,240,255,0.1); color: var(--neon-cyan); }
-        .logo { font-weight: 800; font-size: 24px; }
-        .logo span { color: var(--neon-cyan); }
+
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan-glow);
+        }
+
+        .logo {
+            font-family: var(--font-tech);
+            font-weight: 900;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .logo span { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan-glow); }
+
         .balance-badge {
-            background: rgba(0,240,255,0.1); border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan); padding: 8px 18px; border-radius: 30px;
-            font-size: 14px; display: flex; align-items: center; gap: 8px;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+            font-family: var(--font-tech);
         }
 
+        /* Navigation Dropdown */
         .dropdown {
-            position: absolute; top: 85px; left: 25px; width: 240px;
-            background: rgba(18,22,32,0.96); backdrop-filter: blur(20px);
-            border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
-            transform-origin: top left; transform: scale(0.9);
-            opacity: 0; visibility: hidden; transition: all 0.3s;
+            position: absolute;
+            top: 85px; left: 25px;
+            width: 250px;
+            background: rgba(8, 12, 20, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 18px;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 240, 255, 0.2);
+            transform-origin: top left;
+            transform: scale(0.8) translateY(-10px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1001;
+            padding: 10px 0;
         }
-        .dropdown.active { transform: scale(1); opacity: 1; visibility: visible; }
-        .dropdown-item { padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
-        .dropdown-item:hover { background: rgba(0,240,255,0.1); color: var(--neon-cyan); padding-left: 28px; }
 
-        .page-content { padding: 100px 20px 80px; max-width: 1200px; margin: 0 auto; min-height: 100vh; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .dropdown.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
 
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
-        .page-title { font-size: 26px; font-weight: 800; text-transform: uppercase; }
-        .page-title span { color: var(--neon-purple); }
+        .dropdown-item {
+            padding: 14px 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: 0.3s;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-main);
+        }
 
-        /* ANIMATED & NEON SEARCH BAR */
-        .search-container { 
-            position: relative; 
-            flex: 1; 
-            min-width: 280px; 
-            max-width: 450px; 
+        .dropdown-item i { width: 20px; color: var(--neon-cyan); transition: 0.3s; }
+
+        .dropdown-item:hover {
+            background: rgba(0, 240, 255, 0.12);
+            color: var(--neon-cyan);
+            padding-left: 28px;
+        }
+
+        .dropdown-item:hover i { transform: scale(1.2); }
+
+        /* Page Layout & Titles */
+        .page-content {
+            padding: 105px 20px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .page-title {
+            font-family: var(--font-tech);
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .page-title span { color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple-glow); }
+
+        /* Cyber Animated Search Bar */
+        .search-container {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 450px;
             border-radius: 30px;
             padding: 2px;
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(188, 19, 254, 0.2), rgba(0, 240, 255, 0.4));
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.6), rgba(188, 19, 254, 0.3), rgba(0, 240, 255, 0.6));
             background-size: 200% 200%;
             animation: borderGradient 4s ease infinite;
             transition: all 0.3s ease;
         }
+
         @keyframes borderGradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        .search-container input { 
+
+        .search-container input {
             width: 100%;
             height: 48px;
-            padding-left: 50px; 
+            padding-left: 50px;
             padding-right: 20px;
-            border-radius: 28px; 
-            background: rgba(10, 12, 18, 0.95); 
+            border-radius: 28px;
+            background: rgba(8, 10, 16, 0.95);
             border: none;
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
             transition: all 0.3s ease;
         }
-        .search-container input::placeholder {
-            color: var(--text-muted);
-            transition: color 0.3s;
-        }
-        .search-container i.fa-search { 
-            position: absolute; 
-            left: 18px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            color: var(--neon-cyan); 
+
+        .search-container input::placeholder { color: var(--text-muted); }
+
+        .search-container i.fa-search {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
             font-size: 16px;
             transition: all 0.3s ease;
             pointer-events: none;
         }
+
         .search-container:focus-within {
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 20px var(--neon-cyan-glow);
             transform: translateY(-2px);
         }
+
         .search-container:focus-within i.fa-search {
             color: var(--neon-purple);
             transform: translateY(-50%) scale(1.2) rotate(10deg);
         }
 
-        .promo-slider { display: flex; overflow-x: auto; gap: 15px; margin-bottom: 30px; scroll-snap-type: x mandatory; }
+        /* Promo Slider */
+        .promo-slider {
+            display: flex;
+            overflow-x: auto;
+            gap: 18px;
+            margin-bottom: 35px;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 10px;
+        }
+
         .promo-slider::-webkit-scrollbar { display: none; }
-        .promo-card { flex: 0 0 85%; max-width: 500px; height: 180px; position: relative; border-radius: 16px; overflow: hidden; scroll-snap-align: center; cursor: pointer; }
-        @media (min-width: 768px) { .promo-card { flex: 0 0 45%; } }
+
+        .promo-card {
+            flex: 0 0 85%;
+            max-width: 500px;
+            height: 180px;
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            scroll-snap-align: center;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s;
+        }
+
+        .promo-card:hover { transform: scale(1.02); }
         .promo-card img { width: 100%; height: 100%; object-fit: cover; }
-        .promo-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 40px 15px 15px; background: linear-gradient(transparent, rgba(0,0,0,0.95)); }
+
+        .promo-overlay {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%;
+            padding: 40px 20px 18px;
+            background: linear-gradient(transparent, rgba(3, 3, 5, 0.95));
+        }
+
         .promo-title { color: white; font-weight: 700; font-size: 16px; }
 
-        .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        /* Panel Cards & Grid */
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 25px;
+        }
+
         .panel-card {
-            background: linear-gradient(145deg, rgba(20,24,34,0.9), rgba(10,12,18,0.95));
-            border: 1px solid rgba(0,240,255,0.15);
+            background: linear-gradient(145deg, rgba(15, 20, 32, 0.85), rgba(8, 10, 16, 0.95));
+            border: 1px solid var(--card-border);
             border-radius: 20px;
             overflow: hidden;
-            transition: all 0.4s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
         }
-        .panel-card:hover { transform: translateY(-8px); border-color: rgba(188,19,254,0.5); }
 
-        .video-container { 
-            position: relative; 
-            width: 100%; 
-            padding-bottom: 56.25%; 
-            background: #0a0a12; 
-            overflow: hidden; 
+        .panel-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--neon-purple);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 20px var(--neon-purple-glow);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            background: #000;
+            overflow: hidden;
             cursor: pointer;
         }
-        .video-container iframe, .video-container video { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
+
+        .video-container iframe, .video-container video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
         }
+
         .video-thumbnail {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(10,10,18,0.9);
+            background: rgba(5, 7, 12, 0.85);
             z-index: 2;
             transition: all 0.3s;
         }
+
         .video-thumbnail i {
-            font-size: 64px;
+            font-size: 54px;
             color: var(--neon-cyan);
-            text-shadow: 0 0 30px var(--neon-cyan-dim);
+            filter: drop-shadow(0 0 15px var(--neon-cyan));
             margin-bottom: 10px;
+            transition: transform 0.3s;
         }
-        .video-thumbnail:hover i {
-            transform: scale(1.1);
-            color: #fff;
-        }
-        .video-thumbnail span {
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-        .video-thumbnail img {
+
+        .video-thumbnail:hover i { transform: scale(1.15); color: #fff; }
+        .video-thumbnail span { color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .video-thumbnail img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; }
+
+        .video-fallback {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.3;
-        }
-        .video-fallback { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            background: rgba(20,24,34,0.9); 
-            color: var(--text-muted); 
-        }
-        .video-fallback i { font-size: 48px; margin-bottom: 10px; color: var(--error); }
-
-        .panel-info { padding: 25px; }
-        .panel-title { font-size: 20px; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
-        .features-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .feature-chip { background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2); color: var(--neon-cyan); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; }
-        .plan-select { width: 100%; padding: 0 15px; height: 48px; background: rgba(0,0,0,0.6); border: 1px solid rgba(188,19,254,0.3); border-radius: 12px; color: white; margin-bottom: 15px; cursor: pointer; }
-
-        .payment-settings-card { padding: 40px 30px; text-align: center; max-width: 600px; margin: 0 auto; }
-        .qr-image-container { width: 200px; height: 200px; margin: 20px auto; background: rgba(0,0,0,0.5); border-radius: 16px; border: 2px dashed var(--neon-cyan); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .qr-image-container img { width: 100%; height: 100%; object-fit: cover; }
-        .upi-box { background: rgba(0,0,0,0.6); padding: 18px; border-radius: 12px; border: 1px solid var(--neon-cyan); margin: 25px 0; cursor: pointer; display: flex; justify-content: center; gap: 10px; }
-
-        .history-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .history-card { padding: 20px; background: var(--card-bg); border-radius: 16px; border-left: 4px solid var(--neon-purple); }
-        .status-pending { color: var(--warning); font-weight: 600; }
-        .status-delivered { color: var(--success); font-weight: 600; }
-        .key-box { background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-        .key-text-pending { font-family: monospace; font-size: 14px; color: var(--warning); }
-        .key-text-delivered { font-family: monospace; font-size: 14px; color: var(--success); font-weight: bold; letter-spacing: 1px; }
-        .profile-stat { display: flex; justify-content: space-between; padding: 18px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
-
-        .dashboard-actions {
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(12, 16, 26, 0.9);
+            color: var(--text-muted);
+        }
+
+        .video-fallback i { font-size: 40px; margin-bottom: 8px; color: var(--error); }
+
+        .panel-info { padding: 22px; flex: 1; display: flex; flex-direction: column; }
+        .panel-title { font-family: var(--font-tech); font-size: 18px; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; }
+
+        .features-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+        .feature-chip {
+            background: rgba(0, 240, 255, 0.06);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            color: var(--neon-cyan);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .plan-select {
+            width: 100%;
+            padding: 0 15px;
+            height: 46px;
+            background: rgba(5, 7, 12, 0.9);
+            border: 1px solid var(--neon-purple);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 15px;
+            cursor: pointer;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .dashboard-actions { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+
+        /* Profile & Add Money Cards */
+        .payment-settings-card { padding: 35px 25px; text-align: center; max-width: 550px; margin: 0 auto; }
+        
+        .qr-image-container {
+            width: 210px; height: 210px;
+            margin: 20px auto;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 18px;
+            border: 2px dashed var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+
+        .qr-image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .upi-box {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--neon-cyan);
+            margin: 20px 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             gap: 12px;
-            margin: 12px 0 10px 0;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            transition: all 0.3s;
+        }
+
+        .upi-box:hover { background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px var(--neon-cyan-glow); }
+
+        /* My Keys & History */
+        .history-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .history-card { padding: 22px; background: var(--card-bg); border-radius: 16px; border-left: 4px solid var(--neon-purple); border-top: 1px solid var(--card-border); }
+        .status-pending { color: var(--warning); font-weight: 700; }
+        .status-delivered { color: var(--success); font-weight: 700; }
+
+        .key-box {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
-        }
-        .dashboard-actions .btn-check-update,
-        .dashboard-actions .btn-video-feedback {
-            flex: 1;
-            min-width: 100px;
+            gap: 10px;
+            margin-top: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.15);
         }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .key-text-pending { font-size: 12px; color: var(--warning); }
+        .key-text-delivered { font-family: monospace; font-size: 14px; color: var(--success); font-weight: bold; letter-spacing: 1px; }
+
+        .profile-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+        }
+
+        .preview-img { max-width: 100%; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--neon-cyan); }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(3, 3, 5, 0.88);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
         .modal-overlay.active { visibility: visible; opacity: 1; }
-        .modal { background: var(--card-bg); border: 1px solid var(--neon-cyan); width: 90%; max-width: 440px; padding: 30px; border-radius: 20px; }
-        .success-icon { font-size: 60px; color: var(--success); }
-        .checkout-details { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .checkout-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .checkout-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; color: var(--success); border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px; margin-top: 15px; }
-        .checkout-actions { display: flex; gap: 10px; }
-        .strike-price { text-decoration: line-through; color: var(--text-muted); font-size: 14px; margin-right: 10px; }
-        .empty-state { text-align: center; padding: 60px 20px; }
 
-        .telegram-btn { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; background: linear-gradient(135deg, var(--tg-color), #005580); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: white; cursor: pointer; z-index: 999; text-decoration: none; }
-        .telegram-btn:hover { transform: scale(1.1); }
+        .modal {
+            background: rgba(12, 16, 26, 0.95);
+            border: 1px solid var(--neon-cyan);
+            width: 90%;
+            max-width: 440px;
+            padding: 30px;
+            border-radius: 22px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal { transform: scale(1); }
+        .success-icon { font-size: 64px; color: var(--success); filter: drop-shadow(0 0 15px var(--success)); margin-bottom: 15px; }
+
+        .checkout-details {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .checkout-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .checkout-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--success);
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .checkout-actions { display: flex; gap: 12px; }
+
+        .telegram-btn {
+            position: fixed;
+            bottom: 25px; right: 25px;
+            width: 55px; height: 55px;
+            background: linear-gradient(135deg, var(--tg-color), #005580);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            z-index: 999;
+            text-decoration: none;
+            box-shadow: 0 0 20px rgba(0, 136, 204, 0.5);
+            transition: transform 0.3s;
+        }
+
+        .telegram-btn:hover { transform: scale(1.12) rotate(10deg); }
 
         @media (max-width: 480px) {
             .navbar { padding: 0 15px; height: 70px; }
-            .logo { font-size: 16px; }
+            .logo { font-size: 18px; }
             .page-title { font-size: 20px; }
-            .promo-card { flex: 0 0 90%; height: 150px; }
+            .promo-card { flex: 0 0 92%; height: 150px; }
             .checkout-actions { flex-direction: column; }
-            .dashboard-actions .btn-check-update,
-            .dashboard-actions .btn-video-feedback { min-width: 80px; font-size: 10px; padding: 6px 10px; }
+            .dashboard-actions .btn-check-update, .dashboard-actions .btn-video-feedback { min-width: 80px; font-size: 10px; padding: 6px 10px; }
         }
     </style>
 </head>
 <body>
 
-<!-- UPDATED MODERN LOADER -->
-<div id="loader">
-    <div class="loader-box">
-        <div class="ring"></div>
-        <i class="fas fa-bolt loader-logo"></i>
-    </div>
-    <div class="loader-title">NEXO STORE<span class="dots-animated"></span></div>
-</div>
-
-<div id="toast-container"></div>
-
-<!-- AUTH SCREEN -->
-<div id="auth-screen">
-    <div class="auth-card glass" id="login-box">
-        <h1>NEXO <span>STORE</span></h1>
-        <p>Welcome back! Login to continue.</p>
-        <div class="input-group"><input id="login-email" placeholder="Email Address" type="email"></div>
-        <div class="input-group"><input id="login-pass" placeholder="Password" type="password"></div>
-        <button class="btn btn-primary" id="btn-login"><i class="fas fa-sign-in-alt"></i> Secure Login</button>
-        <p class="auth-toggle">New user? <span id="go-to-signup" style="color:var(--neon-cyan); cursor:pointer;">Create Account</span></p>
-        <div class="contact-buttons" style="display:flex; gap:10px; margin-top:20px;">
-            <a class="btn btn-outline btn-wa" href="#" id="auth-wa-link" target="_blank" style="border-color:#25D366; color:#25D366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-            <a class="btn btn-outline btn-tg" href="#" id="auth-tg-link" target="_blank" style="border-color:#0088cc; color:#0088cc;"><i class="fab fa-telegram-plane"></i> Telegram</a>
+    <!-- MODERN CYBERPUNK LOADER -->
+    <div id="loader">
+        <div class="loader-box">
+            <div class="ring"></div>
+            <i class="fas fa-bolt loader-logo"></i>
         </div>
-    </div>
-    <div class="auth-card glass hidden" id="signup-box">
-        <h1>JOIN <span>NEXO</span></h1>
-        <p>Create an account to get premium access.</p>
-        <div class="input-group"><input id="signup-email" placeholder="Email Address" type="email"></div>
-        <div class="input-group"><input id="signup-pass" placeholder="Password (Min 6 chars)" type="password"></div>
-        <button class="btn btn-primary" id="btn-signup"><i class="fas fa-user-plus"></i> Sign Up</button>
-        <p class="auth-toggle">Already registered? <span id="go-to-login" style="color:var(--neon-cyan); cursor:pointer;">Login here</span></p>
-        <div class="contact-buttons" style="display:flex; gap:10px; margin-top:20px;">
-            <a class="btn btn-outline btn-wa" href="#" id="auth-wa-link-2" target="_blank" style="border-color:#25D366; color:#25D366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-            <a class="btn btn-outline btn-tg" href="#" id="auth-tg-link-2" target="_blank" style="border-color:#0088cc; color:#0088cc;"><i class="fab fa-telegram-plane"></i> Telegram</a>
-        </div>
-    </div>
-</div>
-
-<!-- MAIN APP -->
-<div id="main-app">
-    <nav class="navbar glass">
-        <div class="nav-left">
-            <button class="menu-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-            <div class="logo"><span>NEXO</span> STORE</div>
-        </div>
-        <div class="balance-badge"><i class="fas fa-wallet"></i> ₹<span id="nav-balance">0.00</span></div>
-        <div class="dropdown glass" id="dropdown-menu">
-            <div class="dropdown-item" data-page="home"><i class="fas fa-home"></i> Dashboard</div>
-            <div class="dropdown-item" data-page="add-money"><i class="fas fa-plus-circle"></i> Add Funds</div>
-            <div class="dropdown-item" data-page="history"><i class="fas fa-key"></i> My Keys</div>
-            <div class="dropdown-item" data-page="profile"><i class="fas fa-user"></i> Profile</div>
-            <div class="dropdown-item" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</div>
-        </div>
-    </nav>
-
-    <div class="page-content" id="page-home">
-        <div class="page-header">
-            <h2 class="page-title">Premium <span>Store</span></h2>
-            <!-- UPDATED SEARCH BAR CONTAINER -->
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input id="search-input" placeholder="Search panels, hacks, tools..." autocomplete="off">
-            </div>
-        </div>
-        <div id="promo-container" class="promo-slider hidden"></div>
-        <div id="skeleton-container" class="panel-grid">
-            <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
-            <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
-            <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
-        </div>
-        <div id="panels-container" class="panel-grid hidden"></div>
-        <div id="search-empty" class="empty-state hidden"><i class="fas fa-search"></i><p>No panel found</p></div>
+        <div class="loader-title">NEXO STORE<span class="dots-animated"></span></div>
     </div>
 
-    <div class="page-content hidden" id="page-add-money">
-        <h2 class="page-title">Add <span>Funds</span></h2>
-        <div class="glass payment-settings-card">
-            <div class="qr-image-container" id="display-qr-container"><i class="fas fa-qrcode" style="font-size:50px; opacity:0.3;"></i></div>
-            <div class="upi-box" onclick="copyUPI()"><span id="display-upi">Loading...</span> <i class="fas fa-copy"></i></div>
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+        <!-- LOGIN BOX -->
+        <div class="auth-card glass-cyber" id="login-box">
+            <h1>NEXO <span>STORE</span></h1>
+            <p>Enter your credentials to access the terminal.</p>
+            
             <div class="input-group">
-                <label style="color:var(--text-muted);font-size:12px;">Amount (₹)</label>
-                <input id="add-amount" placeholder="Enter amount" type="number">
+                <input id="login-email" placeholder="Email Address" type="email" autocomplete="off">
             </div>
             <div class="input-group">
-                <label style="color:var(--text-muted);font-size:12px;">Phone Number</label>
-                <input id="add-phone" placeholder="Your phone number">
+                <input id="login-pass" placeholder="Password" type="password">
+            </div>
+            
+            <button class="btn btn-primary" id="btn-login"><i class="fas fa-sign-in-alt"></i> SECURE LOGIN</button>
+            <p class="auth-toggle">New user? <span id="go-to-signup" style="color:var(--neon-cyan); cursor:pointer; font-weight:700;">Create Account</span></p>
+            
+            <div style="display:flex; gap:10px; margin-top:25px;">
+                <a class="btn btn-outline" href="#" id="auth-wa-link" target="_blank" style="border-color:var(--wa-color); color:var(--wa-color);"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                <a class="btn btn-outline" href="#" id="auth-tg-link" target="_blank" style="border-color:var(--tg-color); color:var(--tg-color);"><i class="fab fa-telegram-plane"></i> Telegram</a>
+            </div>
+        </div>
+
+        <!-- SIGNUP BOX -->
+        <div class="auth-card glass-cyber hidden" id="signup-box">
+            <h1>JOIN <span>NEXO</span></h1>
+            <p>Create a secure account for instant access.</p>
+            
+            <div class="input-group">
+                <input id="signup-email" placeholder="Email Address" type="email" autocomplete="off">
             </div>
             <div class="input-group">
-                <label style="color:var(--text-muted);font-size:12px;">Upload Screenshot (Payment Proof)</label>
-                <input type="file" id="screenshot-input" accept="image/*">
-                <div id="screenshot-preview"></div>
+                <input id="signup-pass" placeholder="Password (Min 6 chars)" type="password">
             </div>
-            <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-upload"></i> SUBMIT PAYMENT</button>
+            
+            <button class="btn btn-primary" id="btn-signup"><i class="fas fa-user-plus"></i> REGISTER NOW</button>
+            <p class="auth-toggle">Already registered? <span id="go-to-login" style="color:var(--neon-cyan); cursor:pointer; font-weight:700;">Login here</span></p>
+            
+            <div style="display:flex; gap:10px; margin-top:25px;">
+                <a class="btn btn-outline" href="#" id="auth-wa-link-2" target="_blank" style="border-color:var(--wa-color); color:var(--wa-color);"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                <a class="btn btn-outline" href="#" id="auth-tg-link-2" target="_blank" style="border-color:var(--tg-color); color:var(--tg-color);"><i class="fab fa-telegram-plane"></i> Telegram</a>
+            </div>
         </div>
     </div>
 
-    <div class="page-content hidden" id="page-profile">
-        <h2 class="page-title">My <span>Profile</span></h2>
-        <div class="glass" style="padding:20px; max-width:500px; margin:0 auto;">
-            <div class="profile-stat"><span><i class="fas fa-envelope"></i> Email</span><strong id="prof-email">-</strong></div>
-            <div class="profile-stat"><span><i class="fas fa-wallet"></i> Balance</span><strong>₹<span id="prof-bal">0</span></strong></div>
-            <div class="profile-stat"><span><i class="fas fa-shopping-cart"></i> Purchases</span><strong id="prof-purchases">0</strong></div>
-            <div class="profile-stat"><span><i class="fas fa-chart-line"></i> Total Spent</span><strong>₹<span id="prof-spent">0</span></strong></div>
-            <div class="profile-stat"><span><i class="fas fa-calendar"></i> Joined</span><strong id="prof-date">-</strong></div>
+    <!-- MAIN APP HUB -->
+    <div id="main-app">
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <div class="nav-left">
+                <button class="menu-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                <div class="logo"><span>NEXO</span> STORE</div>
+            </div>
+            
+            <div class="balance-badge">
+                <i class="fas fa-wallet"></i> ₹<span id="nav-balance">0.00</span>
+            </div>
+
+            <!-- DROPDOWN MENU -->
+            <div class="dropdown" id="dropdown-menu">
+                <div class="dropdown-item" data-page="home"><i class="fas fa-home"></i> Dashboard</div>
+                <div class="dropdown-item" data-page="add-money"><i class="fas fa-plus-circle"></i> Add Funds</div>
+                <div class="dropdown-item" data-page="history"><i class="fas fa-key"></i> My Keys</div>
+                <div class="dropdown-item" data-page="profile"><i class="fas fa-user"></i> Profile</div>
+                <div class="dropdown-item" id="btn-logout" style="color:var(--error);"><i class="fas fa-sign-out-alt" style="color:var(--error);"></i> Logout</div>
+            </div>
+        </nav>
+
+        <!-- PAGE: HOME / STORE -->
+        <div class="page-content" id="page-home">
+            <div class="page-header">
+                <h2 class="page-title">PREMIUM <span>STORE</span></h2>
+                
+                <!-- ANIMATED GLOW SEARCH BAR -->
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input id="search-input" placeholder="Search panels, hacks, tools..." autocomplete="off">
+                </div>
+            </div>
+
+            <div id="promo-container" class="promo-slider hidden"></div>
+
+            <!-- SKELETON LOADERS -->
+            <div id="skeleton-container" class="panel-grid">
+                <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
+                <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
+                <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
+            </div>
+
+            <div id="panels-container" class="panel-grid hidden"></div>
+            <div id="search-empty" class="empty-state hidden" style="text-align:center; padding:60px 20px; color:var(--text-muted);"><i class="fas fa-search" style="font-size:48px; margin-bottom:15px;"></i><p>No matching panel found</p></div>
+        </div>
+
+        <!-- PAGE: ADD FUNDS -->
+        <div class="page-content hidden" id="page-add-money">
+            <h2 class="page-title" style="margin-bottom:25px;">ADD <span>FUNDS</span></h2>
+            <div class="glass-cyber payment-settings-card">
+                <div class="qr-image-container" id="display-qr-container">
+                    <i class="fas fa-qrcode" style="font-size:50px; opacity:0.3; color:var(--neon-cyan);"></i>
+                </div>
+                
+                <div class="upi-box" onclick="copyUPI()">
+                    <span id="display-upi">Loading...</span> <i class="fas fa-copy"></i>
+                </div>
+
+                <div class="input-group">
+                    <label>Amount (₹)</label>
+                    <input id="add-amount" placeholder="Enter amount to add" type="number">
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input id="add-phone" placeholder="Your phone number">
+                </div>
+                <div class="input-group">
+                    <label>Upload Screenshot (Payment Proof)</label>
+                    <input type="file" id="screenshot-input" accept="image/*">
+                    <div id="screenshot-preview"></div>
+                </div>
+
+                <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-upload"></i> SUBMIT PAYMENT</button>
+            </div>
+        </div>
+
+        <!-- PAGE: PROFILE -->
+        <div class="page-content hidden" id="page-profile">
+            <h2 class="page-title" style="margin-bottom:25px;">MY <span>PROFILE</span></h2>
+            <div class="glass-cyber" style="padding:10px; max-width:550px; margin:0 auto;">
+                <div class="profile-stat"><span><i class="fas fa-envelope" style="color:var(--neon-cyan);"></i> Email</span><strong id="prof-email">-</strong></div>
+                <div class="profile-stat"><span><i class="fas fa-wallet" style="color:var(--neon-cyan);"></i> Balance</span><strong>₹<span id="prof-bal">0</span></strong></div>
+                <div class="profile-stat"><span><i class="fas fa-shopping-cart" style="color:var(--neon-cyan);"></i> Purchases</span><strong id="prof-purchases">0</strong></div>
+                <div class="profile-stat"><span><i class="fas fa-chart-line" style="color:var(--neon-cyan);"></i> Total Spent</span><strong>₹<span id="prof-spent">0</span></strong></div>
+                <div class="profile-stat" style="border:none;"><span><i class="fas fa-calendar" style="color:var(--neon-cyan);"></i> Joined</span><strong id="prof-date">-</strong></div>
+            </div>
+        </div>
+
+        <!-- PAGE: MY KEYS -->
+        <div class="page-content hidden" id="page-history">
+            <div class="page-header">
+                <h2 class="page-title">MY <span>KEYS</span></h2>
+                <button class="btn btn-sm btn-outline" onclick="refreshKeys()"><i class="fas fa-sync-alt"></i> REFRESH</button>
+            </div>
+            <div id="history-container" class="history-list"></div>
+        </div>
+
+        <!-- FLOATING TELEGRAM SUPPORT -->
+        <a class="telegram-btn" href="#" id="global-telegram-btn" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+    </div>
+
+    <!-- MODAL: CHECKOUT -->
+    <div class="modal-overlay" id="modal-checkout">
+        <div class="modal">
+            <h3 style="font-family:var(--font-tech); margin-bottom:20px; color:var(--neon-cyan);">ORDER CONFIRMATION</h3>
+            <div class="checkout-details">
+                <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
+                <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
+                <div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div>
+                <div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div>
+            </div>
+            <div class="checkout-actions">
+                <button class="btn btn-outline" onclick="closeModal('modal-checkout')">CANCEL</button>
+                <button class="btn btn-purchase" id="confirm-purchase-btn">CONFIRM & PAY</button>
+            </div>
         </div>
     </div>
 
-    <div class="page-content hidden" id="page-history">
-        <div class="page-header">
-            <h2 class="page-title">My <span>Keys</span></h2>
-            <button class="btn btn-sm" onclick="refreshKeys()" style="width:auto; padding:8px 20px;"><i class="fas fa-sync-alt"></i> Refresh</button>
-        </div>
-        <div id="history-container" class="history-list"></div>
-    </div>
-
-    <a class="telegram-btn" href="#" id="global-telegram-btn" target="_blank"><i class="fab fa-telegram-plane"></i></a>
-</div>
-
-<!-- MODALS -->
-<div class="modal-overlay" id="modal-checkout">
-    <div class="modal checkout-modal">
-        <div class="checkout-details">
-            <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
-            <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
-            <div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div>
-            <div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div>
-        </div>
-        <div class="checkout-actions">
-            <button class="btn btn-outline" onclick="closeModal('modal-checkout')">CANCEL</button>
-            <button class="btn btn-purchase" id="confirm-purchase-btn">PAY NOW</button>
+    <!-- MODAL: SUCCESS -->
+    <div class="modal-overlay" id="modal-success">
+        <div class="modal" style="text-align:center;">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h2 style="font-family:var(--font-tech); font-size:20px; margin-bottom:10px;">PURCHASE SUCCESSFUL!</h2>
+            <div style="background:rgba(0,0,0,0.5); padding:18px; border-radius:14px; margin:18px 0; border:1px solid rgba(255,255,255,0.05);">
+                <i class="fas fa-clock" style="color:var(--warning); font-size:24px; margin-bottom:8px;"></i>
+                <p style="font-weight:700;">Order Received!</p>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Admin will deliver your license key shortly.<br>Check "My Keys" page for updates.</p>
+            </div>
+            <button class="btn btn-primary" onclick="closeModal('modal-success'); navigate('history')">VIEW MY KEYS</button>
+            <button class="btn btn-outline" onclick="closeModal('modal-success')" style="margin-top:10px;">CLOSE</button>
         </div>
     </div>
-</div>
 
-<div class="modal-overlay" id="modal-success"><div class="modal" style="text-align:center;"><i class="fas fa-check-circle success-icon"></i><h2>PURCHASE SUCCESSFUL!</h2><div style="background:#00000055; padding:15px; border-radius:12px; margin:15px 0;"><i class="fas fa-clock" style="color:var(--warning); font-size:24px;"></i><p style="margin-top:10px;">Your order is pending!</p><p style="font-size:12px; color:var(--text-muted);">Admin will deliver the license key within 24 hours.<br>Check "My Keys" page for updates.</p></div><button class="btn btn-primary" onclick="closeModal('modal-success'); navigate('history')">VIEW MY KEYS</button><button class="btn btn-outline" onclick="closeModal('modal-success')" style="margin-top:10px;">CLOSE</button></div></div>
+    <!-- APPLICATION LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, onValue, push, runTransaction, serverTimestamp, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, onValue, push, runTransaction, serverTimestamp, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
+            authDomain: "nexo-store-6d494.firebaseapp.com",
+            databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
+            projectId: "nexo-store-6d494",
+            storageBucket: "nexo-store-6d494.firebasestorage.app",
+            messagingSenderId: "1077591470608",
+            appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
+        };
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
-        authDomain: "nexo-store-6d494.firebaseapp.com",
-        databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
-        projectId: "nexo-store-6d494",
-        storageBucket: "nexo-store-6d494.firebasestorage.app",
-        messagingSenderId: "1077591470608",
-        appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
-    };
+        const app = initializeApp(firebaseConfig, 'userApp');
+        const auth = getAuth(app);
+        const db = getDatabase(app);
 
-    const app = initializeApp(firebaseConfig, 'userApp');
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    
-    let currentUser = null;
-    let userData = { balance: 0 };
-    let refreshInterval = null;
-    let balanceListenerUnsubscribe = null;
-    let selectedFile = null;
-    let screenshotBase64 = null;
-    let isSubmitting = false;
+        let currentUser = null;
+        let userData = { balance: 0 };
+        let refreshInterval = null;
+        let balanceListenerUnsubscribe = null;
+        let selectedFile = null;
+        let screenshotBase64 = null;
+        let isSubmitting = false;
 
-    function getVideoEmbedCode(url) {
-        if (!url || url.trim() === '') return null;
-        const videoUrl = url.trim();
-        if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
-            let videoId = '';
-            if (videoUrl.includes('youtu.be/')) videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
-            else videoId = videoUrl.split('v=')[1]?.split('&')[0];
-            if (videoId) {
-                return { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`, thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, videoId: videoId };
+        function getVideoEmbedCode(url) {
+            if (!url || url.trim() === '') return null;
+            const videoUrl = url.trim();
+            if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
+                let videoId = '';
+                if (videoUrl.includes('youtu.be/')) videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+                else videoId = videoUrl.split('v=')[1]?.split('&')[0];
+                if (videoId) {
+                    return { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`, thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, videoId };
+                }
             }
-        }
-        if (videoUrl.includes('youtube.com/shorts/')) {
-            const videoId = videoUrl.split('/shorts/')[1]?.split('?')[0];
-            if (videoId) {
-                return { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`, thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, videoId: videoId };
+            if (videoUrl.includes('youtube.com/shorts/')) {
+                const videoId = videoUrl.split('/shorts/')[1]?.split('?')[0];
+                if (videoId) {
+                    return { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0`, thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, videoId };
+                }
             }
-        }
-        if (videoUrl.includes('vimeo.com/')) {
-            const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
-            if (videoId) {
-                return { type: 'vimeo', embedUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1`, thumbnail: null, videoId: videoId };
+            if (videoUrl.includes('vimeo.com/')) {
+                const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
+                if (videoId) {
+                    return { type: 'vimeo', embedUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1`, thumbnail: null, videoId };
+                }
             }
+            if (videoUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
+                return { type: 'mp4', embedUrl: videoUrl, thumbnail: null, videoId: null };
+            }
+            return null;
         }
-        if (videoUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
-            return { type: 'mp4', embedUrl: videoUrl, thumbnail: null, videoId: null };
+
+        window.playVideo = function(containerId, thumbId) {
+            const container = document.getElementById(containerId);
+            const thumb = document.getElementById(thumbId);
+            if (!container) return;
+            if (thumb) thumb.style.display = 'none';
+            const videoUrl = container.getAttribute('data-video-url');
+            const videoType = container.getAttribute('data-video-type');
+            if (!videoUrl) return;
+
+            let iframeHtml = '';
+            if (videoType === 'youtube' || videoType === 'vimeo') {
+                iframeHtml = `<iframe src="${videoUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+            } else if (videoType === 'mp4') {
+                iframeHtml = `<video controls autoplay><source src="${videoUrl}" type="video/mp4"></video>`;
+            }
+            container.innerHTML = iframeHtml;
+        };
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : (type === 'warning' ? 'fa-triangle-exclamation' : 'fa-check-circle')}"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
         }
-        return null;
-    }
 
-    window.playVideo = function(containerId, thumbId) {
-        const container = document.getElementById(containerId);
-        const thumb = document.getElementById(thumbId);
-        if (!container) return;
-        if (thumb) thumb.style.display = 'none';
-        const videoUrl = container.getAttribute('data-video-url');
-        const videoType = container.getAttribute('data-video-type');
-        if (!videoUrl) return;
-        let iframeHtml = '';
-        if (videoType === 'youtube' || videoType === 'vimeo') {
-            iframeHtml = `<iframe src="${videoUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
-        } else if (videoType === 'mp4') {
-            iframeHtml = `<video controls autoplay><source src="${videoUrl}" type="video/mp4"></video>`;
-        }
-        container.innerHTML = iframeHtml;
-    };
+        window.copyUPI = () => {
+            const upi = document.getElementById('display-upi').innerText;
+            if(upi && upi !== 'Loading...') {
+                navigator.clipboard.writeText(upi);
+                showToast('UPI ID Copied to Clipboard!');
+            }
+        };
 
-    function showToast(msg, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
 
-    window.copyUPI = () => {
-        const upi = document.getElementById('display-upi').innerText;
-        navigator.clipboard.writeText(upi);
-        showToast('UPI ID Copied!');
-    };
-
-    window.closeModal = (id) => document.getElementById(id).classList.remove('active');
-    
-    document.getElementById('go-to-signup')?.addEventListener('click', () => {
-        document.getElementById('login-box').classList.add('hidden');
-        document.getElementById('signup-box').classList.remove('hidden');
-    });
-    document.getElementById('go-to-login')?.addEventListener('click', () => {
-        document.getElementById('signup-box').classList.add('hidden');
-        document.getElementById('login-box').classList.remove('hidden');
-    });
-
-    onValue(ref(db, 'support_links'), (snap) => {
-        const data = snap.val();
-        if(data) {
-            document.getElementById('auth-wa-link').href = data.whatsapp || '#';
-            document.getElementById('auth-wa-link-2').href = data.whatsapp || '#';
-            document.getElementById('auth-tg-link').href = data.telegram_login || '#';
-            document.getElementById('auth-tg-link-2').href = data.telegram_login || '#';
-            document.getElementById('global-telegram-btn').href = data.telegram_dashboard || '#';
-        }
-    });
-
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+        document.getElementById('go-to-signup')?.addEventListener('click', () => {
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('signup-box').classList.remove('hidden');
         });
-    }
 
-    async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
-        try {
-            showToast("🔍 Verifying Payment...", "success");
-            
-            const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', {
-                logger: (m) => {}
-            });
-            
-            const text = result.data.text;
-            console.log("📝 OCR Text:", text);
-            
-            const namePatterns = [
-                'punam', 'puna', 'punam devi', 'puna devi', 
-                'punamdevi', 'punaṃ devi', 'punam d evi',
-                'p u n a m', 'p u n a m d e v i',
-                'punam d evi', 'punamdevi'
-            ];
-            
-            const hasPunamDevi = namePatterns.some(pattern => 
-                text.toLowerCase().replace(/[\s,.]/g, '').includes(pattern.replace(/[\s,.]/g, '').toLowerCase())
-            );
-            
-            console.log("🔍 Name found:", hasPunamDevi);
-            
-            if (hasPunamDevi) {
-                return { 
-                    verified: true, 
-                    reason: '✅ Verified!, Amount: ₹' + expectedAmount + ', Added',
-                    nameFound: true,
-                    amountFound: true
-                };
-            } else {
-                return { 
-                    verified: false, 
-                    reason: '❌ Not Verified!, Wait Manual Checking',
-                    nameFound: false,
-                    amountFound: false
-                };
-            }
-        } catch(error) {
-            console.error("OCR Error:", error);
-            return { 
-                verified: false, 
-                reason: '⚠️ OCR failed, manual verification needed',
-                nameFound: false,
-                amountFound: false
-            };
-        }
-    }
-
-    document.getElementById('screenshot-input').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if(file) {
-            selectedFile = file;
-            try {
-                screenshotBase64 = await fileToBase64(file);
-                document.getElementById('screenshot-preview').innerHTML = `<img src="${screenshotBase64}" class="preview-img">`;
-                showToast("✅ Screenshot loaded!", "success");
-            } catch(err) {
-                showToast("Error loading image", "error");
-            }
-        }
-    });
-
-    document.getElementById('btn-signup').onclick = async () => {
-        const email = document.getElementById('signup-email').value.trim();
-        const pass = document.getElementById('signup-pass').value;
-        if(!email || !email.includes('@')) return showToast("Valid email required", "error");
-        if(pass.length < 6) return showToast("Password must be at least 6 characters", "error");
-        try {
-            const cred = await createUserWithEmailAndPassword(auth, email, pass);
-            await set(ref(db, `users/${cred.user.uid}`), { email, balance: 0, createdAt: new Date().toISOString() });
-            showToast("✅ Account created! Please login.");
+        document.getElementById('go-to-login')?.addEventListener('click', () => {
             document.getElementById('signup-box').classList.add('hidden');
             document.getElementById('login-box').classList.remove('hidden');
-            document.getElementById('signup-email').value = '';
-            document.getElementById('signup-pass').value = '';
-        } catch(error) {
-            if(error.code === 'auth/email-already-in-use') showToast("Email already registered. Please login.", "error");
-            else showToast(error.message || "Signup failed. Try again.", "error");
-        }
-    };
-
-    document.getElementById('btn-login').onclick = async () => {
-        const email = document.getElementById('login-email').value.trim();
-        const pass = document.getElementById('login-pass').value;
-        if(!email || !pass) return showToast("Enter credentials", "error");
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            showToast("Welcome back!");
-        } catch(e) {
-            if(e.code === 'auth/user-not-found') showToast("Account not found. Please sign up first.", "error");
-            else if(e.code === 'auth/wrong-password') showToast("Wrong password. Try again.", "error");
-            else showToast("Invalid credentials", "error");
-        }
-    };
-
-    document.getElementById('btn-logout').onclick = async () => { 
-        if(refreshInterval) clearInterval(refreshInterval);
-        if(balanceListenerUnsubscribe) { balanceListenerUnsubscribe(); balanceListenerUnsubscribe = null; }
-        await signOut(auth); 
-    };
-
-    window.navigate = (pageId) => {
-        document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-        document.getElementById(`page-${pageId}`).classList.remove('hidden');
-        document.getElementById('dropdown-menu').classList.remove('active');
-        if(pageId === 'history') {
-            loadHistory();
-            if(refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = setInterval(() => {
-                if(document.getElementById('page-history') && !document.getElementById('page-history').classList.contains('hidden')) {
-                    loadHistory();
-                }
-            }, 10000);
-        } else {
-            if(refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = null;
-        }
-        if(pageId === 'profile') loadProfile();
-        window.scrollTo(0,0);
-    };
-    
-    window.refreshKeys = () => {
-        loadHistory();
-        showToast("Keys refreshed!", "success");
-    };
-
-    document.getElementById('menu-toggle').onclick = (e) => {
-        e.stopPropagation();
-        document.getElementById('dropdown-menu').classList.toggle('active');
-    };
-    document.addEventListener('click', (e) => {
-        const dropdown = document.getElementById('dropdown-menu');
-        const btn = document.getElementById('menu-toggle');
-        if(dropdown?.classList.contains('active') && !dropdown.contains(e.target) && !btn?.contains(e.target)) {
-            dropdown.classList.remove('active');
-        }
-    });
-    document.querySelectorAll('.dropdown-item[data-page]').forEach(item => {
-        item.addEventListener('click', () => navigate(item.dataset.page));
-    });
-
-    onValue(ref(db, 'settings/payment'), (snap) => {
-        if(snap.exists()) {
-            document.getElementById('display-upi').innerText = snap.val().upiId || 'Not set';
-            if(snap.val().qrImage) {
-                document.getElementById('display-qr-container').innerHTML = `<img src="${snap.val().qrImage}" style="width:100%;height:100%;object-fit:cover;">`;
-            }
-        }
-    });
-
-    document.getElementById('btn-submit-payment').onclick = async function() {
-        if (isSubmitting) {
-            showToast("⏳ Please wait, payment is being processed...", "warning");
-            return;
-        }
-        
-        if(!currentUser) return showToast("Please login first", "error");
-        
-        const amount = document.getElementById('add-amount').value;
-        const phone = document.getElementById('add-phone').value.trim();
-        
-        if(!amount || amount <= 0) return showToast("Enter amount", "error");
-        if(!phone) return showToast("Phone number required", "error");
-        if(!screenshotBase64) return showToast("Please upload screenshot", "error");
-        
-        isSubmitting = true;
-        const btn = this;
-        btn.disabled = true;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
-        
-        try {
-            const verifyResult = await autoVerifyScreenshot(screenshotBase64, parseFloat(amount));
-            const autoVerified = verifyResult.verified;
-            const verificationStatus = autoVerified ? 'approved' : 'pending';
-            
-            const paymentRef = await push(ref(db, 'payments'), {
-                uid: currentUser.uid, email: currentUser.email,
-                amount: parseFloat(amount), phone, screenshot: screenshotBase64,
-                status: verificationStatus, type: 'screenshot_base64',
-                autoVerified, autoVerifyNote: verifyResult.reason,
-                expectedAmount: parseFloat(amount),
-                nameFound: verifyResult.nameFound || false,
-                amountFound: verifyResult.amountFound || false,
-                timestamp: serverTimestamp()
-            });
-            
-            if(autoVerified) {
-                const balRef = ref(db, `users/${currentUser.uid}/balance`);
-                const balSnap = await get(balRef);
-                await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
-                showToast("✅ Payment verified! ₹" + amount + " added to balance!");
-                await update(ref(db, `payments/${paymentRef.key}`), { status: 'approved', approvedAt: serverTimestamp(), approvedBy: 'Auto-Verify System' });
-            } else {
-                showToast("📤 " + verifyResult.reason);
-            }
-            
-            document.getElementById('add-amount').value = '';
-            document.getElementById('add-phone').value = '';
-            document.getElementById('screenshot-input').value = '';
-            document.getElementById('screenshot-preview').innerHTML = '';
-            selectedFile = null;
-            screenshotBase64 = null;
-            
-            const balRef = ref(db, `users/${currentUser.uid}/balance`);
-            const balSnap = await get(balRef);
-            userData.balance = balSnap.val() || 0;
-            
-        } catch(error) {
-            showToast("Error submitting payment: " + error.message, "error");
-        }
-        
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            isSubmitting = false;
-        }, 30000);
-    };
-
-    async function loadHistory() {
-        if(!currentUser) return;
-        const container = document.getElementById('history-container');
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading keys...</p></div>';
-        try {
-            const snapshot = await get(ref(db, `purchases/${currentUser.uid}`));
-            container.innerHTML = '';
-            if(!snapshot.exists()) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-key"></i><p>No purchases yet</p></div>';
-                return;
-            }
-            const purchases = [];
-            snapshot.forEach((child) => { purchases.push({ id: child.key, ...child.val() }); });
-            purchases.sort((a,b) => {
-                const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
-                const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
-                return dateB - dateA;
-            });
-            for(const p of purchases) {
-                const div = document.createElement('div');
-                div.className = 'history-card';
-                const isDelivered = p.keyStatus === 'delivered' && p.key && p.key !== 'PENDING';
-                const statusText = isDelivered ? '✅ DELIVERED' : '⏳ PENDING';
-                const statusColor = isDelivered ? 'status-delivered' : 'status-pending';
-                const planBadge = p.label || p.plan || 'N/A';
-                let featuresHtml = '';
-                if(p.description) {
-                    const features = p.description.split(/\n|-/).filter(f => f.trim()).slice(0,4);
-                    if(features.length > 0) {
-                        featuresHtml = `<div class="features-list" style="margin-top:5px; margin-bottom:8px; gap:5px;">`;
-                        features.forEach(f => {
-                            featuresHtml += `<span class="feature-chip" style="font-size:10px; padding:4px 10px;">${f.trim()}</span>`;
-                        });
-                        featuresHtml += `</div>`;
-                    }
-                }
-                let keyHtml = '';
-                if(isDelivered) {
-                    keyHtml = `<div class="key-box" style="margin-top:8px;"><span class="key-text-delivered" id="key-${p.id}">${p.key}</span><button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button></div>`;
-                } else {
-                    keyHtml = `<div class="key-box" style="margin-top:8px;"><span class="key-text-pending"><i class="fas fa-clock"></i> Key Pending - Admin will deliver within 24 hours</span></div>`;
-                }
-                div.innerHTML = `<div><strong>${p.panelName}</strong></div>${featuresHtml}<div style="margin:8px 0;"><span class="history-plan-badge">${planBadge}</span> - ₹${p.price}</div><div class="${statusColor}" style="margin-bottom:5px;">${statusText}</div>${keyHtml}`;
-                container.appendChild(div);
-            }
-        } catch(error) {
-            console.error("Error loading history:", error);
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading keys. Click Refresh to try again.</p></div>';
-        }
-    }
-    
-    window.copyKey = (id) => {
-        const text = document.getElementById(id)?.innerText;
-        if(text) { navigator.clipboard.writeText(text); showToast('Key copied!'); }
-    };
-
-    async function loadProfile() {
-        if(!currentUser) return;
-        try {
-            const userSnap = await get(ref(db, `users/${currentUser.uid}`));
-            const purchaseSnap = await get(ref(db, `purchases/${currentUser.uid}`));
-            let count = 0, spent = 0;
-            if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
-            document.getElementById('prof-email').innerText = currentUser.email;
-            document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
-            document.getElementById('prof-purchases').innerText = count;
-            document.getElementById('prof-spent').innerText = spent.toFixed(2);
-            if(userSnap.val()?.createdAt) {
-                const date = new Date(userSnap.val().createdAt);
-                document.getElementById('prof-date').innerText = date.toLocaleDateString();
-            }
-        } catch(e) { console.error("Profile load error:", e); }
-    }
-
-    let autoScroll;
-    function initPromotions() {
-        onValue(ref(db, 'promotions'), (snap) => {
-            const container = document.getElementById('promo-container');
-            const promos = [];
-            if(snap.exists()) snap.forEach(c => { if(c.val().status === true || c.val().status === 'true') promos.push(c.val()); });
-            if(promos.length === 0) { container.classList.add('hidden'); return; }
-            container.classList.remove('hidden');
-            container.innerHTML = '';
-            promos.forEach(p => {
-                container.innerHTML += `<div class="promo-card glass" onclick="window.open('${p.link || '#'}', '_blank')">
-                    ${p.image ? `<img src="${p.image}" alt="${p.title}">` : '<div style="background:#111;height:100%;"></div>'}
-                    <div class="promo-overlay"><div class="promo-title">${p.title || 'Special Offer'}</div></div>
-                </div>`;
-            });
-            if(autoScroll) clearInterval(autoScroll);
-            autoScroll = setInterval(() => {
-                if(container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) container.scrollTo({ left: 0, behavior: 'smooth' });
-                else container.scrollBy({ left: 300, behavior: 'smooth' });
-            }, 4000);
         });
-    }
 
-    function fetchPanels() {
-        onValue(ref(db, 'panels'), (snapshot) => {
-            const skeleton = document.getElementById('skeleton-container');
-            const panelsContainer = document.getElementById('panels-container');
-            if(skeleton) skeleton.classList.add('hidden');
-            if(panelsContainer) panelsContainer.classList.remove('hidden');
-            if(panelsContainer) panelsContainer.innerHTML = '';
-            
-            if (!snapshot.exists()) {
-                if(panelsContainer) panelsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-box"></i><p>No panels available</p></div>';
-                return;
-            }
-            
-            snapshot.forEach((child) => {
-                const panelId = child.key;
-                const p = child.val();
-                if(!p || p.status !== 'active') return;
-                
-                let featuresHtml = (p.description || 'Premium Tool').split(/\n|-/).filter(f => f.trim()).slice(0,4)
-                    .map(f => `<span class="feature-chip"><i class="fas fa-bolt"></i> ${f.trim()}</span>`).join('');
-                
-                let plansHtml = '';
-                if(p.plans && Object.keys(p.plans).length > 0) {
-                    plansHtml = `<select class="plan-select" id="plan-${panelId}">`;
-                    Object.entries(p.plans).forEach(([key, plan]) => {
-                        plansHtml += `<option value='${JSON.stringify({key, label: plan.label, price: plan.price})}'>${plan.label || key} - ₹${plan.price}</option>`;
-                    });
-                    plansHtml += `</select>`;
-                }
-                
-                let videoHtml = '';
-                const videoUrl = p.video || p.youtube || '';
-                const videoData = getVideoEmbedCode(videoUrl);
-                
-                if(videoData) {
-                    const containerId = `video-${panelId}`;
-                    const thumbId = `thumb-${panelId}`;
-                    let thumbImg = videoData.thumbnail ? `<img src="${videoData.thumbnail}" alt="Video thumbnail">` : '';
-                    videoHtml = `
-                        <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${videoData.embedUrl}" data-video-type="${videoData.type}">
-                            <div class="video-thumbnail" id="${thumbId}">
-                                ${thumbImg}
-                                <i class="fas fa-play-circle"></i>
-                                <span>▶ Click to Play</span>
-                            </div>
-                            <div class="video-fallback" style="display:none;">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <span>Loading...</span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    videoHtml = `<div class="video-container"><div class="video-fallback"><i class="fas fa-video-slash"></i><span>Video Unavailable</span></div></div>`;
-                }
-                
-                const card = document.createElement('div');
-                card.className = 'panel-card';
-                card.setAttribute('data-search', `${p.name} ${p.description || ''}`);
-                
-                const checkUpdateLink = p.checkUpdateLink || '#';
-                const videoFeedbackLink = p.videoFeedbackLink || '#';
-                
-                const dashboardButtons = `
-                    <div class="dashboard-actions">
-                        <button class="btn-check-update" onclick="window.open('${checkUpdateLink}', '_blank')">
-                            <i class="fas fa-sync-alt"></i> CHECK UPDATE FILE
-                        </button>
-                        <button class="btn-video-feedback" onclick="window.open('${videoFeedbackLink}', '_blank')">
-                            <i class="fas fa-video"></i> CHECK VIDEO / FEEDBACK
-                        </button>
-                    </div>
-                `;
-                
-                card.innerHTML = `
-                    ${videoHtml}
-                    <div class="panel-info">
-                        <div class="panel-title">${p.name}</div>
-                        <div class="features-list">${featuresHtml || '<span class="feature-chip">Premium Quality</span>'}</div>
-                        ${plansHtml}
-                        ${dashboardButtons}
-                        <button class="btn btn-purchase" onclick="handlePurchase('${panelId}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')">PURCHASE NOW</button>
-                    </div>
-                `;
-                panelsContainer.appendChild(card);
-            });
-            
-            const searchInput = document.getElementById('search-input');
-            const emptyState = document.getElementById('search-empty');
-            if(searchInput) {
-                searchInput.oninput = () => {
-                    const term = searchInput.value.toLowerCase();
-                    let visible = 0;
-                    document.querySelectorAll('.panel-card').forEach(card => {
-                        const match = card.dataset.search?.toLowerCase().includes(term);
-                        card.style.display = match ? 'flex' : 'none';
-                        if(match) visible++;
-                    });
-                    if(emptyState) emptyState.classList.toggle('hidden', visible > 0);
-                };
+        onValue(ref(db, 'support_links'), (snap) => {
+            const data = snap.val();
+            if(data) {
+                document.getElementById('auth-wa-link').href = data.whatsapp || '#';
+                document.getElementById('auth-wa-link-2').href = data.whatsapp || '#';
+                document.getElementById('auth-tg-link').href = data.telegram_login || '#';
+                document.getElementById('auth-tg-link-2').href = data.telegram_login || '#';
+                document.getElementById('global-telegram-btn').href = data.telegram_dashboard || '#';
             }
         });
-    }
 
-    window.currentCheckout = {};
-    window.handlePurchase = (panelId, panelName, link) => {
-        const select = document.getElementById(`plan-${panelId}`);
-        if(!select) return showToast('No plan selected', 'error');
-        const plan = JSON.parse(select.value);
-        window.currentCheckout = { panelId, panelName, link, planKey: plan.key, label: plan.label, price: plan.price };
-        document.getElementById('chk-panel-name').innerText = panelName;
-        document.getElementById('chk-plan-label').innerText = plan.label;
-        document.getElementById('chk-orig-price').innerText = plan.price;
-        document.getElementById('chk-final-price').innerText = plan.price;
-        document.getElementById('chk-strike-price').classList.add('hidden');
-        document.getElementById('modal-checkout').classList.add('active');
-    };
-    
-    document.getElementById('confirm-purchase-btn').onclick = async () => {
-        if(!currentUser) return;
-        const price = window.currentCheckout.finalPrice || window.currentCheckout.price;
-        if(userData.balance < price) return showToast(`Need ₹${price}`, "error");
-        try {
-            const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
-            if(result.committed) {
-                await push(ref(db, `purchases/${currentUser.uid}`), {
-                    panelId: window.currentCheckout.panelId,
-                    panelName: window.currentCheckout.panelName,
-                    plan: window.currentCheckout.planKey,
-                    label: window.currentCheckout.label,
-                    price: price,
-                    key: "PENDING",
-                    keyStatus: "pending",
-                    link: window.currentCheckout.link,
-                    date: serverTimestamp()
-                });
-                document.getElementById('modal-checkout').classList.remove('active');
-                document.getElementById('modal-success').classList.add('active');
-                showToast("Purchase successful! Key pending from admin.");
-            } else showToast("Insufficient balance", "error");
-        } catch(e) { showToast("Error: " + e.message, "error"); }
-    };
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
 
-    onAuthStateChanged(auth, (user) => {
-        const loader = document.getElementById('loader');
-        const authScreen = document.getElementById('auth-screen');
-        const mainApp = document.getElementById('main-app');
-        
-        if(user) {
-            currentUser = user;
-            authScreen.style.display = 'none';
-            mainApp.style.display = 'block';
-            
-            // Smooth fade out for loader
-            if(loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => { loader.style.display = 'none'; }, 500);
-            }
-            
+        async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
             try {
-                if (balanceListenerUnsubscribe) { balanceListenerUnsubscribe(); balanceListenerUnsubscribe = null; }
+                showToast("🔍 Verifying Payment Proof...", "success");
+                const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', { logger: () => {} });
+                const text = result.data.text;
+                
+                const namePatterns = [
+                    'punam', 'puna', 'punam devi', 'puna devi', 'punamdevi', 
+                    'punaṃ devi', 'punam d evi', 'p u n a m', 'p u n a m d e v i'
+                ];
+
+                const hasPunamDevi = namePatterns.some(pattern => 
+                    text.toLowerCase().replace(/[\s,.]/g, '').includes(pattern.replace(/[\s,.]/g, '').toLowerCase())
+                );
+
+                if (hasPunamDevi) {
+                    return { verified: true, reason: '✅ Verified! ₹' + expectedAmount + ' added', nameFound: true, amountFound: true };
+                } else {
+                    return { verified: false, reason: '⏳ Submitted for manual verification', nameFound: false, amountFound: false };
+                }
+            } catch(error) {
+                return { verified: false, reason: '⚠️ Manual verification required', nameFound: false, amountFound: false };
+            }
+        }
+
+        document.getElementById('screenshot-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                selectedFile = file;
+                try {
+                    screenshotBase64 = await fileToBase64(file);
+                    document.getElementById('screenshot-preview').innerHTML = `<img src="${screenshotBase64}" class="preview-img">`;
+                    showToast("✅ Screenshot loaded successfully!", "success");
+                } catch(err) {
+                    showToast("Error reading image file", "error");
+                }
+            }
+        });
+
+        document.getElementById('btn-signup').onclick = async () => {
+            const email = document.getElementById('signup-email').value.trim();
+            const pass = document.getElementById('signup-pass').value;
+            if(!email || !email.includes('@')) return showToast("Valid email required", "error");
+            if(pass.length < 6) return showToast("Password must be at least 6 characters", "error");
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await set(ref(db, `users/${cred.user.uid}`), {
+                    email,
+                    balance: 0,
+                    createdAt: new Date().toISOString()
+                });
+                showToast("✅ Account created! Please login.");
+                document.getElementById('signup-box').classList.add('hidden');
+                document.getElementById('login-box').classList.remove('hidden');
+            } catch(error) {
+                showToast(error.message || "Signup failed", "error");
+            }
+        };
+
+        document.getElementById('btn-login').onclick = async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            if(!email || !pass) return showToast("Enter credentials", "error");
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                showToast("Access Granted. Welcome back!");
+            } catch(e) {
+                showToast("Invalid Credentials", "error");
+            }
+        };
+
+        document.getElementById('btn-logout').onclick = async () => {
+            if(refreshInterval) clearInterval(refreshInterval);
+            if(balanceListenerUnsubscribe) balanceListenerUnsubscribe();
+            await signOut(auth);
+        };
+
+        window.navigate = (pageId) => {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.getElementById('dropdown-menu').classList.remove('active');
+
+            if(pageId === 'history') {
+                loadHistory();
+                if(refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = setInterval(() => {
+                    if(document.getElementById('page-history') && !document.getElementById('page-history').classList.contains('hidden')) {
+                        loadHistory();
+                    }
+                }, 10000);
+            } else {
+                if(refreshInterval) clearInterval(refreshInterval);
+            }
+
+            if(pageId === 'profile') loadProfile();
+            window.scrollTo(0,0);
+        };
+
+        window.refreshKeys = () => {
+            loadHistory();
+            showToast("Keys list refreshed!", "success");
+        };
+
+        document.getElementById('menu-toggle').onclick = (e) => {
+            e.stopPropagation();
+            document.getElementById('dropdown-menu').classList.toggle('active');
+        };
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('dropdown-menu');
+            const btn = document.getElementById('menu-toggle');
+            if(dropdown?.classList.contains('active') && !dropdown.contains(e.target) && !btn?.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.dropdown-item[data-page]').forEach(item => {
+            item.addEventListener('click', () => navigate(item.dataset.page));
+        });
+
+        onValue(ref(db, 'settings/payment'), (snap) => {
+            if(snap.exists()) {
+                document.getElementById('display-upi').innerText = snap.val().upiId || 'Not set';
+                if(snap.val().qrImage) {
+                    document.getElementById('display-qr-container').innerHTML = `<img src="${snap.val().qrImage}">`;
+                }
+            }
+        });
+
+        document.getElementById('btn-submit-payment').onclick = async function() {
+            if (isSubmitting) return showToast("⏳ Payment processing...", "warning");
+            if(!currentUser) return showToast("Please login first", "error");
+
+            const amount = document.getElementById('add-amount').value;
+            const phone = document.getElementById('add-phone').value.trim();
+
+            if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
+            if(!phone) return showToast("Phone number required", "error");
+            if(!screenshotBase64) return showToast("Upload payment screenshot", "error");
+
+            isSubmitting = true;
+            const btn = this;
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+
+            try {
+                const verifyResult = await autoVerifyScreenshot(screenshotBase64, parseFloat(amount));
+                const autoVerified = verifyResult.verified;
+                const verificationStatus = autoVerified ? 'approved' : 'pending';
+
+                const paymentRef = await push(ref(db, 'payments'), {
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    amount: parseFloat(amount),
+                    phone,
+                    screenshot: screenshotBase64,
+                    status: verificationStatus,
+                    type: 'screenshot_base64',
+                    autoVerified,
+                    autoVerifyNote: verifyResult.reason,
+                    expectedAmount: parseFloat(amount),
+                    nameFound: verifyResult.nameFound || false,
+                    amountFound: verifyResult.amountFound || false,
+                    timestamp: serverTimestamp()
+                });
+
+                if(autoVerified) {
+                    const balRef = ref(db, `users/${currentUser.uid}/balance`);
+                    const balSnap = await get(balRef);
+                    await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
+                    showToast("✅ Payment Verified! ₹" + amount + " added!");
+                    await update(ref(db, `payments/${paymentRef.key}`), {
+                        status: 'approved',
+                        approvedAt: serverTimestamp(),
+                        approvedBy: 'Auto-Verify System'
+                    });
+                } else {
+                    showToast("📤 " + verifyResult.reason);
+                }
+
+                document.getElementById('add-amount').value = '';
+                document.getElementById('add-phone').value = '';
+                document.getElementById('screenshot-input').value = '';
+                document.getElementById('screenshot-preview').innerHTML = '';
+                selectedFile = null;
+                screenshotBase64 = null;
+
+            } catch(error) {
+                showToast("Error: " + error.message, "error");
+            }
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                isSubmitting = false;
+            }, 5000);
+        };
+
+        async function loadHistory() {
+            if(!currentUser) return;
+            const container = document.getElementById('history-container');
+            container.innerHTML = '<div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:32px; color:var(--neon-cyan);"></i></div>';
+
+            try {
+                const snapshot = await get(ref(db, `purchases/${currentUser.uid}`));
+                container.innerHTML = '';
+                if(!snapshot.exists()) {
+                    container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted);"><i class="fas fa-key" style="font-size:40px; margin-bottom:10px;"></i><p>No keys purchased yet</p></div>';
+                    return;
+                }
+
+                const purchases = [];
+                snapshot.forEach((child) => { purchases.push({ id: child.key, ...child.val() }); });
+                purchases.sort((a,b) => (b.date || 0) - (a.date || 0));
+
+                for(const p of purchases) {
+                    const div = document.createElement('div');
+                    div.className = 'history-card';
+                    const isDelivered = p.keyStatus === 'delivered' && p.key && p.key !== 'PENDING';
+                    const statusText = isDelivered ? '✅ DELIVERED' : '⏳ PENDING';
+                    const statusColor = isDelivered ? 'status-delivered' : 'status-pending';
+
+                    let keyHtml = isDelivered ? 
+                        `<div class="key-box"><span class="key-text-delivered" id="key-${p.id}">${p.key}</span><button class="btn btn-sm btn-primary" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button></div>` :
+                        `<div class="key-box"><span class="key-text-pending"><i class="fas fa-clock"></i> Delivery Pending - Admin will fulfill within 24h</span></div>`;
+
+                    div.innerHTML = `
+                        <div style="font-family:var(--font-tech); font-size:16px;"><strong>${p.panelName}</strong></div>
+                        <div style="margin:6px 0; font-size:13px; color:var(--text-muted);"><span class="feature-chip">${p.label || p.plan || 'Plan'}</span> - ₹${p.price}</div>
+                        <div class="${statusColor}">${statusText}</div>
+                        ${keyHtml}
+                    `;
+                    container.appendChild(div);
+                }
+            } catch(error) {
+                container.innerHTML = '<p style="color:var(--error);">Failed to load keys history.</p>';
+            }
+        }
+
+        window.copyKey = (id) => {
+            const text = document.getElementById(id)?.innerText;
+            if(text) {
+                navigator.clipboard.writeText(text);
+                showToast('Key copied to clipboard!');
+            }
+        };
+
+        async function loadProfile() {
+            if(!currentUser) return;
+            try {
+                const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+                const purchaseSnap = await get(ref(db, `purchases/${currentUser.uid}`));
+                let count = 0, spent = 0;
+                if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
+
+                document.getElementById('prof-email').innerText = currentUser.email;
+                document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
+                document.getElementById('prof-purchases').innerText = count;
+                document.getElementById('prof-spent').innerText = spent.toFixed(2);
+                if(userSnap.val()?.createdAt) {
+                    document.getElementById('prof-date').innerText = new Date(userSnap.val().createdAt).toLocaleDateString();
+                }
+            } catch(e) {}
+        }
+
+        let autoScroll;
+        function initPromotions() {
+            onValue(ref(db, 'promotions'), (snap) => {
+                const container = document.getElementById('promo-container');
+                const promos = [];
+                if(snap.exists()) snap.forEach(c => { if(c.val().status === true || c.val().status === 'true') promos.push(c.val()); });
+
+                if(promos.length === 0) return container.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = '';
+
+                promos.forEach(p => {
+                    container.innerHTML += `
+                        <div class="promo-card glass-cyber" onclick="window.open('${p.link || '#'}', '_blank')">
+                            ${p.image ? `<img src="${p.image}">` : '<div style="background:#111;height:100%;"></div>'}
+                            <div class="promo-overlay"><div class="promo-title">${p.title || 'Special Offer'}</div></div>
+                        </div>`;
+                });
+
+                if(autoScroll) clearInterval(autoScroll);
+                autoScroll = setInterval(() => {
+                    if(container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) container.scrollTo({ left: 0, behavior: 'smooth' });
+                    else container.scrollBy({ left: 300, behavior: 'smooth' });
+                }, 4000);
+            });
+        }
+
+        function fetchPanels() {
+            onValue(ref(db, 'panels'), (snapshot) => {
+                const skeleton = document.getElementById('skeleton-container');
+                const panelsContainer = document.getElementById('panels-container');
+
+                if(skeleton) skeleton.classList.add('hidden');
+                if(panelsContainer) panelsContainer.classList.remove('hidden');
+                if(panelsContainer) panelsContainer.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    if(panelsContainer) panelsContainer.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted);"><i class="fas fa-box-open" style="font-size:48px; margin-bottom:15px;"></i><p>No panels available currently.</p></div>';
+                    return;
+                }
+
+                snapshot.forEach((child) => {
+                    const panelId = child.key;
+                    const p = child.val();
+                    if(!p || p.status !== 'active') return;
+
+                    let featuresHtml = (p.description || 'Premium Tool').split(/\n|-/).filter(f => f.trim()).slice(0,4)
+                        .map(f => `<span class="feature-chip"><i class="fas fa-bolt"></i> ${f.trim()}</span>`).join('');
+
+                    let plansHtml = '';
+                    if(p.plans && Object.keys(p.plans).length > 0) {
+                        plansHtml = `<select class="plan-select" id="plan-${panelId}">`;
+                        Object.entries(p.plans).forEach(([key, plan]) => {
+                            plansHtml += `<option value='${JSON.stringify({key, label: plan.label, price: plan.price})}'>${plan.label || key} - ₹${plan.price}</option>`;
+                        });
+                        plansHtml += `</select>`;
+                    }
+
+                    let videoHtml = '';
+                    const videoUrl = p.video || p.youtube || '';
+                    const videoData = getVideoEmbedCode(videoUrl);
+
+                    if(videoData) {
+                        const containerId = `video-${panelId}`;
+                        const thumbId = `thumb-${panelId}`;
+                        let thumbImg = videoData.thumbnail ? `<img src="${videoData.thumbnail}">` : '';
+                        videoHtml = `
+                            <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${videoData.embedUrl}" data-video-type="${videoData.type}">
+                                <div class="video-thumbnail" id="${thumbId}">
+                                    ${thumbImg}
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>CLICK TO WATCH DEMO</span>
+                                </div>
+                            </div>`;
+                    } else {
+                        videoHtml = `<div class="video-container"><div class="video-fallback"><i class="fas fa-video-slash"></i><span>No Preview</span></div></div>`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'panel-card';
+                    card.setAttribute('data-search', `${p.name} ${p.description || ''}`);
+
+                    card.innerHTML = `
+                        ${videoHtml}
+                        <div class="panel-info">
+                            <div class="panel-title">${p.name}</div>
+                            <div class="features-list">${featuresHtml}</div>
+                            ${plansHtml}
+                            <div class="dashboard-actions">
+                                <button class="btn-check-update" onclick="window.open('${p.checkUpdateLink || '#'}', '_blank')"><i class="fas fa-sync-alt"></i> UPDATE FILE</button>
+                                <button class="btn-video-feedback" onclick="window.open('${p.videoFeedbackLink || '#'}', '_blank')"><i class="fas fa-video"></i> FEEDBACK</button>
+                            </div>
+                            <button class="btn btn-purchase" onclick="handlePurchase('${panelId}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')"><i class="fas fa-shopping-cart"></i> PURCHASE NOW</button>
+                        </div>`;
+
+                    panelsContainer.appendChild(card);
+                });
+
+                const searchInput = document.getElementById('search-input');
+                const emptyState = document.getElementById('search-empty');
+                if(searchInput) {
+                    searchInput.oninput = () => {
+                        const term = searchInput.value.toLowerCase();
+                        let visible = 0;
+                        document.querySelectorAll('.panel-card').forEach(card => {
+                            const match = card.dataset.search?.toLowerCase().includes(term);
+                            card.style.display = match ? 'flex' : 'none';
+                            if(match) visible++;
+                        });
+                        if(emptyState) emptyState.classList.toggle('hidden', visible > 0);
+                    };
+                }
+            });
+        }
+
+        window.currentCheckout = {};
+        window.handlePurchase = (panelId, panelName, link) => {
+            const select = document.getElementById(`plan-${panelId}`);
+            if(!select) return showToast('Select a plan first', 'error');
+            const plan = JSON.parse(select.value);
+
+            window.currentCheckout = { panelId, panelName, link, planKey: plan.key, label: plan.label, price: plan.price };
+            document.getElementById('chk-panel-name').innerText = panelName;
+            document.getElementById('chk-plan-label').innerText = plan.label;
+            document.getElementById('chk-orig-price').innerText = plan.price;
+            document.getElementById('chk-final-price').innerText = plan.price;
+            document.getElementById('modal-checkout').classList.add('active');
+        };
+
+        document.getElementById('confirm-purchase-btn').onclick = async () => {
+            if(!currentUser) return;
+            const price = window.currentCheckout.price;
+            if(userData.balance < price) return showToast(`Insufficient balance. Need ₹${price}`, "error");
+
+            try {
+                const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
+                if(result.committed) {
+                    await push(ref(db, `purchases/${currentUser.uid}`), {
+                        panelId: window.currentCheckout.panelId,
+                        panelName: window.currentCheckout.panelName,
+                        plan: window.currentCheckout.planKey,
+                        label: window.currentCheckout.label,
+                        price: price,
+                        key: "PENDING",
+                        keyStatus: "pending",
+                        link: window.currentCheckout.link,
+                        date: serverTimestamp()
+                    });
+                    document.getElementById('modal-checkout').classList.remove('active');
+                    document.getElementById('modal-success').classList.add('active');
+                } else {
+                    showToast("Insufficient balance", "error");
+                }
+            } catch(e) {
+                showToast("Transaction Error: " + e.message, "error");
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            const loader = document.getElementById('loader');
+            const authScreen = document.getElementById('auth-screen');
+            const mainApp = document.getElementById('main-app');
+
+            if(user) {
+                currentUser = user;
+                authScreen.style.display = 'none';
+                mainApp.style.display = 'block';
+
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
+
+                if (balanceListenerUnsubscribe) balanceListenerUnsubscribe();
                 const balanceRef = ref(db, `users/${user.uid}/balance`);
                 balanceListenerUnsubscribe = onValue(balanceRef, (snap) => {
                     const balance = snap.val() || 0;
                     userData.balance = balance;
-                    const balSpan = document.getElementById('nav-balance');
-                    if(balSpan) balSpan.innerText = balance.toFixed(2);
-                }, (error) => {
-                    console.warn("Balance listener error (ignored):", error);
-                    userData.balance = 0;
-                    const balSpan = document.getElementById('nav-balance');
-                    if(balSpan) balSpan.innerText = '0.00';
+                    document.getElementById('nav-balance').innerText = balance.toFixed(2);
                 });
-            } catch(e) { console.warn("Failed to setup balance listener:", e); userData.balance = 0; }
-            
-            fetchPanels();
-            initPromotions();
-            navigate('home');
-        } else {
-            if(refreshInterval) clearInterval(refreshInterval);
-            if(balanceListenerUnsubscribe) { balanceListenerUnsubscribe(); balanceListenerUnsubscribe = null; }
-            currentUser = null;
-            authScreen.style.display = 'flex';
-            mainApp.style.display = 'none';
-            
-            if(loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => { loader.style.display = 'none'; }, 500);
+
+                fetchPanels();
+                initPromotions();
+                navigate('home');
+            } else {
+                currentUser = null;
+                authScreen.style.display = 'flex';
+                mainApp.style.display = 'none';
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 </html>

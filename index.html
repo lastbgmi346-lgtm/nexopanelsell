@@ -1051,13 +1051,6 @@
                 <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
                 <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
                 <div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div>
-                
-                <!-- ⚡ NEW: Device ID field – Admin can toggle this via panel setting -->
-                <div class="input-group" id="device-id-group" style="margin-top:15px; margin-bottom:0; display:none;">
-                    <label style="color: var(--neon-cyan);">Device ID (Required)</label>
-                    <input id="chk-device-id" placeholder="Enter device ID (e.g. Android ID)">
-                </div>
-
                 <div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div>
             </div>
             <div class="checkout-actions">
@@ -1109,33 +1102,13 @@
         let screenshotBase64 = null;
         let isSubmitting = false;
 
-        // ⚡ NEW: Listen for deviceID toggle from admin settings
-        let deviceIDRequired = false;
-        onValue(ref(db, 'settings/deviceID'), (snap) => {
-            if(snap.exists()) {
-                deviceIDRequired = snap.val().enabled === true;
-                const group = document.getElementById('device-id-group');
-                if(group) {
-                    group.style.display = deviceIDRequired ? 'block' : 'none';
-                    if(!deviceIDRequired) {
-                        document.getElementById('chk-device-id').value = '';
-                    }
-                }
-            } else {
-                deviceIDRequired = false;
-                const group = document.getElementById('device-id-group');
-                if(group) group.style.display = 'none';
-            }
-        });
-
         // API Buy Integration Function
-        async function buyFromResellerApi(productId, duration, deviceId) {
+        async function buyFromResellerApi(productId, duration) {
             const formData = new URLSearchParams();
             formData.append('api_key', '5e517a587e01bb849427efbb4fdd5bd3');
             formData.append('action', 'buy');
             formData.append('product_id', productId);
             formData.append('duration', duration);
-            if (deviceId) formData.append('android_id', deviceId);
 
             try {
                 const response = await fetch('https://xyzcheats.com/api/reseller_v1.php', {
@@ -1686,32 +1659,21 @@
             document.getElementById('chk-plan-label').innerText = plan.label;
             document.getElementById('chk-orig-price').innerText = plan.price;
             document.getElementById('chk-final-price').innerText = plan.price;
-            document.getElementById('chk-device-id').value = '';
             document.getElementById('modal-checkout').classList.add('active');
         };
 
         document.getElementById('confirm-purchase-btn').onclick = async function() {
             if(!currentUser) return;
-            
-            // ⚡ NEW: Device ID validation if required
-            if(deviceIDRequired) {
-                const deviceId = document.getElementById('chk-device-id').value.trim();
-                if(!deviceId) {
-                    showToast("Device ID is required for this purchase", "error");
-                    return;
-                }
-            }
 
             const price = window.currentCheckout.price;
             if(userData.balance < price) return showToast(`Insufficient balance. Need ₹${price}`, "error");
 
-            const deviceId = document.getElementById('chk-device-id').value.trim();
             const btn = this;
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING KEY...';
 
             try {
-                const apiRes = await buyFromResellerApi(window.currentCheckout.productId, window.currentCheckout.duration, deviceId);
+                const apiRes = await buyFromResellerApi(window.currentCheckout.productId, window.currentCheckout.duration);
 
                 let generatedKey = "PENDING";
                 let keyStatus = "pending";
@@ -1736,7 +1698,6 @@
                         price: price,
                         key: generatedKey,
                         keyStatus: keyStatus,
-                        deviceId: deviceId || null,
                         link: window.currentCheckout.link,
                         date: serverTimestamp()
                     });

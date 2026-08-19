@@ -51,7 +51,6 @@
             min-height: 100vh;
         }
 
-        /* Scrollbar Styling */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 10px; }
@@ -59,7 +58,6 @@
 
         .hidden { display: none !important; }
 
-        /* Glassmorphism & Cyber Card Effects */
         .glass-cyber {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
@@ -83,7 +81,6 @@
 
         .glass-cyber:hover::before { left: 100%; }
 
-        /* Cyber Animated Buttons */
         .btn {
             background: rgba(5, 5, 8, 0.8);
             border: 1px solid var(--neon-cyan);
@@ -169,7 +166,6 @@
             box-shadow: none !important;
         }
 
-        /* Action Buttons Inside Panel */
         .btn-check-update, .btn-video-feedback {
             padding: 8px 14px;
             border-radius: 10px;
@@ -215,7 +211,6 @@
             transform: translateY(-2px);
         }
 
-        /* Input Styling */
         .input-group {
             margin-bottom: 20px;
             text-align: left;
@@ -256,7 +251,6 @@
             cursor: pointer;
         }
 
-        /* Skeleton Loading Screen Animations */
         .skeleton-card {
             background: rgba(15, 20, 30, 0.6);
             border-radius: 20px;
@@ -271,12 +265,11 @@
             100% { opacity: 0.4; }
         }
 
-        .skeleton-video { height: 200px; background: rgba(255, 255, 255, 0.08); }
+        .skeleton-video { height: 200px; background: rgba(255, 255, 255, 0.05); }
         .skeleton-title { height: 24px; width: 70%; margin: 20px 15px 10px; background: rgba(255, 255, 255, 0.08); border-radius: 8px; }
         .skeleton-chip { height: 24px; width: 70px; display: inline-block; margin: 5px 5px 15px 15px; background: rgba(255, 255, 255, 0.08); border-radius: 20px; }
         .skeleton-btn { height: 48px; margin: 15px; background: rgba(255, 255, 255, 0.08); border-radius: 12px; }
 
-        /* Modern Cyberpunk Loader */
         #loader {
             position: fixed;
             top: 0; left: 0;
@@ -351,7 +344,6 @@
         @keyframes pulseLogo { 0% { transform: scale(0.85); opacity: 0.7; } 100% { transform: scale(1.15); opacity: 1; } }
         @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
 
-        /* Animated Toast Messages */
         #toast-container {
             position: fixed;
             bottom: 30px;
@@ -388,7 +380,6 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Auth Screen */
         #auth-screen {
             min-height: 100vh;
             display: flex;
@@ -418,7 +409,6 @@
         .auth-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; }
         .auth-toggle { margin-top: 20px; font-size: 13px; color: var(--text-muted); }
 
-        /* Main App & Navbar */
         #main-app { display: none; width: 100%; }
 
         .navbar {
@@ -479,7 +469,6 @@
             font-family: var(--font-tech);
         }
 
-        /* Navigation Dropdown */
         .dropdown {
             position: absolute;
             top: 85px; left: 25px;
@@ -526,7 +515,6 @@
 
         .dropdown-item:hover i { transform: scale(1.2); }
 
-        /* Page Layout & Titles */
         .page-content {
             padding: 105px 20px 80px;
             max-width: 1200px;
@@ -559,7 +547,6 @@
 
         .page-title span { color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple-glow); }
 
-        /* Cyber Animated Search Bar */
         .search-container {
             position: relative;
             flex: 1;
@@ -616,7 +603,6 @@
             transform: translateY(-50%) scale(1.2) rotate(10deg);
         }
 
-        /* Promo Slider */
         .promo-slider {
             display: flex;
             overflow-x: auto;
@@ -654,7 +640,6 @@
 
         .promo-title { color: white; font-weight: 700; font-size: 16px; }
 
-        /* Panel Cards & Grid */
         .panel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -762,7 +747,6 @@
 
         .dashboard-actions { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
 
-        /* Profile & Add Money Cards */
         .payment-settings-card { padding: 35px 25px; text-align: center; max-width: 550px; margin: 0 auto; }
         
         .qr-image-container {
@@ -798,7 +782,6 @@
 
         .upi-box:hover { background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px var(--neon-cyan-glow); }
 
-        /* My Keys & History */
         .history-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .history-card { padding: 22px; background: var(--card-bg); border-radius: 16px; border-left: 4px solid var(--neon-purple); border-top: 1px solid var(--card-border); }
         .status-pending { color: var(--warning); font-weight: 700; }
@@ -830,7 +813,6 @@
 
         .preview-img { max-width: 100%; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--neon-cyan); }
 
-        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -917,7 +899,6 @@
 </head>
 <body>
 
-    <!-- MODERN CYBERPUNK LOADER -->
     <div id="loader">
         <div class="loader-box">
             <div class="ring"></div>
@@ -926,12 +907,9 @@
         <div class="loader-title">NEXO STORE<span class="dots-animated"></span></div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container"></div>
 
-    <!-- AUTH SCREEN -->
     <div id="auth-screen">
-        <!-- LOGIN BOX -->
         <div class="auth-card glass-cyber" id="login-box">
             <h1>NEXO <span>STORE</span></h1>
             <p>Enter your credentials to access the terminal.</p>
@@ -952,7 +930,6 @@
             </div>
         </div>
 
-        <!-- SIGNUP BOX -->
         <div class="auth-card glass-cyber hidden" id="signup-box">
             <h1>JOIN <span>NEXO</span></h1>
             <p>Create a secure account for instant access.</p>
@@ -974,9 +951,7 @@
         </div>
     </div>
 
-    <!-- MAIN APP HUB -->
     <div id="main-app">
-        <!-- NAVBAR -->
         <nav class="navbar">
             <div class="nav-left">
                 <button class="menu-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
@@ -987,7 +962,6 @@
                 <i class="fas fa-wallet"></i> ₹<span id="nav-balance">0.00</span>
             </div>
 
-            <!-- DROPDOWN MENU -->
             <div class="dropdown" id="dropdown-menu">
                 <div class="dropdown-item" data-page="home"><i class="fas fa-home"></i> Dashboard</div>
                 <div class="dropdown-item" data-page="add-money"><i class="fas fa-plus-circle"></i> Add Funds</div>
@@ -997,12 +971,10 @@
             </div>
         </nav>
 
-        <!-- PAGE: HOME / STORE -->
         <div class="page-content" id="page-home">
             <div class="page-header">
                 <h2 class="page-title">PREMIUM <span>STORE</span></h2>
                 
-                <!-- ANIMATED GLOW SEARCH BAR -->
                 <div class="search-container">
                     <i class="fas fa-search"></i>
                     <input id="search-input" placeholder="Search panels, hacks, tools..." autocomplete="off">
@@ -1011,7 +983,6 @@
 
             <div id="promo-container" class="promo-slider hidden"></div>
 
-            <!-- SKELETON LOADERS -->
             <div id="skeleton-container" class="panel-grid">
                 <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
                 <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
@@ -1022,7 +993,6 @@
             <div id="search-empty" class="empty-state hidden" style="text-align:center; padding:60px 20px; color:var(--text-muted);"><i class="fas fa-search" style="font-size:48px; margin-bottom:15px;"></i><p>No matching panel found</p></div>
         </div>
 
-        <!-- PAGE: ADD FUNDS -->
         <div class="page-content hidden" id="page-add-money">
             <h2 class="page-title" style="margin-bottom:25px;">ADD <span>FUNDS</span></h2>
             <div class="glass-cyber payment-settings-card">
@@ -1052,7 +1022,6 @@
             </div>
         </div>
 
-        <!-- PAGE: PROFILE -->
         <div class="page-content hidden" id="page-profile">
             <h2 class="page-title" style="margin-bottom:25px;">MY <span>PROFILE</span></h2>
             <div class="glass-cyber" style="padding:10px; max-width:550px; margin:0 auto;">
@@ -1064,7 +1033,6 @@
             </div>
         </div>
 
-        <!-- PAGE: MY KEYS -->
         <div class="page-content hidden" id="page-history">
             <div class="page-header">
                 <h2 class="page-title">MY <span>KEYS</span></h2>
@@ -1073,11 +1041,9 @@
             <div id="history-container" class="history-list"></div>
         </div>
 
-        <!-- FLOATING TELEGRAM SUPPORT -->
         <a class="telegram-btn" href="#" id="global-telegram-btn" target="_blank"><i class="fab fa-telegram-plane"></i></a>
     </div>
 
-    <!-- MODAL: CHECKOUT -->
     <div class="modal-overlay" id="modal-checkout">
         <div class="modal">
             <h3 style="font-family:var(--font-tech); margin-bottom:20px; color:var(--neon-cyan);">ORDER CONFIRMATION</h3>
@@ -1094,7 +1060,6 @@
         </div>
     </div>
 
-    <!-- MODAL: SUCCESS -->
     <div class="modal-overlay" id="modal-success">
         <div class="modal" style="text-align:center;">
             <i class="fas fa-check-circle success-icon"></i>
@@ -1138,7 +1103,7 @@
         let isSubmitting = false;
 
         function getVideoEmbedCode(url) {
-            if (!url || url.trim() === '') return null;
+            if (!url || typeof url !== 'string' || url.trim() === '') return null;
             const videoUrl = url.trim();
             if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
                 let videoId = '';
@@ -1177,9 +1142,9 @@
 
             let iframeHtml = '';
             if (videoType === 'youtube' || videoType === 'vimeo') {
-                iframeHtml = `<iframe src="${videoUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+                iframeHtml = `<iframe src="${videoUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
             } else if (videoType === 'mp4') {
-                iframeHtml = `<video controls autoplay><source src="${videoUrl}" type="video/mp4"></video>`;
+                iframeHtml = `<video controls autoplay style="position:absolute;top:0;left:0;width:100%;height:100%;"><source src="${videoUrl}" type="video/mp4"></video>`;
             }
             container.innerHTML = iframeHtml;
         };
@@ -1487,236 +1452,239 @@
             if(!currentUser) return;
             try {
                 const userSnap = await get(ref(db, `users/${currentUser.uid}`));
-                const user = userSnap.val() || {};
-                
-                document.getElementById('prof-email').innerText = currentUser.email || '-';
-                document.getElementById('prof-bal').innerText = (user.balance || 0).toFixed(2);
-                
-                const purchasesSnap = await get(ref(db, `purchases/${currentUser.uid}`));
-                let totalSpent = 0;
-                let count = 0;
-                
-                if(purchasesSnap.exists()) {
-                    purchasesSnap.forEach(child => {
-                        count++;
-                        totalSpent += parseFloat(child.val().price || 0);
-                    });
-                }
-                
+                const purchaseSnap = await get(ref(db, `purchases/${currentUser.uid}`));
+                let count = 0, spent = 0;
+                if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
+
+                document.getElementById('prof-email').innerText = currentUser.email;
+                document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
                 document.getElementById('prof-purchases').innerText = count;
-                document.getElementById('prof-spent').innerText = totalSpent.toFixed(2);
-                document.getElementById('prof-date').innerText = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-';
-            } catch(e) {
-                console.error(e);
-            }
+                document.getElementById('prof-spent').innerText = spent.toFixed(2);
+                if(userSnap.val()?.createdAt) {
+                    document.getElementById('prof-date').innerText = new Date(userSnap.val().createdAt).toLocaleDateString();
+                }
+            } catch(e) {}
         }
 
-        let panelsData = [];
-        let selectedCheckout = null;
+        let autoScroll;
+        function initPromotions() {
+            onValue(ref(db, 'promotions'), (snap) => {
+                const container = document.getElementById('promo-container');
+                const promos = [];
+                if(snap.exists()) snap.forEach(c => { if(c.val().status === true || c.val().status === 'true') promos.push(c.val()); });
 
-        onValue(ref(db, 'panels'), (snap) => {
-            const container = document.getElementById('panels-container');
-            const skeleton = document.getElementById('skeleton-container');
-            container.innerHTML = '';
-            panelsData = [];
-
-            if(!snap.exists()) {
-                skeleton.classList.add('hidden');
+                if(promos.length === 0) return container.classList.add('hidden');
                 container.classList.remove('hidden');
-                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No products available right now.</div>';
-                return;
-            }
+                container.innerHTML = '';
 
-            snap.forEach(child => {
-                panelsData.push({ id: child.key, ...child.val() });
-            });
-
-            renderPanels(panelsData);
-            skeleton.classList.add('hidden');
-            container.classList.remove('hidden');
-        });
-
-        function renderPanels(data) {
-            const container = document.getElementById('panels-container');
-            const emptyState = document.getElementById('search-empty');
-            container.innerHTML = '';
-
-            if(data.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            emptyState.classList.add('hidden');
-
-            data.forEach(panel => {
-                const card = document.createElement('div');
-                card.className = 'panel-card';
-
-                const embed = getVideoEmbedCode(panel.videoUrl);
-                let videoMarkup = '';
-                
-                if (embed) {
-                    const thumbImg = embed.thumbnail ? `<img src="${embed.thumbnail}" alt="Thumbnail">` : '';
-                    videoMarkup = `
-                        <div class="video-container" id="vc-${panel.id}" data-video-url="${embed.embedUrl}" data-video-type="${embed.type}">
-                            <div class="video-thumbnail" id="vt-${panel.id}" onclick="playVideo('vc-${panel.id}', 'vt-${panel.id}')">
-                                ${thumbImg}
-                                <i class="fas fa-play-circle"></i>
-                                <span>Watch Preview</span>
-                            </div>
+                promos.forEach(p => {
+                    container.innerHTML += `
+                        <div class="promo-card glass-cyber" onclick="window.open('${p.link || '#'}', '_blank')">
+                            ${p.image ? `<img src="${p.image}">` : '<div style="background:#111;height:100%;"></div>'}
+                            <div class="promo-overlay"><div class="promo-title">${p.title || 'Special Offer'}</div></div>
                         </div>`;
-                } else {
-                    videoMarkup = `
-                        <div class="video-container">
-                            <div class="video-fallback">
-                                <i class="fas fa-shield-halved"></i>
-                                <span style="font-size:12px; font-weight:700; color:var(--neon-cyan);">${panel.name || 'NEXO PRODUCT'}</span>
-                            </div>
-                        </div>`;
-                }
+                });
 
-                let plansOptions = '';
-                if (panel.plans && Array.isArray(panel.plans)) {
-                    panel.plans.forEach((pl, idx) => {
-                        plansOptions += `<option value="${idx}">${pl.label || pl.duration} - ₹${pl.price}</option>`;
-                    });
-                }
-
-                let featuresMarkup = '';
-                if (panel.features && Array.isArray(panel.features)) {
-                    featuresMarkup = panel.features.map(f => `<span class="feature-chip"><i class="fas fa-check"></i> ${f}</span>`).join('');
-                }
-
-                const checkUpdateBtn = panel.checkUpdateLink ? `<a href="${panel.checkUpdateLink}" target="_blank" class="btn-check-update"><i class="fas fa-sync-alt"></i> Updates</a>` : '';
-                const videoFeedbackBtn = panel.feedbackLink ? `<a href="${panel.feedbackLink}" target="_blank" class="btn-video-feedback"><i class="fab fa-youtube"></i> Feedback</a>` : '';
-
-                card.innerHTML = `
-                    ${videoMarkup}
-                    <div class="panel-info">
-                        <div class="panel-title">${panel.name || 'Unnamed Panel'}</div>
-                        <div class="features-list">${featuresMarkup}</div>
-                        
-                        ${(checkUpdateBtn || videoFeedbackBtn) ? `<div class="dashboard-actions">${checkUpdateBtn}${videoFeedbackBtn}</div>` : ''}
-
-                        <select class="plan-select" id="select-plan-${panel.id}">
-                            ${plansOptions || '<option value="">No Plans Available</option>'}
-                        </select>
-
-                        <button class="btn btn-purchase" onclick="openCheckout('${panel.id}')"><i class="fas fa-shopping-cart"></i> BUY NOW</button>
-                    </div>
-                `;
-
-                container.appendChild(card);
+                if(autoScroll) clearInterval(autoScroll);
+                autoScroll = setInterval(() => {
+                    if(container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) container.scrollTo({ left: 0, behavior: 'smooth' });
+                    else container.scrollBy({ left: 300, behavior: 'smooth' });
+                }, 4000);
             });
         }
 
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const filtered = panelsData.filter(p => 
-                (p.name && p.name.toLowerCase().includes(query)) ||
-                (p.features && p.features.some(f => f.toLowerCase().includes(query)))
-            );
-            renderPanels(filtered);
-        });
+        function fetchPanels() {
+            onValue(ref(db, 'panels'), (snapshot) => {
+                const skeleton = document.getElementById('skeleton-container');
+                const panelsContainer = document.getElementById('panels-container');
 
-        window.openCheckout = (panelId) => {
-            if(!currentUser) return showToast("Please login to place an order", "error");
-            
-            const panel = panelsData.find(p => p.id === panelId);
-            if(!panel) return;
+                if(skeleton) skeleton.classList.add('hidden');
+                if(panelsContainer) panelsContainer.classList.remove('hidden');
+                if(panelsContainer) panelsContainer.innerHTML = '';
 
-            const selectEl = document.getElementById(`select-plan-${panelId}`);
-            const planIdx = selectEl.value;
-
-            if(planIdx === "" || !panel.plans || !panel.plans[planIdx]) {
-                return showToast("Please select a valid plan", "error");
-            }
-
-            const chosenPlan = panel.plans[planIdx];
-            selectedCheckout = {
-                panelId: panel.id,
-                panelName: panel.name,
-                plan: chosenPlan,
-                label: chosenPlan.label || chosenPlan.duration,
-                price: parseFloat(chosenPlan.price)
-            };
-
-            document.getElementById('chk-panel-name').innerText = selectedCheckout.panelName;
-            document.getElementById('chk-plan-label').innerText = selectedCheckout.label;
-            document.getElementById('chk-orig-price').innerText = selectedCheckout.price;
-            document.getElementById('chk-final-price').innerText = selectedCheckout.price;
-
-            document.getElementById('modal-checkout').classList.add('active');
-        };
-
-        document.getElementById('confirm-purchase-btn').onclick = async function() {
-            if(!selectedCheckout || !currentUser) return;
-
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> BUYING...';
-
-            try {
-                const userBalRef = ref(db, `users/${currentUser.uid}/balance`);
-                const balSnap = await get(userBalRef);
-                const currentBal = balSnap.val() || 0;
-
-                if(currentBal < selectedCheckout.price) {
-                    showToast("Insufficient Balance! Please Add Funds.", "error");
-                    closeModal('modal-checkout');
-                    btn.disabled = false;
-                    btn.innerHTML = 'CONFIRM & PAY';
+                if (!snapshot.exists()) {
+                    if(panelsContainer) panelsContainer.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted);"><i class="fas fa-box-open" style="font-size:48px; margin-bottom:15px;"></i><p>No panels available currently.</p></div>';
                     return;
                 }
 
-                // Deduct Balance
-                await set(userBalRef, currentBal - selectedCheckout.price);
+                snapshot.forEach((child) => {
+                    const panelId = child.key;
+                    const p = child.val();
+                    if(!p || p.status !== 'active') return;
 
-                // Create Purchase Order
-                await push(ref(db, `purchases/${currentUser.uid}`), {
-                    panelId: selectedCheckout.panelId,
-                    panelName: selectedCheckout.panelName,
-                    plan: selectedCheckout.label,
-                    price: selectedCheckout.price,
-                    key: 'PENDING',
-                    keyStatus: 'pending',
-                    date: serverTimestamp()
+                    let featuresHtml = (p.description || 'Premium Tool').split(/\n|-/).filter(f => f.trim()).slice(0,4)
+                        .map(f => `<span class="feature-chip"><i class="fas fa-bolt"></i> ${f.trim()}</span>`).join('');
+
+                    // Universal Plan Handling (Array + Object)
+                    let plansHtml = '';
+                    let plansList = [];
+                    if (p.plans) {
+                        if (Array.isArray(p.plans)) {
+                            plansList = p.plans.filter(item => item != null);
+                        } else if (typeof p.plans === 'object') {
+                            plansList = Object.entries(p.plans).map(([key, val]) => ({ key, ...val }));
+                        }
+                    }
+
+                    if (plansList.length > 0) {
+                        plansHtml = `<select class="plan-select" id="plan-${panelId}">`;
+                        plansList.forEach((plan, idx) => {
+                            const pKey = plan.key || plan.id || idx;
+                            const pLabel = plan.label || plan.name || plan.title || 'Plan ' + (idx + 1);
+                            const pPrice = plan.price || 0;
+                            const optVal = JSON.stringify({ key: pKey, label: pLabel, price: pPrice });
+                            plansHtml += `<option value='${optVal.replace(/'/g, "&apos;")}'>${pLabel} - ₹${pPrice}</option>`;
+                        });
+                        plansHtml += `</select>`;
+                    } else {
+                        plansHtml = `<select class="plan-select" disabled><option>No Plans Available</option></select>`;
+                    }
+
+                    // Video extraction
+                    let videoHtml = '';
+                    const rawVideoUrl = p.video || p.youtube || p.videoUrl || p.demoVideo || '';
+                    const videoData = getVideoEmbedCode(rawVideoUrl);
+
+                    if(videoData) {
+                        const containerId = `video-${panelId}`;
+                        const thumbId = `thumb-${panelId}`;
+                        let thumbImg = videoData.thumbnail ? `<img src="${videoData.thumbnail}">` : '';
+                        videoHtml = `
+                            <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${videoData.embedUrl}" data-video-type="${videoData.type}">
+                                <div class="video-thumbnail" id="${thumbId}">
+                                    ${thumbImg}
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>CLICK TO WATCH DEMO</span>
+                                </div>
+                            </div>`;
+                    } else if (rawVideoUrl) {
+                        const containerId = `video-${panelId}`;
+                        const thumbId = `thumb-${panelId}`;
+                        videoHtml = `
+                            <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${rawVideoUrl}" data-video-type="youtube">
+                                <div class="video-thumbnail" id="${thumbId}">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>CLICK TO WATCH DEMO</span>
+                                </div>
+                            </div>`;
+                    } else {
+                        videoHtml = `<div class="video-container"><div class="video-fallback"><i class="fas fa-video-slash"></i><span>No Preview</span></div></div>`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'panel-card';
+                    card.setAttribute('data-search', `${p.name} ${p.description || ''}`);
+
+                    card.innerHTML = `
+                        ${videoHtml}
+                        <div class="panel-info">
+                            <div class="panel-title">${p.name}</div>
+                            <div class="features-list">${featuresHtml}</div>
+                            ${plansHtml}
+                            <div class="dashboard-actions">
+                                <button class="btn-check-update" onclick="window.open('${p.checkUpdateLink || '#'}', '_blank')"><i class="fas fa-sync-alt"></i> UPDATE FILE</button>
+                                <button class="btn-video-feedback" onclick="window.open('${p.videoFeedbackLink || '#'}', '_blank')"><i class="fas fa-video"></i> FEEDBACK</button>
+                            </div>
+                            <button class="btn btn-purchase" onclick="handlePurchase('${panelId}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')"><i class="fas fa-shopping-cart"></i> PURCHASE NOW</button>
+                        </div>`;
+
+                    panelsContainer.appendChild(card);
                 });
 
-                closeModal('modal-checkout');
-                document.getElementById('modal-success').classList.add('active');
+                const searchInput = document.getElementById('search-input');
+                const emptyState = document.getElementById('search-empty');
+                if(searchInput) {
+                    searchInput.oninput = () => {
+                        const term = searchInput.value.toLowerCase();
+                        let visible = 0;
+                        document.querySelectorAll('.panel-card').forEach(card => {
+                            const match = card.dataset.search?.toLowerCase().includes(term);
+                            card.style.display = match ? 'flex' : 'none';
+                            if(match) visible++;
+                        });
+                        if(emptyState) emptyState.classList.toggle('hidden', visible > 0);
+                    };
+                }
+            });
+        }
 
-            } catch(error) {
-                showToast("Purchase Error: " + error.message, "error");
-            }
+        window.currentCheckout = {};
+        window.handlePurchase = (panelId, panelName, link) => {
+            const select = document.getElementById(`plan-${panelId}`);
+            if(!select || select.disabled) return showToast('No plans available to purchase', 'error');
+            const plan = JSON.parse(select.value);
 
-            btn.disabled = false;
-            btn.innerHTML = 'CONFIRM & PAY';
+            window.currentCheckout = { panelId, panelName, link, planKey: plan.key, label: plan.label, price: plan.price };
+            document.getElementById('chk-panel-name').innerText = panelName;
+            document.getElementById('chk-plan-label').innerText = plan.label;
+            document.getElementById('chk-orig-price').innerText = plan.price;
+            document.getElementById('chk-final-price').innerText = plan.price;
+            document.getElementById('modal-checkout').classList.add('active');
         };
 
-        // AUTH STATE MONITOR
+        document.getElementById('confirm-purchase-btn').onclick = async () => {
+            if(!currentUser) return;
+            const price = window.currentCheckout.price;
+            if(userData.balance < price) return showToast(`Insufficient balance. Need ₹${price}`, "error");
+
+            try {
+                const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
+                if(result.committed) {
+                    await push(ref(db, `purchases/${currentUser.uid}`), {
+                        panelId: window.currentCheckout.panelId,
+                        panelName: window.currentCheckout.panelName,
+                        plan: window.currentCheckout.planKey,
+                        label: window.currentCheckout.label,
+                        price: price,
+                        key: "PENDING",
+                        keyStatus: "pending",
+                        link: window.currentCheckout.link,
+                        date: serverTimestamp()
+                    });
+                    document.getElementById('modal-checkout').classList.remove('active');
+                    document.getElementById('modal-success').classList.add('active');
+                } else {
+                    showToast("Insufficient balance", "error");
+                }
+            } catch(e) {
+                showToast("Transaction Error: " + e.message, "error");
+            }
+        };
+
         onAuthStateChanged(auth, (user) => {
             const loader = document.getElementById('loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 500);
-            }
+            const authScreen = document.getElementById('auth-screen');
+            const mainApp = document.getElementById('main-app');
 
             if(user) {
                 currentUser = user;
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('main-app').style.display = 'block';
+                authScreen.style.display = 'none';
+                mainApp.style.display = 'block';
 
-                balanceListenerUnsubscribe = onValue(ref(db, `users/${user.uid}/balance`), (snap) => {
-                    const bal = snap.val() || 0;
-                    userData.balance = bal;
-                    document.getElementById('nav-balance').innerText = bal.toFixed(2);
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
+
+                if (balanceListenerUnsubscribe) balanceListenerUnsubscribe();
+                const balanceRef = ref(db, `users/${user.uid}/balance`);
+                balanceListenerUnsubscribe = onValue(balanceRef, (snap) => {
+                    const balance = snap.val() || 0;
+                    userData.balance = balance;
+                    document.getElementById('nav-balance').innerText = balance.toFixed(2);
                 });
 
+                fetchPanels();
+                initPromotions();
                 navigate('home');
             } else {
                 currentUser = null;
-                document.getElementById('main-app').style.display = 'none';
-                document.getElementById('auth-screen').classList.remove('hidden');
+                authScreen.style.display = 'flex';
+                mainApp.style.display = 'none';
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
             }
         });
     </script>

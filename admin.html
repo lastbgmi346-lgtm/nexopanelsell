@@ -142,6 +142,49 @@
         .close-modal { background: none; border: none; color: white; font-size: 28px; cursor: pointer; transition: all 0.3s; }
         .close-modal:hover { color: var(--error); transform: rotate(90deg); }
 
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0 5px;
+            cursor: pointer;
+        }
+        .toggle-wrap input[type="checkbox"] {
+            width: 44px;
+            height: 24px;
+            appearance: none;
+            background: #333;
+            border-radius: 12px;
+            position: relative;
+            outline: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .toggle-wrap input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #888;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .toggle-wrap input[type="checkbox"]:checked {
+            background: var(--neon-cyan);
+        }
+        .toggle-wrap input[type="checkbox"]:checked::after {
+            left: 22px;
+            background: #fff;
+        }
+        .toggle-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
         @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-item span { display: none; } .sidebar-item i { width: auto; font-size: 20px; } .main-content { margin-left: 70px; } }
         @media (max-width: 480px) { .main-content { padding: 75px 15px 30px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .stat-card h3 { font-size: 22px; } .navbar { padding: 0 15px; } .logo { font-size: 16px; } }
     </style>
@@ -259,6 +302,18 @@
         <!-- SETTINGS -->
         <div id="settings-page" class="hidden">
             <div class="card"><div class="card-header"><h3>Payment Settings</h3></div><div class="input-group"><label>UPI ID</label><input id="setting-upi" placeholder="Enter UPI ID"></div><div class="input-group"><label>QR Image URL</label><input id="setting-qr" placeholder="https://..."></div><button class="btn btn-primary" id="save-payment-settings">Save</button></div>
+            
+            <!-- ⚡ NEW: Device ID Toggle Section -->
+            <div class="card">
+                <div class="card-header"><h3>Device ID Requirement <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(Force Android ID / Device ID on purchase)</span></h3></div>
+                <div class="toggle-wrap" id="device-id-toggle-wrap">
+                    <input type="checkbox" id="device-id-toggle">
+                    <span class="toggle-label">Require Device ID for all purchases</span>
+                </div>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">When enabled, users must enter a Device ID (Android ID) before completing any purchase.</p>
+                <button class="btn btn-primary" id="save-device-id-setting" style="margin-top:15px;"><i class="fas fa-save"></i> Save Device ID Setting</button>
+            </div>
+
             <div class="card"><div class="card-header"><h3>Support Links</h3></div><div class="input-group"><label>WhatsApp</label><input id="setting-wa" placeholder="https://wa.me/..."></div><div class="input-group"><label>Telegram (Login)</label><input id="setting-tg-login" placeholder="https://t.me/..."></div><div class="input-group"><label>Telegram (Dashboard)</label><input id="setting-tg-dash" placeholder="https://t.me/..."></div><button class="btn btn-primary" id="save-support-links">Save</button></div>
         </div>
 
@@ -360,7 +415,7 @@
         if(page === 'key-delivery') loadKeyDelivery();
         if(page === 'payments') loadPayments();
         if(page === 'users') loadUsers();
-        if(page === 'settings') loadSettings();
+        if(page === 'settings') { loadSettings(); loadDeviceIDSetting(); }
     }
 
     document.querySelectorAll('.sidebar-item').forEach(i=>{ i.addEventListener('click',()=>navigateAdmin(i.dataset.page)); });
@@ -880,6 +935,23 @@
             document.getElementById('setting-tg-dash').value = ss.val().telegram_dashboard || ''; 
         } 
     }
+
+    // ⚡ NEW: Device ID Setting Load & Save
+    async function loadDeviceIDSetting(){
+        const snap = await get(ref(db, 'settings/deviceID'));
+        const toggle = document.getElementById('device-id-toggle');
+        if(snap.exists()) {
+            toggle.checked = snap.val().enabled === true;
+        } else {
+            toggle.checked = false;
+        }
+    }
+
+    document.getElementById('save-device-id-setting').onclick = async () => {
+        const enabled = document.getElementById('device-id-toggle').checked;
+        await set(ref(db, 'settings/deviceID'), { enabled });
+        showToast(`Device ID requirement ${enabled ? 'ENABLED' : 'DISABLED'}!`);
+    };
 
     document.getElementById('save-payment-settings').onclick = async() => { 
         await set(ref(db,'settings/payment'), {

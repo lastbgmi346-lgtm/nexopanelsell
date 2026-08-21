@@ -303,7 +303,6 @@
         <div id="settings-page" class="hidden">
             <div class="card"><div class="card-header"><h3>Payment Settings</h3></div><div class="input-group"><label>UPI ID</label><input id="setting-upi" placeholder="Enter UPI ID"></div><div class="input-group"><label>QR Image URL</label><input id="setting-qr" placeholder="https://..."></div><button class="btn btn-primary" id="save-payment-settings">Save</button></div>
             
-            <!-- ⚡ NEW: Device ID Toggle Section -->
             <div class="card">
                 <div class="card-header"><h3>Device ID Requirement <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(Force Android ID / Device ID on purchase)</span></h3></div>
                 <div class="toggle-wrap" id="device-id-toggle-wrap">
@@ -370,7 +369,6 @@
     let plansCount = 0;
     const adminEmails = ["nexomodsss@gmail.com"];
 
-    // Cache Data locally to optimize performance and network bandwidth
     let globalPurchases = [];
     let globalUsers = {};
 
@@ -394,7 +392,6 @@
             document.getElementById('admin-email-display').innerText=user.email; 
             as.style.display='none'; aa.style.display='block'; l.style.display='none'; 
             
-            // Fast Init Load
             await loadDashboardStats(); 
             navigateAdmin('dashboard'); 
         } else { 
@@ -409,7 +406,6 @@
         document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); 
         document.querySelector(`.sidebar-item[data-page="${page}"]`).classList.add('active'); 
 
-        // Lazy load views for high performance
         if(page === 'panels') loadPanels();
         if(page === 'promotions') loadPromotions();
         if(page === 'key-delivery') loadKeyDelivery();
@@ -420,7 +416,6 @@
 
     document.querySelectorAll('.sidebar-item').forEach(i=>{ i.addEventListener('click',()=>navigateAdmin(i.dataset.page)); });
 
-    // DASHBOARD & MONTHLY REVENUE ENGINE
     async function loadDashboardStats(){ 
         try {
             const [uSnap, purchasesSnap] = await Promise.all([
@@ -472,7 +467,6 @@
                 });
             }
 
-            // Render Metrics
             document.getElementById('monthly-revenue').innerText = `₹${currentMonthRevenue.toLocaleString()}`;
             document.getElementById('total-keys-sold').innerText = totalKeysSold;
             document.getElementById('auto-keys-count').innerText = autoKeysCount;
@@ -480,7 +474,6 @@
             document.getElementById('total-users').innerText = totalUsers;
             document.getElementById('pending-keys').innerText = pendingKeysCount;
 
-            // Render Sales Ledger
             if(globalPurchases.length === 0) {
                 historyTbody.innerHTML = '<tr><td colspan="7">No key sales found.</td></tr>';
             } else {
@@ -505,7 +498,6 @@
         }
     }
 
-    // PANELS & PID CONFIGURATION
     async function loadPanels(){ 
         const snap = await get(ref(db,'panels')); 
         const tbody = document.getElementById('panels-list'); 
@@ -650,7 +642,6 @@
         addPlanField();
     }
 
-    // KEY DELIVERY MANAGEMENT
     async function loadKeyDelivery(){ 
         const tbody = document.getElementById('key-delivery-list'); 
         tbody.innerHTML = '<tr><td colspan="8">Fetching pending requests...</td></tr>'; 
@@ -704,7 +695,7 @@
             await update(ref(db, `purchases/${uid}/${pid}`), { 
                 key: key, 
                 keyStatus: 'delivered',
-                deliveryType: 'manual',
+                deliveryType: 'manual_web',
                 deliveredAt: serverTimestamp() 
             }); 
             showToast("✅ Key delivered manually!"); 
@@ -716,7 +707,6 @@
         }
     };
 
-    // PROMOTIONS ENGINE
     async function loadPromotions(){ 
         const snap = await get(ref(db,'promotions')); 
         const tbody = document.getElementById('promotions-list'); 
@@ -788,7 +778,6 @@
         openModal('promo-modal'); 
     };
 
-    // PAYMENTS ENGINE
     async function loadPayments(){ 
         const snap = await get(ref(db,'payments')); 
         const tbody = document.getElementById('payments-list'); 
@@ -884,7 +873,6 @@
         } 
     };
 
-    // USERS ENGINE
     async function loadUsers(){ 
         const snap = await get(ref(db,'users')); 
         const tbody = document.getElementById('users-list'); 
@@ -921,7 +909,6 @@
         } 
     };
 
-    // SETTINGS ENGINE
     async function loadSettings(){ 
         const ps = await get(ref(db,'settings/payment')); 
         if(ps.exists()){ 
@@ -936,7 +923,6 @@
         } 
     }
 
-    // ⚡ NEW: Device ID Setting Load & Save
     async function loadDeviceIDSetting(){
         const snap = await get(ref(db, 'settings/deviceID'));
         const toggle = document.getElementById('device-id-toggle');
@@ -970,7 +956,6 @@
         showToast('Support links saved!'); 
     };
 
-    // Global bindings
     window.addPlanField = addPlanField;
     window.removePlan = removePlan;
     window.openKeyDeliveryModal = openKeyDeliveryModal;

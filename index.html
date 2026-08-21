@@ -887,42 +887,6 @@
 
         .telegram-btn:hover { transform: scale(1.12) rotate(10deg); }
 
-        /* Device ID Modal */
-        .device-id-input {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--warning);
-            margin: 15px 0;
-        }
-
-        .device-id-input label {
-            color: var(--warning);
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .device-id-input input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            margin-top: 8px;
-            outline: none;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-
-        .device-id-input input:focus {
-            border-color: var(--warning);
-            box-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
-        }
-
         @media (max-width: 480px) {
             .navbar { padding: 0 15px; height: 70px; }
             .logo { font-size: 18px; }
@@ -1083,14 +1047,6 @@
     <div class="modal-overlay" id="modal-checkout">
         <div class="modal">
             <h3 style="font-family:var(--font-tech); margin-bottom:20px; color:var(--neon-cyan);">ORDER CONFIRMATION</h3>
-            
-            <!-- Device ID Input (shown only if required) -->
-            <div class="device-id-input" id="device-id-section" style="display:none;">
-                <label><i class="fas fa-mobile-alt"></i> Device ID Required</label>
-                <input id="device-id-input" placeholder="Enter your Android ID / Device ID" autocomplete="off">
-                <p style="font-size:11px; color:var(--text-muted); margin-top:5px;">Required for device-bound products (Bala Mod, etc.)</p>
-            </div>
-
             <div class="checkout-details">
                 <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
                 <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
@@ -1109,9 +1065,9 @@
             <i class="fas fa-check-circle success-icon"></i>
             <h2 style="font-family:var(--font-tech); font-size:20px; margin-bottom:10px;">PURCHASE SUCCESSFUL!</h2>
             <div style="background:rgba(0,0,0,0.5); padding:18px; border-radius:14px; margin:18px 0; border:1px solid rgba(255,255,255,0.05);">
-                <i class="fas fa-key" style="color:var(--neon-cyan); font-size:24px; margin-bottom:8px;"></i>
-                <p style="font-weight:700;">Key Generated!</p>
-                <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Your license key has been generated and sent to "My Keys".</p>
+                <i class="fas fa-clock" style="color:var(--warning); font-size:28px; margin-bottom:8px;"></i>
+                <p style="font-weight:700; color:var(--warning);">Order Processing!</p>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Please wait <b>3 to 4 hours</b>. Your key will be delivered shortly by Admin into "My Keys".</p>
             </div>
             <button class="btn btn-primary" onclick="closeModal('modal-success'); navigate('history')">VIEW MY KEYS</button>
             <button class="btn btn-outline" onclick="closeModal('modal-success')" style="margin-top:10px;">CLOSE</button>
@@ -1145,74 +1101,6 @@
         let selectedFile = null;
         let screenshotBase64 = null;
         let isSubmitting = false;
-        let deviceIDRequired = false;
-
-        async function checkDeviceIDSetting() {
-            try {
-                const snap = await get(ref(db, 'settings/deviceID'));
-                deviceIDRequired = snap.exists() && snap.val().enabled === true;
-                return deviceIDRequired;
-            } catch(e) {
-                deviceIDRequired = false;
-                return false;
-            }
-        }
-
-        // 🔥 FIX: CORS Bypass Proxy Added to prevent "Failed to fetch" Error
-        async function buyFromResellerApi(productId, duration, androidId = null) {
-            const targetUrl = 'https://xyzcheats.com/api/reseller_v1.php';
-            // CORS Bypass Proxy Endpoint
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-
-            const formData = new URLSearchParams();
-            formData.append('api_key', '5e517a587e01bb849427efbb4fdd5bd3');
-            formData.append('action', 'buy');
-            formData.append('product_id', String(productId));
-            formData.append('duration', String(duration));
-            
-            if (androidId && androidId.trim().length > 0) {
-                formData.append('android_id', androidId.trim());
-                console.log('📱 Device ID sent:', androidId.trim());
-            }
-
-            console.log('🚀 API Request Data:', {
-                product_id: productId,
-                duration: duration,
-                android_id: androidId || 'NONE'
-            });
-
-            try {
-                const response = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'x-master-key': 'a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8'
-                    },
-                    body: formData.toString()
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP Error! Status: ${response.status}`);
-                }
-
-                const text = await response.text();
-                console.log('📦 API Raw Response:', text);
-                
-                try {
-                    const json = JSON.parse(text);
-                    console.log('✅ API JSON Response:', json);
-                    return json;
-                } catch(e) {
-                    if (text && text.length > 5 && !text.includes('html') && !text.includes('Error')) {
-                        return { status: 'success', key: text.trim() };
-                    }
-                    return { status: 'error', message: text || 'Invalid response from server' };
-                }
-            } catch (err) {
-                console.error('❌ API Error:', err);
-                return { status: 'error', message: 'Failed to fetch (Check Proxy/Network)' };
-            }
-        }
 
         function getVideoEmbedCode(url) {
             if (!url || typeof url !== 'string' || url.trim() === '') return null;
@@ -1532,12 +1420,12 @@
                     const div = document.createElement('div');
                     div.className = 'history-card';
                     const isDelivered = p.keyStatus === 'delivered' && p.key && p.key !== 'PENDING';
-                    const statusText = isDelivered ? '✅ DELIVERED' : '⏳ PENDING';
+                    const statusText = isDelivered ? '✅ DELIVERED' : '⏳ PENDING (3-4 Hours Wait)';
                     const statusColor = isDelivered ? 'status-delivered' : 'status-pending';
 
                     let keyHtml = isDelivered ? 
                         `<div class="key-box"><span class="key-text-delivered" id="key-${p.id}">${p.key}</span><button class="btn btn-sm btn-primary" onclick="copyKey('key-${p.id}')"><i class="fas fa-copy"></i> COPY</button></div>` :
-                        `<div class="key-box"><span class="key-text-pending"><i class="fas fa-clock"></i> Delivery Pending - Processing Key</span></div>`;
+                        `<div class="key-box"><span class="key-text-pending"><i class="fas fa-clock"></i> Delivery Pending - Admin will deliver key in 3-4 hours</span></div>`;
 
                     div.innerHTML = `
                         <div style="font-family:var(--font-tech); font-size:16px;"><strong>${p.panelName}</strong></div>
@@ -1644,15 +1532,8 @@
                             const pLabel = plan.label || plan.name || plan.title || 'Plan ' + (idx + 1);
                             const pPrice = plan.price || 0;
                             const pDuration = plan.duration || '1 Day';
-                            const pProductId = plan.pid || p.pid || '62';
-                            const optVal = JSON.stringify({ 
-                                key: pKey, 
-                                label: pLabel, 
-                                price: pPrice, 
-                                duration: pDuration, 
-                                product_id: pProductId 
-                            });
-                            plansHtml += `<option value='${optVal.replace(/'/g, "&apos;")}'>${pLabel} - ₹${pPrice} (${pDuration})</option>`;
+                            const optVal = JSON.stringify({ key: pKey, label: pLabel, price: pPrice, duration: pDuration });
+                            plansHtml += `<option value='${optVal.replace(/'/g, "&apos;")}'>${pLabel} - ₹${pPrice}</option>`;
                         });
                         plansHtml += `</select>`;
                     } else {
@@ -1727,12 +1608,10 @@
         }
 
         window.currentCheckout = {};
-        window.handlePurchase = async (panelId, panelName, link) => {
+        window.handlePurchase = (panelId, panelName, link) => {
             const select = document.getElementById(`plan-${panelId}`);
             if(!select || select.disabled) return showToast('No plans available to purchase', 'error');
             const plan = JSON.parse(select.value);
-
-            await checkDeviceIDSetting();
 
             window.currentCheckout = { 
                 panelId, 
@@ -1741,24 +1620,13 @@
                 planKey: plan.key, 
                 label: plan.label, 
                 price: plan.price,
-                duration: plan.duration || '1 Day',
-                productId: plan.product_id || '62'
+                duration: plan.duration || '1 Day'
             };
             
             document.getElementById('chk-panel-name').innerText = panelName;
             document.getElementById('chk-plan-label').innerText = plan.label;
             document.getElementById('chk-orig-price').innerText = plan.price;
             document.getElementById('chk-final-price').innerText = plan.price;
-
-            const deviceIdSection = document.getElementById('device-id-section');
-            if (deviceIDRequired) {
-                deviceIdSection.style.display = 'block';
-                document.getElementById('device-id-input').value = '';
-                document.getElementById('device-id-input').placeholder = 'Enter Android ID / Device ID (required)';
-            } else {
-                deviceIdSection.style.display = 'none';
-            }
-
             document.getElementById('modal-checkout').classList.add('active');
         };
 
@@ -1768,98 +1636,34 @@
             const price = window.currentCheckout.price;
             if(userData.balance < price) return showToast(`Insufficient balance. Need ₹${price}`, "error");
 
-            let deviceId = null;
-            if (deviceIDRequired) {
-                deviceId = document.getElementById('device-id-input').value.trim();
-                if (!deviceId) {
-                    showToast('⚠️ Device ID (Android ID) is required for this product!', 'warning');
-                    document.getElementById('device-id-input').focus();
-                    return;
-                }
-                if (deviceId.length < 8) {
-                    showToast('⚠️ Please enter a valid Android ID (minimum 8 characters)', 'warning');
-                    return;
-                }
-            }
-
             const btn = this;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING KEY...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING ORDER...';
 
             try {
-                const apiRes = await buyFromResellerApi(
-                    window.currentCheckout.productId, 
-                    window.currentCheckout.duration,
-                    deviceId
-                );
-
-                let generatedKey = "PENDING";
-                let keyStatus = "pending";
-                let apiError = null;
-
-                if (apiRes) {
-                    console.log('📥 API Response:', apiRes);
-                    
-                    if (apiRes.status === 'error' || apiRes.error) {
-                        apiError = apiRes.message || apiRes.error || 'Unknown API error';
-                        showToast('❌ API Error: ' + apiError, 'error');
-                        btn.disabled = false;
-                        btn.innerHTML = 'CONFIRM & PAY';
-                        return;
-                    }
-
-                    if (apiRes.key || apiRes.license || apiRes.data) {
-                        generatedKey = apiRes.key || apiRes.license || apiRes.data;
-                        keyStatus = "delivered";
-                    } else if (typeof apiRes === 'string' && apiRes.length > 5) {
-                        generatedKey = apiRes;
-                        keyStatus = "delivered";
-                    } else if (apiRes.status === 'success' && apiRes.key) {
-                        generatedKey = apiRes.key;
-                        keyStatus = "delivered";
-                    } else {
-                        generatedKey = "PENDING";
-                        keyStatus = "pending";
-                    }
-                } else {
-                    generatedKey = "PENDING";
-                    keyStatus = "pending";
-                    showToast('⚠️ API returned no response, key pending manual delivery', 'warning');
-                }
-
+                // Balance deduct kar rahe hain
                 const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
                 
                 if(result.committed) {
+                    // Purchase record save kar rahe hain (Manual Delivery Mode)
                     await push(ref(db, `purchases/${currentUser.uid}`), {
                         panelId: window.currentCheckout.panelId,
                         panelName: window.currentCheckout.panelName,
                         plan: window.currentCheckout.planKey,
                         label: window.currentCheckout.label,
                         price: price,
-                        key: generatedKey,
-                        keyStatus: keyStatus,
+                        key: "PENDING",
+                        keyStatus: "pending",
                         link: window.currentCheckout.link,
-                        productId: window.currentCheckout.productId,
-                        duration: window.currentCheckout.duration,
-                        deviceId: deviceId || null,
-                        deliveryType: keyStatus === 'delivered' ? 'auto' : 'pending',
-                        isAuto: keyStatus === 'delivered',
                         date: serverTimestamp()
                     });
 
                     document.getElementById('modal-checkout').classList.remove('active');
                     document.getElementById('modal-success').classList.add('active');
-                    
-                    if (keyStatus === 'delivered') {
-                        showToast('✅ Key generated successfully!');
-                    } else {
-                        showToast('⏳ Key pending - Admin will deliver soon!', 'warning');
-                    }
                 } else {
-                    showToast("Insufficient balance or transaction failed", "error");
+                    showToast("Insufficient balance", "error");
                 }
             } catch(e) {
-                console.error('❌ Purchase Error:', e);
                 showToast("Transaction Error: " + e.message, "error");
             } finally {
                 btn.disabled = false;
@@ -1867,7 +1671,7 @@
             }
         };
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             const loader = document.getElementById('loader');
             const authScreen = document.getElementById('auth-screen');
             const mainApp = document.getElementById('main-app');
@@ -1881,8 +1685,6 @@
                     loader.style.opacity = '0';
                     setTimeout(() => { loader.style.display = 'none'; }, 500);
                 }
-
-                await checkDeviceIDSetting();
 
                 if (balanceListenerUnsubscribe) balanceListenerUnsubscribe();
                 const balanceRef = ref(db, `users/${user.uid}/balance`);

@@ -749,39 +749,6 @@
 
         .payment-settings-card { padding: 35px 25px; text-align: center; max-width: 550px; margin: 0 auto; }
         
-        .qr-image-container {
-            width: 210px; height: 210px;
-            margin: 20px auto;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 18px;
-            border: 2px dashed var(--neon-cyan);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
-        }
-
-        .qr-image-container img { width: 100%; height: 100%; object-fit: cover; }
-
-        .upi-box {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid var(--neon-cyan);
-            margin: 20px 0;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            color: var(--neon-cyan);
-            transition: all 0.3s;
-        }
-
-        .upi-box:hover { background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px var(--neon-cyan-glow); }
-
         .history-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .history-card { padding: 22px; background: var(--card-bg); border-radius: 16px; border-left: 4px solid var(--neon-purple); border-top: 1px solid var(--card-border); }
         .status-pending { color: var(--warning); font-weight: 700; }
@@ -810,8 +777,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 14px;
         }
-
-        .preview-img { max-width: 100%; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--neon-cyan); }
 
         .modal-overlay {
             position: fixed;
@@ -994,31 +959,19 @@
         </div>
 
         <div class="page-content hidden" id="page-add-money">
-            <h2 class="page-title" style="margin-bottom:25px;">ADD <span>FUNDS</span></h2>
+            <h2 class="page-title" style="margin-bottom:25px;">ADD <span>FUNDS (FAMGATEWAY)</span></h2>
             <div class="glass-cyber payment-settings-card">
-                <div class="qr-image-container" id="display-qr-container">
-                    <i class="fas fa-qrcode" style="font-size:50px; opacity:0.3; color:var(--neon-cyan);"></i>
+                <div style="font-size:48px; color:var(--neon-cyan); margin-bottom:15px;">
+                    <i class="fas fa-credit-card"></i>
                 </div>
-                
-                <div class="upi-box" onclick="copyUPI()">
-                    <span id="display-upi">Loading...</span> <i class="fas fa-copy"></i>
-                </div>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Instant automatic balance topup via FamGateway API</p>
 
                 <div class="input-group">
                     <label>Amount (₹)</label>
-                    <input id="add-amount" placeholder="Enter amount to add" type="number">
-                </div>
-                <div class="input-group">
-                    <label>Phone Number</label>
-                    <input id="add-phone" placeholder="Your phone number">
-                </div>
-                <div class="input-group">
-                    <label>Upload Screenshot (Payment Proof)</label>
-                    <input type="file" id="screenshot-input" accept="image/*">
-                    <div id="screenshot-preview"></div>
+                    <input id="add-amount" placeholder="Enter amount to add" type="number" min="1">
                 </div>
 
-                <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-upload"></i> SUBMIT PAYMENT</button>
+                <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-bolt"></i> PAY VIA FAMGATEWAY</button>
             </div>
         </div>
 
@@ -1055,7 +1008,11 @@
             </div>
             <div class="checkout-actions">
                 <button class="btn btn-outline" onclick="closeModal('modal-checkout')">CANCEL</button>
-                <button class="btn btn-purchase" id="confirm-purchase-btn">CONFIRM & PAY</button>
+                <button class="btn btn-purchase" id="confirm-purchase-btn">PAY WITH BALANCE</button>
+            </div>
+            <div style="margin-top:15px; text-align:center;">
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">OR DIRECT PAY VIA GATEWAY</p>
+                <button class="btn btn-primary" id="direct-gateway-pay-btn"><i class="fas fa-bolt"></i> DIRECT FAMGATEWAY PAY</button>
             </div>
         </div>
     </div>
@@ -1098,8 +1055,6 @@
         let userData = { balance: 0 };
         let refreshInterval = null;
         let balanceListenerUnsubscribe = null;
-        let selectedFile = null;
-        let screenshotBase64 = null;
         let isSubmitting = false;
 
         function getVideoEmbedCode(url) {
@@ -1158,14 +1113,6 @@
             setTimeout(() => toast.remove(), 3200);
         }
 
-        window.copyUPI = () => {
-            const upi = document.getElementById('display-upi').innerText;
-            if(upi && upi !== 'Loading...') {
-                navigator.clipboard.writeText(upi);
-                showToast('UPI ID Copied to Clipboard!');
-            }
-        };
-
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
 
         document.getElementById('go-to-signup')?.addEventListener('click', () => {
@@ -1186,54 +1133,6 @@
                 document.getElementById('auth-tg-link').href = data.telegram_login || '#';
                 document.getElementById('auth-tg-link-2').href = data.telegram_login || '#';
                 document.getElementById('global-telegram-btn').href = data.telegram_dashboard || '#';
-            }
-        });
-
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        async function autoVerifyScreenshot(imageDataUrl, expectedAmount) {
-            try {
-                showToast("🔍 Verifying Payment Proof...", "success");
-                const result = await Tesseract.recognize(imageDataUrl, 'hin+eng', { logger: () => {} });
-                const text = result.data.text;
-                
-                const namePatterns = [
-                    'punam', 'puna', 'punam devi', 'puna devi', 'punamdevi', 
-                    'punaṃ devi', 'punam d evi', 'p u n a m', 'p u n a m d e v i'
-                ];
-
-                const hasPunamDevi = namePatterns.some(pattern => 
-                    text.toLowerCase().replace(/[\s,.]/g, '').includes(pattern.replace(/[\s,.]/g, '').toLowerCase())
-                );
-
-                if (hasPunamDevi) {
-                    return { verified: true, reason: '✅ Verified! ₹' + expectedAmount + ' added', nameFound: true, amountFound: true };
-                } else {
-                    return { verified: false, reason: '⏳ Submitted for manual verification', nameFound: false, amountFound: false };
-                }
-            } catch(error) {
-                return { verified: false, reason: '⚠️ Manual verification required', nameFound: false, amountFound: false };
-            }
-        }
-
-        document.getElementById('screenshot-input').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if(file) {
-                selectedFile = file;
-                try {
-                    screenshotBase64 = await fileToBase64(file);
-                    document.getElementById('screenshot-preview').innerHTML = `<img src="${screenshotBase64}" class="preview-img">`;
-                    showToast("✅ Screenshot loaded successfully!", "success");
-                } catch(err) {
-                    showToast("Error reading image file", "error");
-                }
             }
         });
 
@@ -1320,83 +1219,73 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        onValue(ref(db, 'settings/payment'), (snap) => {
-            if(snap.exists()) {
-                document.getElementById('display-upi').innerText = snap.val().upiId || 'Not set';
-                if(snap.val().qrImage) {
-                    document.getElementById('display-qr-container').innerHTML = `<img src="${snap.val().qrImage}">`;
-                }
-            }
-        });
+        // FAMGATEWAY INTEGRATION FUNCTION
+        async function initiateFamGatewayPayment(amount) {
+            try {
+                const response = await fetch('create-order.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
 
+                const data = await response.json();
+
+                if (data && (data.checkout_url || data.payment_url || data.url)) {
+                    const checkoutUrl = data.checkout_url || data.payment_url || data.url;
+                    window.location.href = checkoutUrl;
+                } else if (data && data.message) {
+                    showToast("Gateway Error: " + data.message, "error");
+                } else {
+                    showToast("Failed to create order via FamGateway", "error");
+                }
+            } catch (err) {
+                showToast("Connection Error with FamGateway API", "error");
+            }
+        }
+
+        // Add Funds via FamGateway
         document.getElementById('btn-submit-payment').onclick = async function() {
-            if (isSubmitting) return showToast("⏳ Payment processing...", "warning");
+            if (isSubmitting) return showToast("⏳ Processing...", "warning");
             if(!currentUser) return showToast("Please login first", "error");
 
             const amount = document.getElementById('add-amount').value;
-            const phone = document.getElementById('add-phone').value.trim();
-
             if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
-            if(!phone) return showToast("Phone number required", "error");
-            if(!screenshotBase64) return showToast("Upload payment screenshot", "error");
 
             isSubmitting = true;
             const btn = this;
             btn.disabled = true;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> REDIRECTING...';
 
-            try {
-                const verifyResult = await autoVerifyScreenshot(screenshotBase64, parseFloat(amount));
-                const autoVerified = verifyResult.verified;
-                const verificationStatus = autoVerified ? 'approved' : 'pending';
-
-                const paymentRef = await push(ref(db, 'payments'), {
-                    uid: currentUser.uid,
-                    email: currentUser.email,
-                    amount: parseFloat(amount),
-                    phone,
-                    screenshot: screenshotBase64,
-                    status: verificationStatus,
-                    type: 'screenshot_base64',
-                    autoVerified,
-                    autoVerifyNote: verifyResult.reason,
-                    expectedAmount: parseFloat(amount),
-                    nameFound: verifyResult.nameFound || false,
-                    amountFound: verifyResult.amountFound || false,
-                    timestamp: serverTimestamp()
-                });
-
-                if(autoVerified) {
-                    const balRef = ref(db, `users/${currentUser.uid}/balance`);
-                    const balSnap = await get(balRef);
-                    await set(balRef, (balSnap.val() || 0) + parseFloat(amount));
-                    showToast("✅ Payment Verified! ₹" + amount + " added!");
-                    await update(ref(db, `payments/${paymentRef.key}`), {
-                        status: 'approved',
-                        approvedAt: serverTimestamp(),
-                        approvedBy: 'Auto-Verify System'
-                    });
-                } else {
-                    showToast("📤 " + verifyResult.reason);
-                }
-
-                document.getElementById('add-amount').value = '';
-                document.getElementById('add-phone').value = '';
-                document.getElementById('screenshot-input').value = '';
-                document.getElementById('screenshot-preview').innerHTML = '';
-                selectedFile = null;
-                screenshotBase64 = null;
-
-            } catch(error) {
-                showToast("Error: " + error.message, "error");
-            }
+            await initiateFamGatewayPayment(parseFloat(amount));
 
             setTimeout(() => {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 isSubmitting = false;
-            }, 5000);
+            }, 4000);
+        };
+
+        // Direct FamGateway Purchase Button in Modal
+        document.getElementById('direct-gateway-pay-btn').onclick = async function() {
+            if(!currentUser) return;
+            const price = window.currentCheckout.price;
+
+            // Pre-record pending purchase
+            await push(ref(db, `purchases/${currentUser.uid}`), {
+                panelId: window.currentCheckout.panelId,
+                panelName: window.currentCheckout.panelName,
+                plan: window.currentCheckout.planKey,
+                label: window.currentCheckout.label,
+                price: price,
+                key: "PENDING",
+                keyStatus: "pending",
+                link: window.currentCheckout.link,
+                paymentMode: "FamGateway Direct",
+                date: serverTimestamp()
+            });
+
+            await initiateFamGatewayPayment(price);
         };
 
         async function loadHistory() {
@@ -1641,11 +1530,11 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING ORDER...';
 
             try {
-                // Balance deduct kar rahe hain
+                // Balance deduct
                 const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
                 
                 if(result.committed) {
-                    // Purchase record save kar rahe hain (Manual Delivery Mode)
+                    // Purchase record save
                     await push(ref(db, `purchases/${currentUser.uid}`), {
                         panelId: window.currentCheckout.panelId,
                         panelName: window.currentCheckout.panelName,
@@ -1667,7 +1556,7 @@
                 showToast("Transaction Error: " + e.message, "error");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = 'CONFIRM & PAY';
+                btn.innerHTML = 'PAY WITH BALANCE';
             }
         };
 

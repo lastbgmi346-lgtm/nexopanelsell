@@ -1092,7 +1092,7 @@
         let balanceListenerUnsubscribe = null;
         let isSubmitting = false;
 
-        // ======== NEW: CONFIG LOAD FROM JSON ========
+        // ======== FAMGATEWAY CONFIG LOAD FROM JSON ========
         let paymentConfig = null;
 
         async function loadPaymentConfig() {
@@ -1278,9 +1278,8 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // ======== NEW: FAMGATEWAY INTEGRATION WITH CONFIG ========
+        // ======== FAMGATEWAY PAYMENT INTEGRATION ========
         async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
-            // If config not loaded, try loading again
             if (!paymentConfig) {
                 await loadPaymentConfig();
                 if (!paymentConfig) {
@@ -1290,55 +1289,44 @@
             }
 
             try {
-                const redirectUrl = window.location.href;
-                const reqBody = {
-                    amount: parseFloat(amount),
-                    mobile_number: mobile,
-                    redirect_url: redirectUrl,
-                    remark: 'Nexo Store Add Funds'
-                };
+                showToast('⏳ Creating payment order...', 'warning');
 
-                console.log('📤 Sending payment request:', reqBody);
-                console.log('🔑 Using API Key:', paymentConfig.apiKey);
-                console.log('🌐 API URL:', paymentConfig.apiUrl);
-
-                const response = await fetch(paymentConfig.apiUrl, {
+                const response = await fetch('/api/create-order', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${paymentConfig.apiKey}`,
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(reqBody)
+                    body: JSON.stringify({
+                        amount: parseFloat(amount),
+                        mobile: mobile
+                    })
                 });
 
-                console.log('📥 Response status:', response.status);
-
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ API Error Response:', errorText);
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('✅ FamGateway Response:', data);
+                console.log('✅ Payment Response:', data);
 
-                if (data && (data.payment_url || data.checkout_url || data.url)) {
-                    const checkoutUrl = data.payment_url || data.checkout_url || data.url;
-                    console.log('🔗 Redirecting to:', checkoutUrl);
-                    window.location.href = checkoutUrl;
-                } else if (data && data.message) {
-                    showToast("Gateway: " + data.message, "error");
+                if (data.success && data.checkout_url) {
+                    // Save order_id for verification
+                    sessionStorage.setItem('current_order_id', data.order_id);
+                    sessionStorage.setItem('payable_amount', data.payable_amount);
+                    
+                    // Redirect to FamGateway checkout page
+                    window.location.href = data.checkout_url;
                 } else {
-                    showToast("Failed to create order. Check FamGateway config.", "error");
+                    showToast('Payment error: ' + (data.error || 'Unknown error'), 'error');
                 }
             } catch (err) {
                 console.error('❌ Payment Error:', err);
-                showToast("Connection Error with Payment API: " + err.message, "error");
+                showToast('Connection Error: ' + err.message, 'error');
             }
         }
 
-        // Add Funds Button Handler - UPDATED
+        // Add Funds Button Handler
         document.getElementById('btn-submit-payment').onclick = async function() {
             if (isSubmitting) return showToast("⏳ Processing...", "warning");
             if(!currentUser) return showToast("Please login first", "error");
@@ -1355,7 +1343,6 @@
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREATING GATEWAY ORDER...';
 
-            // Make sure config is loaded
             if (!paymentConfig) {
                 await loadPaymentConfig();
             }
@@ -1369,7 +1356,7 @@
             }, 4000);
         };
 
-        // Direct Purchase via Gateway - UPDATED
+        // Direct Purchase via Gateway
         document.getElementById('direct-gateway-pay-btn').onclick = async function() {
             if(!currentUser) return;
             const price = window.currentCheckout.price;
@@ -1387,7 +1374,6 @@
                 date: serverTimestamp()
             });
 
-            // Make sure config is loaded
             if (!paymentConfig) {
                 await loadPaymentConfig();
             }

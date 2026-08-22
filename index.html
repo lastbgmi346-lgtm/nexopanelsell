@@ -1279,53 +1279,51 @@
         });
 
         // ======== FAMGATEWAY PAYMENT INTEGRATION ========
-        async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
-            if (!paymentConfig) {
-                await loadPaymentConfig();
-                if (!paymentConfig) {
-                    showToast('Payment configuration not loaded', 'error');
-                    return;
-                }
-            }
+        // index.html - initiateFamGatewayPayment function update karo
+async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
+    if (!paymentConfig) {
+        await loadPaymentConfig();
+        if (!paymentConfig) {
+            showToast('Payment configuration not loaded', 'error');
+            return;
+        }
+    }
 
-            try {
-                showToast('⏳ Creating payment order...', 'warning');
+    try {
+        showToast('⏳ Creating payment order...', 'warning');
 
-                const response = await fetch('/api/create-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        amount: parseFloat(amount),
-                        mobile: mobile
-                    })
-                });
+        const response = await fetch('/api/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                mobile: mobile,
+                uid: currentUser?.uid || 'unknown' // ✅ User UID bhejo
+            })
+        });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('✅ Payment Response:', data);
-
-                if (data.success && data.checkout_url) {
-                    // Save order_id for verification
-                    sessionStorage.setItem('current_order_id', data.order_id);
-                    sessionStorage.setItem('payable_amount', data.payable_amount);
-                    
-                    // Redirect to FamGateway checkout page
-                    window.location.href = data.checkout_url;
-                } else {
-                    showToast('Payment error: ' + (data.error || 'Unknown error'), 'error');
-                }
-            } catch (err) {
-                console.error('❌ Payment Error:', err);
-                showToast('Connection Error: ' + err.message, 'error');
-            }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}`);
         }
 
+        const data = await response.json();
+        console.log('✅ Payment Response:', data);
+
+        if (data.success && data.checkout_url) {
+            sessionStorage.setItem('current_order_id', data.order_id);
+            sessionStorage.setItem('payable_amount', data.payable_amount);
+            window.location.href = data.checkout_url;
+        } else {
+            showToast('Payment error: ' + (data.error || 'Unknown error'), 'error');
+        }
+    } catch (err) {
+        console.error('❌ Payment Error:', err);
+        showToast('Connection Error: ' + err.message, 'error');
+    }
+}
         // Add Funds Button Handler
         document.getElementById('btn-submit-payment').onclick = async function() {
             if (isSubmitting) return showToast("⏳ Processing...", "warning");

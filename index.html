@@ -1279,7 +1279,7 @@
         });
 
         // ======== FAMGATEWAY PAYMENT INTEGRATION ========
-        // index.html - initiateFamGatewayPayment function update karo
+        // index.html - initiateFamGatewayPayment function
 async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
     if (!paymentConfig) {
         await loadPaymentConfig();
@@ -1292,6 +1292,14 @@ async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
     try {
         showToast('⏳ Creating payment order...', 'warning');
 
+        // ✅ Make sure currentUser is not null
+        if (!currentUser || !currentUser.uid) {
+            showToast('Please login first', 'error');
+            return;
+        }
+
+        console.log('👤 User UID:', currentUser.uid);
+
         const response = await fetch('/api/create-order', {
             method: 'POST',
             headers: {
@@ -1300,7 +1308,7 @@ async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
             body: JSON.stringify({
                 amount: parseFloat(amount),
                 mobile: mobile,
-                uid: currentUser?.uid || 'unknown' // ✅ User UID bhejo
+                uid: currentUser.uid  // ✅ User UID bhejo
             })
         });
 

@@ -245,10 +245,30 @@
             background: rgba(0, 0, 0, 0.9);
         }
 
-        .input-group input[type="file"] {
-            padding: 12px 18px;
-            height: auto;
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chip-amt {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--neon-cyan);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .chip-amt:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-cyan-glow);
         }
 
         .skeleton-card {
@@ -959,19 +979,31 @@
         </div>
 
         <div class="page-content hidden" id="page-add-money">
-            <h2 class="page-title" style="margin-bottom:25px;">ADD <span>FUNDS (FAMGATEWAY)</span></h2>
+            <h2 class="page-title" style="margin-bottom:25px;">INSTANT <span>ADD FUNDS</span></h2>
             <div class="glass-cyber payment-settings-card">
                 <div style="font-size:48px; color:var(--neon-cyan); margin-bottom:15px;">
-                    <i class="fas fa-credit-card"></i>
+                    <i class="fas fa-qrcode"></i>
                 </div>
-                <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Instant automatic balance topup via FamGateway API</p>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Automated Fast UPI Gateway - Instant Credit</p>
 
                 <div class="input-group">
-                    <label>Amount (₹)</label>
-                    <input id="add-amount" placeholder="Enter amount to add" type="number" min="1">
+                    <label><i class="fas fa-phone-alt" style="color:var(--neon-cyan);"></i> Mobile Number</label>
+                    <input id="add-mobile" placeholder="Enter 10-digit mobile number" type="tel" maxlength="10">
                 </div>
 
-                <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-bolt"></i> PAY VIA FAMGATEWAY</button>
+                <div class="input-group">
+                    <label><i class="fas fa-rupee-sign" style="color:var(--neon-cyan);"></i> Amount (₹)</label>
+                    <input id="add-amount" placeholder="Enter amount (Min ₹10)" type="number" min="10">
+                </div>
+
+                <div class="quick-amounts">
+                    <div class="chip-amt" onclick="setAmount(50)">+ ₹50</div>
+                    <div class="chip-amt" onclick="setAmount(100)">+ ₹100</div>
+                    <div class="chip-amt" onclick="setAmount(200)">+ ₹200</div>
+                    <div class="chip-amt" onclick="setAmount(500)">+ ₹500</div>
+                </div>
+
+                <button class="btn btn-purchase" id="btn-submit-payment"><i class="fas fa-bolt"></i> GENERATE PAYMENT UPI</button>
             </div>
         </div>
 
@@ -1012,7 +1044,7 @@
             </div>
             <div style="margin-top:15px; text-align:center;">
                 <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">OR DIRECT PAY VIA GATEWAY</p>
-                <button class="btn btn-primary" id="direct-gateway-pay-btn"><i class="fas fa-bolt"></i> DIRECT FAMGATEWAY PAY</button>
+                <button class="btn btn-primary" id="direct-gateway-pay-btn"><i class="fas fa-bolt"></i> DIRECT FAST GATEWAY PAY</button>
             </div>
         </div>
     </div>
@@ -1056,6 +1088,13 @@
         let refreshInterval = null;
         let balanceListenerUnsubscribe = null;
         let isSubmitting = false;
+
+        // FAMGATEWAY CONFIGURATION DIRECTLY IN CLIENT
+        const FAMGATEWAY_API_TOKEN = 'fam_7faeee60ef2a8fee0b90811fdaab21623582dbe5';
+
+        window.setAmount = function(amt) {
+            document.getElementById('add-amount').value = amt;
+        };
 
         function getVideoEmbedCode(url) {
             if (!url || typeof url !== 'string' || url.trim() === '') return null;
@@ -1219,45 +1258,59 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // FAMGATEWAY INTEGRATION FUNCTION
-        async function initiateFamGatewayPayment(amount) {
+        // DIRECT CLIENT-SIDE FAMGATEWAY INTEGRATION (NO BACKEND/SERVER NEEDED)
+        async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
             try {
-                const response = await fetch('create-order.php', {
+                const redirectUrl = window.location.href;
+                const reqBody = {
+                    amount: parseFloat(amount),
+                    mobile_number: mobile,
+                    redirect_url: redirectUrl,
+                    remark: 'Nexo Store Add Funds'
+                };
+
+                const response = await fetch('https://famgateway.in/api/create-order.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${FAMGATEWAY_API_TOKEN}`
+                    },
+                    body: JSON.stringify(reqBody)
                 });
 
                 const data = await response.json();
 
-                if (data && (data.checkout_url || data.payment_url || data.url)) {
-                    const checkoutUrl = data.checkout_url || data.payment_url || data.url;
+                if (data && (data.payment_url || data.checkout_url || data.url)) {
+                    const checkoutUrl = data.payment_url || data.checkout_url || data.url;
                     window.location.href = checkoutUrl;
                 } else if (data && data.message) {
-                    showToast("Gateway Error: " + data.message, "error");
+                    showToast("Gateway: " + data.message, "error");
                 } else {
-                    showToast("Failed to create order via FamGateway", "error");
+                    showToast("Failed to create order. Check FamGateway config.", "error");
                 }
             } catch (err) {
-                showToast("Connection Error with FamGateway API", "error");
+                showToast("Connection Error with Payment API", "error");
             }
         }
 
-        // Add Funds via FamGateway
+        // Add Funds Click Handler
         document.getElementById('btn-submit-payment').onclick = async function() {
             if (isSubmitting) return showToast("⏳ Processing...", "warning");
             if(!currentUser) return showToast("Please login first", "error");
 
+            const mobile = document.getElementById('add-mobile').value.trim();
             const amount = document.getElementById('add-amount').value;
-            if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
+
+            if(!mobile || mobile.length < 10) return showToast("Enter valid 10-digit mobile number", "error");
+            if(!amount || amount < 10) return showToast("Minimum deposit is ₹10", "error");
 
             isSubmitting = true;
             const btn = this;
             btn.disabled = true;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> REDIRECTING...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREATING GATEWAY ORDER...';
 
-            await initiateFamGatewayPayment(parseFloat(amount));
+            await initiateFamGatewayPayment(parseFloat(amount), mobile);
 
             setTimeout(() => {
                 btn.disabled = false;
@@ -1266,12 +1319,11 @@
             }, 4000);
         };
 
-        // Direct FamGateway Purchase Button in Modal
+        // Direct Purchase via Gateway
         document.getElementById('direct-gateway-pay-btn').onclick = async function() {
             if(!currentUser) return;
             const price = window.currentCheckout.price;
 
-            // Pre-record pending purchase
             await push(ref(db, `purchases/${currentUser.uid}`), {
                 panelId: window.currentCheckout.panelId,
                 panelName: window.currentCheckout.panelName,
@@ -1281,7 +1333,7 @@
                 key: "PENDING",
                 keyStatus: "pending",
                 link: window.currentCheckout.link,
-                paymentMode: "FamGateway Direct",
+                paymentMode: "Direct Gateway",
                 date: serverTimestamp()
             });
 
@@ -1530,11 +1582,9 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING ORDER...';
 
             try {
-                // Balance deduct
                 const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
                 
                 if(result.committed) {
-                    // Purchase record save
                     await push(ref(db, `purchases/${currentUser.uid}`), {
                         panelId: window.currentCheckout.panelId,
                         panelName: window.currentCheckout.panelName,

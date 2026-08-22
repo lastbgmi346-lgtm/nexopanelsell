@@ -986,7 +986,7 @@
                 </div>
                 <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Automated Fast UPI Gateway - Instant Credit</p>
 
-                <!-- Amount (₹) - UP -->
+                <!-- Amount Input -->
                 <div class="input-group">
                     <label><i class="fas fa-rupee-sign" style="color:var(--neon-cyan);"></i> Amount (₹)</label>
                     <input id="add-amount" placeholder="Enter amount" type="number" min="1">
@@ -1000,7 +1000,7 @@
                     <div class="chip-amt" onclick="setAmount(500)">+ ₹500</div>
                 </div>
 
-                <!-- Mobile Number - DOWN -->
+                <!-- Mobile Number Input -->
                 <div class="input-group">
                     <label><i class="fas fa-phone-alt" style="color:var(--neon-cyan);"></i> Mobile Number</label>
                     <input id="add-mobile" placeholder="Enter 10-digit mobile number" type="tel" maxlength="10">
@@ -1092,7 +1092,7 @@
         let balanceListenerUnsubscribe = null;
         let isSubmitting = false;
 
-        // FAMGATEWAY CONFIGURATION DIRECTLY IN CLIENT
+        // FAMGATEWAY API KEY INTEGRATED DIRECTLY IN CLIENT (METHOD 1)
         const FAMGATEWAY_API_TOKEN = 'fam_7faeee60ef2a8fee0b90811fdaab21623582dbe5';
 
         window.setAmount = function(amt) {
@@ -1261,7 +1261,7 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // DIRECT CLIENT-SIDE FAMGATEWAY INTEGRATION (NO BACKEND/SERVER NEEDED)
+        // METHOD 1: DIRECT CLIENT-SIDE FAMGATEWAY INTEGRATION (FETCH API CALL)
         async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
             try {
                 const redirectUrl = window.location.href;
@@ -1296,7 +1296,7 @@
             }
         }
 
-        // Add Funds Click Handler
+        // Add Funds Button Handler
         document.getElementById('btn-submit-payment').onclick = async function() {
             if (isSubmitting) return showToast("⏳ Processing...", "warning");
             if(!currentUser) return showToast("Please login first", "error");

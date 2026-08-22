@@ -1,0 +1,6 @@
+{
+  "name": "nexo-store-backend",
+  "version": "1.0.0",
+  "description": "Nexo Store Backend for FamGateway",
+  "type": "module"
+}

@@ -226,7 +226,7 @@
             text-transform: uppercase;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 0 18px;
             height: 52px;
@@ -239,10 +239,61 @@
             transition: all 0.3s;
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             border-color: var(--neon-cyan);
             box-shadow: 0 0 15px var(--neon-cyan-glow);
             background: rgba(0, 0, 0, 0.9);
+        }
+
+        /* --- GAME SWITCHER SECTION --- */
+        .game-switch-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0 30px;
+            background: rgba(12, 16, 26, 0.8);
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-tab-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-family: var(--font-tech);
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .game-tab-btn i {
+            font-size: 18px;
+        }
+
+        .game-tab-btn.active-ff {
+            background: linear-gradient(135deg, rgba(255, 123, 0, 0.25), rgba(255, 60, 0, 0.1));
+            border: 1px solid #ff7b00;
+            color: #ff9d00;
+            box-shadow: 0 0 15px rgba(255, 123, 0, 0.3);
+        }
+
+        .game-tab-btn.active-bgmi {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(0, 136, 255, 0.1));
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan-glow);
         }
 
         .quick-amounts {
@@ -552,7 +603,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
         }
@@ -960,6 +1011,8 @@
             .checkout-actions { flex-direction: column; }
             .dashboard-actions .btn-check-update, .dashboard-actions .btn-video-feedback { min-width: 80px; font-size: 10px; padding: 6px 10px; }
             .reseller-card { padding: 20px; }
+            .game-switch-wrapper { gap: 8px; }
+            .game-tab-btn { font-size: 12px; padding: 10px 12px; }
         }
     </style>
 </head>
@@ -976,6 +1029,7 @@
     <div id="toast-container"></div>
 
     <div id="auth-screen">
+        <!-- LOGIN BOX -->
         <div class="auth-card glass-cyber" id="login-box">
             <h1>NEXO <span>STORE</span></h1>
             <p>Enter your credentials to access the terminal.</p>
@@ -989,13 +1043,9 @@
             
             <button class="btn btn-primary" id="btn-login"><i class="fas fa-sign-in-alt"></i> SECURE LOGIN</button>
             <p class="auth-toggle">New user? <span id="go-to-signup" style="color:var(--neon-cyan); cursor:pointer; font-weight:700;">Create Account</span></p>
-            
-            <div style="display:flex; gap:10px; margin-top:25px;">
-                <a class="btn btn-outline" href="#" id="auth-wa-link" target="_blank" style="border-color:var(--wa-color); color:var(--wa-color);"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                <a class="btn btn-outline" href="#" id="auth-tg-link" target="_blank" style="border-color:var(--tg-color); color:var(--tg-color);"><i class="fab fa-telegram-plane"></i> Telegram</a>
-            </div>
         </div>
 
+        <!-- REGISTER / SIGNUP BOX -->
         <div class="auth-card glass-cyber hidden" id="signup-box">
             <h1>JOIN <span>NEXO</span></h1>
             <p>Create a secure account for instant access.</p>
@@ -1006,14 +1056,21 @@
             <div class="input-group">
                 <input id="signup-pass" placeholder="Password (Min 6 chars)" type="password">
             </div>
+            <div class="input-group">
+                <input id="signup-confirm-pass" placeholder="Confirm Password" type="password">
+            </div>
+            
+            <!-- GAME SELECTION SELECTION -->
+            <div class="input-group">
+                <label style="color:var(--neon-cyan);"><i class="fas fa-gamepad"></i> Select Preferred Game</label>
+                <select id="signup-preferred-game">
+                    <option value="ff">Free Fire</option>
+                    <option value="bgmi">BGMI</option>
+                </select>
+            </div>
             
             <button class="btn btn-primary" id="btn-signup"><i class="fas fa-user-plus"></i> REGISTER NOW</button>
             <p class="auth-toggle">Already registered? <span id="go-to-login" style="color:var(--neon-cyan); cursor:pointer; font-weight:700;">Login here</span></p>
-            
-            <div style="display:flex; gap:10px; margin-top:25px;">
-                <a class="btn btn-outline" href="#" id="auth-wa-link-2" target="_blank" style="border-color:var(--wa-color); color:var(--wa-color);"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                <a class="btn btn-outline" href="#" id="auth-tg-link-2" target="_blank" style="border-color:var(--tg-color); color:var(--tg-color);"><i class="fab fa-telegram-plane"></i> Telegram</a>
-            </div>
         </div>
     </div>
 
@@ -1048,6 +1105,16 @@
                 </div>
             </div>
 
+            <!-- FREE FIRE & BGMI SWITCHER TABS -->
+            <div class="game-switch-wrapper">
+                <button class="game-tab-btn active-ff" id="btn-tab-ff" onclick="switchGameCategory('ff')">
+                    <i class="fas fa-fire"></i> FREE FIRE
+                </button>
+                <button class="game-tab-btn" id="btn-tab-bgmi" onclick="switchGameCategory('bgmi')">
+                    <i class="fas fa-crosshairs"></i> BGMI
+                </button>
+            </div>
+
             <div id="promo-container" class="promo-slider hidden"></div>
 
             <div id="reseller-container" class="hidden"></div>
@@ -1059,7 +1126,7 @@
             </div>
 
             <div id="panels-container" class="panel-grid hidden"></div>
-            <div id="search-empty" class="empty-state hidden" style="text-align:center; padding:60px 20px; color:var(--text-muted);"><i class="fas fa-search" style="font-size:48px; margin-bottom:15px;"></i><p>No matching panel found</p></div>
+            <div id="search-empty" class="empty-state hidden" style="text-align:center; padding:60px 20px; color:var(--text-muted);"><i class="fas fa-search" style="font-size:48px; margin-bottom:15px;"></i><p>No matching panel found in this section</p></div>
         </div>
 
         <div class="page-content hidden" id="page-add-money">
@@ -1098,6 +1165,7 @@
             <h2 class="page-title" style="margin-bottom:25px;">MY <span>PROFILE</span></h2>
             <div class="glass-cyber" style="padding:10px; max-width:550px; margin:0 auto;">
                 <div class="profile-stat"><span><i class="fas fa-envelope" style="color:var(--neon-cyan);"></i> Email</span><strong id="prof-email">-</strong></div>
+                <div class="profile-stat"><span><i class="fas fa-gamepad" style="color:var(--neon-cyan);"></i> Preferred Game</span><strong id="prof-game" style="text-transform:uppercase;">-</strong></div>
                 <div class="profile-stat"><span><i class="fas fa-wallet" style="color:var(--neon-cyan);"></i> Balance</span><strong>₹<span id="prof-bal">0</span></strong></div>
                 <div class="profile-stat"><span><i class="fas fa-shopping-cart" style="color:var(--neon-cyan);"></i> Purchases</span><strong id="prof-purchases">0</strong></div>
                 <div class="profile-stat"><span><i class="fas fa-chart-line" style="color:var(--neon-cyan);"></i> Total Spent</span><strong>₹<span id="prof-spent">0</span></strong></div>
@@ -1173,7 +1241,8 @@
         const db = getDatabase(app);
 
         let currentUser = null;
-        let userData = { balance: 0, isReseller: false };
+        let userData = { balance: 0, isReseller: false, preferredGame: 'ff' };
+        let currentSelectedCategory = 'ff'; // Default Free Fire
         let refreshInterval = null;
         let balanceListenerUnsubscribe = null;
         let isSubmitting = false;
@@ -1200,6 +1269,23 @@
 
         window.setAmount = function(amt) {
             document.getElementById('add-amount').value = amt;
+        };
+
+        // Game Category Switching Logic
+        window.switchGameCategory = function(cat) {
+            currentSelectedCategory = cat;
+            const btnFF = document.getElementById('btn-tab-ff');
+            const btnBGMI = document.getElementById('btn-tab-bgmi');
+
+            if(cat === 'ff') {
+                btnFF.className = 'game-tab-btn active-ff';
+                btnBGMI.className = 'game-tab-btn';
+            } else {
+                btnFF.className = 'game-tab-btn';
+                btnBGMI.className = 'game-tab-btn active-bgmi';
+            }
+
+            fetchPanels();
         };
 
         function getVideoEmbedCode(url) {
@@ -1273,10 +1359,6 @@
         onValue(ref(db, 'support_links'), (snap) => {
             const data = snap.val();
             if(data) {
-                document.getElementById('auth-wa-link').href = data.whatsapp || '#';
-                document.getElementById('auth-wa-link-2').href = data.whatsapp || '#';
-                document.getElementById('auth-tg-link').href = data.telegram_login || '#';
-                document.getElementById('auth-tg-link-2').href = data.telegram_login || '#';
                 document.getElementById('global-telegram-btn').href = data.telegram_dashboard || '#';
             }
         });
@@ -1284,8 +1366,12 @@
         document.getElementById('btn-signup').onclick = async () => {
             const email = document.getElementById('signup-email').value.trim();
             const pass = document.getElementById('signup-pass').value;
+            const confirmPass = document.getElementById('signup-confirm-pass').value;
+            const preferredGame = document.getElementById('signup-preferred-game').value;
+
             if(!email || !email.includes('@')) return showToast("Valid email required", "error");
             if(pass.length < 6) return showToast("Password must be at least 6 characters", "error");
+            if(pass !== confirmPass) return showToast("Passwords do not match", "error");
 
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
@@ -1293,6 +1379,7 @@
                     email,
                     balance: 0,
                     isReseller: false,
+                    preferredGame: preferredGame,
                     createdAt: new Date().toISOString()
                 });
                 showToast("✅ Account created! Please login.");
@@ -1544,8 +1631,10 @@
                 if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
 
                 const isReseller = userSnap.val()?.isReseller || false;
+                const preferredGame = userSnap.val()?.preferredGame || 'ff';
 
                 document.getElementById('prof-email').innerText = currentUser.email;
+                document.getElementById('prof-game').innerText = preferredGame === 'ff' ? 'Free Fire' : 'BGMI';
                 document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
                 document.getElementById('prof-purchases').innerText = count;
                 document.getElementById('prof-spent').innerText = spent.toFixed(2);
@@ -1676,11 +1765,20 @@
                 snapshot.forEach((child) => {
                     const p = child.val();
                     if(p && p.status === 'active') {
-                        panelsList.push({ id: child.key, ...p });
+                        // Category filter (if panel has category field, otherwise default ff)
+                        const panelCat = (p.category || 'ff').toLowerCase();
+                        if(panelCat === currentSelectedCategory) {
+                            panelsList.push({ id: child.key, ...p });
+                        }
                     }
                 });
 
-                // SORT NEWEST FIRST - Always places newly added panels at top
+                if (panelsList.length === 0) {
+                    if(panelsContainer) panelsContainer.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted);"><i class="fas fa-gamepad" style="font-size:48px; margin-bottom:15px;"></i><p>No ${currentSelectedCategory.toUpperCase()} panels available right now.</p></div>`;
+                    return;
+                }
+
+                // SORT NEWEST FIRST
                 panelsList.sort((a, b) => {
                     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -1868,10 +1966,12 @@
 
                 if (balanceListenerUnsubscribe) balanceListenerUnsubscribe();
                 
-                // Load user data including reseller status
+                // Load user data including reseller status & preferred game
                 const userSnap = await get(ref(db, `users/${user.uid}`));
                 if(userSnap.exists()) {
                     userData.isReseller = userSnap.val().isReseller || false;
+                    userData.preferredGame = userSnap.val().preferredGame || 'ff';
+                    switchGameCategory(userData.preferredGame);
                 }
 
                 const balanceRef = ref(db, `users/${user.uid}/balance`);
@@ -1882,7 +1982,6 @@
                 });
 
                 displayReseller();
-                fetchPanels();
                 initPromotions();
                 navigate('home');
             } else {

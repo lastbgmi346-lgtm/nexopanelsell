@@ -660,6 +660,56 @@
 
         .promo-title { color: white; font-weight: 700; font-size: 16px; }
 
+        .reseller-card {
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.08));
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .reseller-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .reseller-title {
+            font-family: var(--font-tech);
+            font-size: 18px;
+            font-weight: 800;
+            margin: 10px 0;
+            color: #FFD700;
+        }
+
+        .reseller-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .reseller-benefit {
+            background: rgba(0, 255, 102, 0.1);
+            border-left: 3px solid #00ff66;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 12px 0;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
         .panel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -740,6 +790,17 @@
         .panel-info { padding: 22px; flex: 1; display: flex; flex-direction: column; }
         .panel-title { font-family: var(--font-tech); font-size: 18px; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; }
 
+        .price-display {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            margin-bottom: 12px;
+        }
+
+        .price-display.discount {
+            color: var(--success);
+        }
+
         .features-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
         .feature-chip {
             background: rgba(0, 240, 255, 0.06);
@@ -796,6 +857,25 @@
             padding: 18px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 14px;
+        }
+
+        .reseller-status {
+            display: flex;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .reseller-badge-small {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
         }
 
         .modal-overlay {
@@ -879,6 +959,7 @@
             .promo-card { flex: 0 0 92%; height: 150px; }
             .checkout-actions { flex-direction: column; }
             .dashboard-actions .btn-check-update, .dashboard-actions .btn-video-feedback { min-width: 80px; font-size: 10px; padding: 6px 10px; }
+            .reseller-card { padding: 20px; }
         }
     </style>
 </head>
@@ -968,6 +1049,8 @@
 
             <div id="promo-container" class="promo-slider hidden"></div>
 
+            <div id="reseller-container" class="hidden"></div>
+
             <div id="skeleton-container" class="panel-grid">
                 <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
                 <div class="skeleton-card"><div class="skeleton-video"></div><div class="skeleton-title"></div><div><span class="skeleton-chip"></span><span class="skeleton-chip"></span></div><div class="skeleton-btn"></div></div>
@@ -1017,6 +1100,7 @@
                 <div class="profile-stat"><span><i class="fas fa-wallet" style="color:var(--neon-cyan);"></i> Balance</span><strong>₹<span id="prof-bal">0</span></strong></div>
                 <div class="profile-stat"><span><i class="fas fa-shopping-cart" style="color:var(--neon-cyan);"></i> Purchases</span><strong id="prof-purchases">0</strong></div>
                 <div class="profile-stat"><span><i class="fas fa-chart-line" style="color:var(--neon-cyan);"></i> Total Spent</span><strong>₹<span id="prof-spent">0</span></strong></div>
+                <div class="reseller-status" id="reseller-status-profile" style="display:none;"><span><i class="fas fa-crown" style="color:#FFD700;"></i> Status</span><span class="reseller-badge-small">ACTIVE RESELLER</span></div>
                 <div class="profile-stat" style="border:none;"><span><i class="fas fa-calendar" style="color:var(--neon-cyan);"></i> Joined</span><strong id="prof-date">-</strong></div>
             </div>
         </div>
@@ -1038,6 +1122,7 @@
             <div class="checkout-details">
                 <div class="checkout-row"><span>Item:</span><strong id="chk-panel-name">-</strong></div>
                 <div class="checkout-row"><span>Plan:</span><strong id="chk-plan-label">-</strong></div>
+                <div class="checkout-row"><span>Type:</span><strong id="chk-type-label">Regular User</strong></div>
                 <div class="checkout-row"><span>Price:</span><strong>₹<span id="chk-orig-price">0</span></strong></div>
                 <div class="checkout-total"><span>Total:</span><div><span id="chk-strike-price" class="strike-price hidden"></span> ₹<span id="chk-final-price">0</span></div></div>
             </div>
@@ -1087,7 +1172,7 @@
         const db = getDatabase(app);
 
         let currentUser = null;
-        let userData = { balance: 0 };
+        let userData = { balance: 0, isReseller: false };
         let refreshInterval = null;
         let balanceListenerUnsubscribe = null;
         let isSubmitting = false;
@@ -1206,6 +1291,7 @@
                 await set(ref(db, `users/${cred.user.uid}`), {
                     email,
                     balance: 0,
+                    isReseller: false,
                     createdAt: new Date().toISOString()
                 });
                 showToast("✅ Account created! Please login.");
@@ -1319,7 +1405,6 @@
                 console.log('✅ Payment Response:', data);
 
                 if (data.success && data.checkout_url) {
-                    // ✅ Store user_uid for success page
                     sessionStorage.setItem('user_uid', currentUser.uid);
                     sessionStorage.setItem('current_order_id', data.order_id);
                     sessionStorage.setItem('payable_amount', data.payable_amount);
@@ -1446,12 +1531,18 @@
                 let count = 0, spent = 0;
                 if(purchaseSnap.exists()) purchaseSnap.forEach(c => { count++; spent += c.val().price || 0; });
 
+                const isReseller = userSnap.val()?.isReseller || false;
+
                 document.getElementById('prof-email').innerText = currentUser.email;
                 document.getElementById('prof-bal').innerText = userSnap.val()?.balance || 0;
                 document.getElementById('prof-purchases').innerText = count;
                 document.getElementById('prof-spent').innerText = spent.toFixed(2);
                 if(userSnap.val()?.createdAt) {
                     document.getElementById('prof-date').innerText = new Date(userSnap.val().createdAt).toLocaleDateString();
+                }
+
+                if(isReseller) {
+                    document.getElementById('reseller-status-profile').style.display = 'flex';
                 }
             } catch(e) {}
         }
@@ -1483,6 +1574,78 @@
             });
         }
 
+        function displayReseller() {
+            const container = document.getElementById('reseller-container');
+            if(!userData.isReseller) {
+                container.innerHTML = `
+                    <div class="reseller-card">
+                        <div class="reseller-badge"><i class="fas fa-crown"></i> RESELLER PROGRAM</div>
+                        <div class="reseller-title">Become a NEXO Reseller</div>
+                        <div class="reseller-text">₹499 - Get 40% discount on all premium keys + dedicated admin support</div>
+                        <div class="reseller-benefit"><i class="fas fa-check"></i> All keys at 40% reduced price</div>
+                        <div class="reseller-benefit"><i class="fas fa-check"></i> Priority customer support</div>
+                        <div class="reseller-benefit"><i class="fas fa-check"></i> Lifetime reseller benefits</div>
+                        <button class="btn btn-primary" style="margin-top:18px;" onclick="buyReseller()"><i class="fas fa-crown"></i> UPGRADE TO RESELLER - ₹499</button>
+                    </div>`;
+                container.classList.remove('hidden');
+            } else {
+                container.innerHTML = `
+                    <div class="reseller-card" style="border-color:rgba(0, 255, 102, 0.5); background:rgba(0, 255, 102, 0.05);">
+                        <div style="display:inline-block; background:rgba(0, 255, 102, 0.2); color:#00ff66; padding:8px 20px; border-radius:30px; font-size:11px; font-weight:800; margin-bottom:12px; text-transform:uppercase;"><i class="fas fa-check-circle"></i> ACTIVE RESELLER</div>
+                        <div class="reseller-title" style="color:#00ff66;">You're a NEXO Reseller!</div>
+                        <div class="reseller-text">Enjoy 40% discount on all premium keys + exclusive benefits</div>
+                        <div class="reseller-benefit" style="border-left-color:#00ff66; background:rgba(0, 255, 102, 0.1);"><i class="fas fa-check"></i> Saving 40% on every purchase</div>
+                        <div class="reseller-benefit" style="border-left-color:#00ff66; background:rgba(0, 255, 102, 0.1);"><i class="fas fa-check"></i> Priority admin support</div>
+                    </div>`;
+                container.classList.remove('hidden');
+            }
+        }
+
+        window.buyReseller = async () => {
+            if(!currentUser) return showToast("Please login first", "error");
+            if(userData.isReseller) return showToast("You're already a reseller!", "warning");
+
+            const resellerPrice = 499;
+            if(userData.balance < resellerPrice) {
+                return showToast(`Insufficient balance. Need ₹${resellerPrice}. Current: ₹${userData.balance}`, "error");
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+
+            try {
+                const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= resellerPrice ? bal - resellerPrice : undefined);
+                
+                if(result.committed) {
+                    await update(ref(db, `users/${currentUser.uid}`), { isReseller: true });
+                    
+                    await push(ref(db, `purchases/${currentUser.uid}`), {
+                        panelId: "reseller",
+                        panelName: "NEXO Reseller Status",
+                        plan: "reseller",
+                        label: "Reseller Upgrade",
+                        price: resellerPrice,
+                        key: "RESELLER_ACTIVE",
+                        keyStatus: "delivered",
+                        date: serverTimestamp()
+                    });
+
+                    userData.isReseller = true;
+                    displayReseller();
+                    showToast("🎉 Welcome to NEXO Reseller Program! Enjoy 40% discount!", "success");
+                    fetchPanels();
+                } else {
+                    showToast("Insufficient balance", "error");
+                }
+            } catch(e) {
+                showToast("Error: " + e.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-crown"></i> UPGRADE TO RESELLER - ₹499';
+            }
+        };
+
         function fetchPanels() {
             onValue(ref(db, 'panels'), (snapshot) => {
                 const skeleton = document.getElementById('skeleton-container');
@@ -1497,11 +1660,22 @@
                     return;
                 }
 
+                const panelsList = [];
                 snapshot.forEach((child) => {
-                    const panelId = child.key;
                     const p = child.val();
-                    if(!p || p.status !== 'active') return;
+                    if(p && p.status === 'active') {
+                        panelsList.push({ id: child.key, ...p });
+                    }
+                });
 
+                // SORT NEWEST FIRST - by createdAt or push key
+                panelsList.sort((a, b) => {
+                    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                    return timeB - timeA;
+                });
+
+                panelsList.forEach((p) => {
                     let featuresHtml = (p.description || 'Premium Tool').split(/\n|-/).filter(f => f.trim()).slice(0,4)
                         .map(f => `<span class="feature-chip"><i class="fas fa-bolt"></i> ${f.trim()}</span>`).join('');
 
@@ -1516,11 +1690,14 @@
                     }
 
                     if (plansList.length > 0) {
-                        plansHtml = `<select class="plan-select" id="plan-${panelId}">`;
+                        plansHtml = `<select class="plan-select" id="plan-${p.id}">`;
                         plansList.forEach((plan, idx) => {
                             const pKey = plan.key || plan.id || idx;
                             const pLabel = plan.label || plan.name || plan.title || 'Plan ' + (idx + 1);
-                            const pPrice = plan.price || 0;
+                            let pPrice = plan.price || 0;
+                            if(userData.isReseller) {
+                                pPrice = Math.round(pPrice * 0.6);
+                            }
                             const pDuration = plan.duration || '1 Day';
                             const optVal = JSON.stringify({ key: pKey, label: pLabel, price: pPrice, duration: pDuration });
                             plansHtml += `<option value='${optVal.replace(/'/g, "&apos;")}'>${pLabel} - ₹${pPrice}</option>`;
@@ -1535,8 +1712,8 @@
                     const videoData = getVideoEmbedCode(rawVideoUrl);
 
                     if(videoData) {
-                        const containerId = `video-${panelId}`;
-                        const thumbId = `thumb-${panelId}`;
+                        const containerId = `video-${p.id}`;
+                        const thumbId = `thumb-${p.id}`;
                         let thumbImg = videoData.thumbnail ? `<img src="${videoData.thumbnail}">` : '';
                         videoHtml = `
                             <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${videoData.embedUrl}" data-video-type="${videoData.type}">
@@ -1547,8 +1724,8 @@
                                 </div>
                             </div>`;
                     } else if (rawVideoUrl) {
-                        const containerId = `video-${panelId}`;
-                        const thumbId = `thumb-${panelId}`;
+                        const containerId = `video-${p.id}`;
+                        const thumbId = `thumb-${p.id}`;
                         videoHtml = `
                             <div class="video-container" id="${containerId}" onclick="playVideo('${containerId}', '${thumbId}')" data-video-url="${rawVideoUrl}" data-video-type="youtube">
                                 <div class="video-thumbnail" id="${thumbId}">
@@ -1574,7 +1751,7 @@
                                 <button class="btn-check-update" onclick="window.open('${p.checkUpdateLink || '#'}', '_blank')"><i class="fas fa-sync-alt"></i> UPDATE FILE</button>
                                 <button class="btn-video-feedback" onclick="window.open('${p.videoFeedbackLink || '#'}', '_blank')"><i class="fas fa-video"></i> FEEDBACK</button>
                             </div>
-                            <button class="btn btn-purchase" onclick="handlePurchase('${panelId}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')"><i class="fas fa-shopping-cart"></i> PURCHASE NOW</button>
+                            <button class="btn btn-purchase" onclick="handlePurchase('${p.id}', '${p.name.replace(/'/g, "\\'")}', '${p.link || ''}')"><i class="fas fa-shopping-cart"></i> PURCHASE NOW</button>
                         </div>`;
 
                     panelsContainer.appendChild(card);
@@ -1613,8 +1790,10 @@
                 duration: plan.duration || '1 Day'
             };
             
+            const userType = userData.isReseller ? 'RESELLER (40% OFF)' : 'Regular User';
             document.getElementById('chk-panel-name').innerText = panelName;
             document.getElementById('chk-plan-label').innerText = plan.label;
+            document.getElementById('chk-type-label').innerText = userType;
             document.getElementById('chk-orig-price').innerText = plan.price;
             document.getElementById('chk-final-price').innerText = plan.price;
             document.getElementById('modal-checkout').classList.add('active');
@@ -1659,7 +1838,7 @@
             }
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             const loader = document.getElementById('loader');
             const authScreen = document.getElementById('auth-screen');
             const mainApp = document.getElementById('main-app');
@@ -1675,6 +1854,13 @@
                 }
 
                 if (balanceListenerUnsubscribe) balanceListenerUnsubscribe();
+                
+                // Load user data including reseller status
+                const userSnap = await get(ref(db, `users/${user.uid}`));
+                if(userSnap.exists()) {
+                    userData.isReseller = userSnap.val().isReseller || false;
+                }
+
                 const balanceRef = ref(db, `users/${user.uid}/balance`);
                 balanceListenerUnsubscribe = onValue(balanceRef, (snap) => {
                     const balance = snap.val() || 0;
@@ -1682,6 +1868,7 @@
                     document.getElementById('nav-balance').innerText = balance.toFixed(2);
                 });
 
+                displayReseller();
                 fetchPanels();
                 initPromotions();
                 navigate('home');

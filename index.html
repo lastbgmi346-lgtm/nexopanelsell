@@ -1032,6 +1032,7 @@
                 <div class="dropdown-item" data-page="home"><i class="fas fa-home"></i> Dashboard</div>
                 <div class="dropdown-item" data-page="add-money"><i class="fas fa-plus-circle"></i> Add Funds</div>
                 <div class="dropdown-item" data-page="history"><i class="fas fa-key"></i> My Keys</div>
+                <div class="dropdown-item" data-page="reseller"><i class="fas fa-crown"></i> Reseller Program</div>
                 <div class="dropdown-item" data-page="profile"><i class="fas fa-user"></i> Profile</div>
                 <div class="dropdown-item" id="btn-logout" style="color:var(--error);"><i class="fas fa-sign-out-alt" style="color:var(--error);"></i> Logout</div>
             </div>
@@ -1322,9 +1323,20 @@
         };
 
         window.navigate = (pageId) => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+
+            if (pageId === 'reseller') {
+                document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+                document.getElementById('page-home').classList.remove('hidden');
+                const resellerCard = document.getElementById('reseller-container');
+                if (resellerCard) {
+                    resellerCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
             document.getElementById(`page-${pageId}`).classList.remove('hidden');
-            document.getElementById('dropdown-menu').classList.remove('active');
 
             if(pageId === 'history') {
                 loadHistory();
@@ -1668,11 +1680,12 @@
                     }
                 });
 
-                // SORT NEWEST FIRST - by createdAt or push key
+                // SORT NEWEST FIRST - Always places newly added panels at top
                 panelsList.sort((a, b) => {
                     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                    return timeB - timeA;
+                    if (timeA !== timeB) return timeB - timeA;
+                    return b.id.localeCompare(a.id);
                 });
 
                 panelsList.forEach((p) => {

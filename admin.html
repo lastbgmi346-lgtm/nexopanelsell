@@ -219,6 +219,7 @@
     <div class="sidebar">
         <div class="sidebar-item active" data-page="dashboard"><i class="fas fa-chart-line"></i><span> Dashboard & Revenue</span></div>
         <div class="sidebar-item" data-page="panels"><i class="fas fa-box"></i><span> Panel Management</span></div>
+        <div class="sidebar-item" data-page="key-stock"><i class="fas fa-database"></i><span> Key Stock (Bulk)</span></div>
         <div class="sidebar-item" data-page="promotions"><i class="fas fa-sliders-h"></i><span> Promotions</span></div>
         <div class="sidebar-item" data-page="key-delivery"><i class="fas fa-key"></i><span> Key Delivery</span></div>
         <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
@@ -267,8 +268,56 @@
 
         <!-- PANELS MANAGEMENT -->
         <div id="panels-page" class="hidden">
-            <div class="card-header"><h3>Panel Management</h3><button class="btn btn-primary" id="add-panel-btn"><i class="fas fa-plus"></i> Add Panel</button></div>
-            <div class="table-responsive"><table id="panels-table"><thead><th>Name</th><th>PID</th><th>Status</th><th>Plans</th><th>Actions</th></thead><tbody id="panels-list"></tbody></table></div>
+            <div class="card-header"><h3>Panel Management (BGMI & Games)</h3><button class="btn btn-primary" id="add-panel-btn"><i class="fas fa-plus"></i> Add Panel</button></div>
+            <div class="table-responsive"><table id="panels-table"><thead><th>Name</th><th>Category</th><th>PID</th><th>Status</th><th>Plans</th><th>Actions</th></thead><tbody id="panels-list"></tbody></table></div>
+        </div>
+
+        <!-- BULK KEY STOCK MANAGEMENT -->
+        <div id="key-stock-page" class="hidden">
+            <h2 class="page-title">Bulk <span>Key Stock</span> Management</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-plus-circle" style="color:var(--neon-cyan);"></i> Add Keys to Stock (Auto Instant Delivery)</h3>
+                </div>
+                <div class="input-group">
+                    <label>Select Panel</label>
+                    <select id="stock-panel-select" onchange="loadPanelPlansForStock()">
+                        <option value="">-- Select Panel --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Select Plan</label>
+                    <select id="stock-plan-select">
+                        <option value="">-- Select Plan First --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Paste License Keys (One key per line)</label>
+                    <textarea id="stock-keys-input" rows="8" placeholder="NEXO-KEY-1111&#10;NEXO-KEY-2222&#10;NEXO-KEY-3333"></textarea>
+                </div>
+                <button class="btn btn-primary" id="save-stock-keys-btn"><i class="fas fa-save"></i> Save Keys to Pool</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-boxes" style="color:var(--neon-cyan);"></i> Available Keys in Stock</h3>
+                    <button class="btn btn-sm" onclick="loadKeyStockList()"><i class="fas fa-sync"></i> Refresh Stock</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <th>Panel</th>
+                            <th>Plan</th>
+                            <th>License Key</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </thead>
+                        <tbody id="key-stock-list">
+                            <tr><td colspan="5">Select a panel or load stock...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- PROMOTIONS -->
@@ -326,9 +375,19 @@
 
 <!-- MODALS -->
 <div class="modal-overlay" id="panel-modal"><div class="modal"><div class="modal-header"><h3 id="panel-modal-title">Add Panel</h3><button class="close-modal" onclick="closeModal('panel-modal')">&times;</button></div>
-    <div class="input-group"><label>Panel Name</label><input id="panel-name" placeholder="e.g., VIP Panel Pro"></div>
-    <div class="input-group"><label>PID (Product ID)</label><input id="panel-pid" placeholder="e.g., PID_VIP_01"></div>
-    <div class="input-group"><label>Description</label><textarea id="panel-desc" rows="2" placeholder="Aimbot, ESP, Wallhack"></textarea></div>
+    <div class="input-group"><label>Panel Name</label><input id="panel-name" placeholder="e.g., BGMI VIP Mod, FF Hack"></div>
+    <div class="input-group">
+        <label>Category / Game</label>
+        <select id="panel-category">
+            <option value="BGMI">BGMI</option>
+            <option value="PUBG Mobile">PUBG Mobile</option>
+            <option value="Free Fire">Free Fire</option>
+            <option value="Call of Duty">Call of Duty</option>
+            <option value="Other Games">Other Games</option>
+        </select>
+    </div>
+    <div class="input-group"><label>PID (Product ID)</label><input id="panel-pid" placeholder="e.g., PID_BGMI_VIP"></div>
+    <div class="input-group"><label>Description</label><textarea id="panel-desc" rows="2" placeholder="Aimbot, ESP, Wallhack, No Recoil"></textarea></div>
     <div class="input-group"><label>Video Link</label><input id="panel-video" placeholder="https://youtu.be/..."></div>
     <div class="input-group"><label>CHECK UPDATE Link</label><input id="panel-check-update" placeholder="https://..."></div>
     <div class="input-group"><label>VIDEO/FEEDBACK Link</label><input id="panel-video-feedback" placeholder="https://..."></div>
@@ -371,6 +430,7 @@
 
     let globalPurchases = [];
     let globalUsers = {};
+    let globalPanels = {};
 
     function showToast(msg, type='success') { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=`<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
     window.closeModal = (id) => document.getElementById(id).classList.remove('active');
@@ -407,6 +467,7 @@
         document.querySelector(`.sidebar-item[data-page="${page}"]`).classList.add('active'); 
 
         if(page === 'panels') loadPanels();
+        if(page === 'key-stock') loadKeyStockPage();
         if(page === 'promotions') loadPromotions();
         if(page === 'key-delivery') loadKeyDelivery();
         if(page === 'payments') loadPayments();
@@ -504,10 +565,13 @@
         tbody.innerHTML = ''; 
         if(!snap.exists()) return; 
 
-        Object.entries(snap.val()).forEach(([id,panel])=>{ 
+        globalPanels = snap.val();
+
+        Object.entries(globalPanels).forEach(([id,panel])=>{ 
             const row = document.createElement('tr'); 
             row.innerHTML = `
                 <td><i class="fas fa-cube" style="color:var(--neon-cyan);"></i> <strong>${panel.name}</strong></td>
+                <td><span class="badge-auto">${panel.category || 'BGMI'}</span></td>
                 <td><code style="color:var(--warning);">${panel.pid || 'N/A'}</code></td>
                 <td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td>
                 <td>${panel.plans ? Object.keys(panel.plans).length : 0} plans</td>
@@ -527,6 +591,7 @@
 
         document.getElementById('panel-modal-title').innerText = 'Edit Panel'; 
         document.getElementById('panel-name').value = p.name || ''; 
+        document.getElementById('panel-category').value = p.category || 'BGMI'; 
         document.getElementById('panel-pid').value = p.pid || ''; 
         document.getElementById('panel-desc').value = p.description || ''; 
         document.getElementById('panel-video').value = p.video || ''; 
@@ -582,6 +647,7 @@
     document.getElementById('save-panel-btn').onclick = async() => { 
         const id = document.getElementById('edit-panel-id').value;
         const name = document.getElementById('panel-name').value.trim(); 
+        const category = document.getElementById('panel-category').value; 
         const panelPid = document.getElementById('panel-pid').value.trim(); 
 
         if(!name) return showToast("Name required","error"); 
@@ -602,6 +668,7 @@
 
         const data = {
             name,
+            category,
             pid: panelPid,
             description: document.getElementById('panel-desc').value,
             video: document.getElementById('panel-video').value,
@@ -630,6 +697,7 @@
     function resetPanelForm(){ 
         document.getElementById('panel-modal-title').innerText = 'Add Panel'; 
         document.getElementById('panel-name').value = ''; 
+        document.getElementById('panel-category').value = 'BGMI'; 
         document.getElementById('panel-pid').value = ''; 
         document.getElementById('panel-desc').value = ''; 
         document.getElementById('panel-video').value = ''; 
@@ -642,6 +710,125 @@
         addPlanField();
     }
 
+    /* ========================================================
+       KEY STOCK (BULK ADD & AUTO-DELIVERY STOCK) SYSTEM
+    ======================================================== */
+    async function loadKeyStockPage() {
+        const snap = await get(ref(db, 'panels'));
+        const select = document.getElementById('stock-panel-select');
+        select.innerHTML = '<option value="">-- Select Panel --</option>';
+
+        if(snap.exists()) {
+            globalPanels = snap.val();
+            Object.entries(globalPanels).forEach(([pId, panel]) => {
+                const opt = document.createElement('option');
+                opt.value = pId;
+                opt.innerText = `${panel.name} (${panel.category || 'Game'})`;
+                select.appendChild(opt);
+            });
+        }
+
+        loadKeyStockList();
+    }
+
+    window.loadPanelPlansForStock = () => {
+        const panelId = document.getElementById('stock-panel-select').value;
+        const planSelect = document.getElementById('stock-plan-select');
+        planSelect.innerHTML = '<option value="">-- Select Plan --</option>';
+
+        if(!panelId || !globalPanels[panelId] || !globalPanels[panelId].plans) return;
+
+        Object.entries(globalPanels[panelId].plans).forEach(([planKey, plan]) => {
+            const opt = document.createElement('option');
+            opt.value = planKey;
+            opt.innerText = `${plan.label} - ₹${plan.price}`;
+            planSelect.appendChild(opt);
+        });
+    };
+
+    document.getElementById('save-stock-keys-btn').onclick = async () => {
+        const panelId = document.getElementById('stock-panel-select').value;
+        const planKey = document.getElementById('stock-plan-select').value;
+        const rawText = document.getElementById('stock-keys-input').value.trim();
+
+        if(!panelId) return showToast("Select a Panel", "error");
+        if(!planKey) return showToast("Select a Plan", "error");
+        if(!rawText) return showToast("Enter at least one key", "error");
+
+        const keysArray = rawText.split('\n').map(k => k.trim()).filter(k => k.length > 0);
+
+        if(keysArray.length === 0) return showToast("No valid keys found", "error");
+
+        try {
+            let addedCount = 0;
+            for(let keyStr of keysArray) {
+                const newKeyRef = push(ref(db, `key_pool/${panelId}/${planKey}`));
+                await set(newKeyRef, {
+                    key: keyStr,
+                    status: 'available',
+                    createdAt: serverTimestamp()
+                });
+                addedCount++;
+            }
+
+            showToast(` Successfully added ${addedCount} keys to stock!`);
+            document.getElementById('stock-keys-input').value = '';
+            loadKeyStockList();
+        } catch(e) {
+            showToast("Error adding keys: " + e.message, "error");
+        }
+    };
+
+    async function loadKeyStockList() {
+        const tbody = document.getElementById('key-stock-list');
+        tbody.innerHTML = '<tr><td colspan="5">Loading key stock...</td></tr>';
+
+        const snap = await get(ref(db, 'key_pool'));
+        if(!snap.exists()) {
+            tbody.innerHTML = '<tr><td colspan="5">No keys in stock pool yet. Add some above!</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        const poolData = snap.val();
+        let totalCount = 0;
+
+        Object.entries(poolData).forEach(([pId, plansObj]) => {
+            const panelName = globalPanels[pId]?.name || pId;
+            Object.entries(plansObj).forEach(([planKey, keysObj]) => {
+                const planLabel = globalPanels[pId]?.plans?.[planKey]?.label || planKey;
+                
+                Object.entries(keysObj).forEach(([kId, kData]) => {
+                    totalCount++;
+                    const row = document.createElement('tr');
+                    const isAvail = kData.status === 'available';
+                    row.innerHTML = `
+                        <td><strong>${panelName}</strong></td>
+                        <td>${planLabel}</td>
+                        <td><code style="color:var(--neon-cyan);">${kData.key}</code></td>
+                        <td><span style="color:${isAvail ? '#0f0' : '#ff2a5f'}">${isAvail ? '🟢 Available' : '🔴 Used/Delivered'}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteStockKey('${pId}','${planKey}','${kId}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        });
+
+        if(totalCount === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">No keys in stock pool yet.</td></tr>';
+        }
+    }
+
+    window.deleteStockKey = async (panelId, planKey, kId) => {
+        if(confirm('Delete this key from stock?')) {
+            await remove(ref(db, `key_pool/${panelId}/${planKey}/${kId}`));
+            showToast('Key deleted from stock!');
+            loadKeyStockList();
+        }
+    };
+
     async function loadKeyDelivery(){ 
         const tbody = document.getElementById('key-delivery-list'); 
         tbody.innerHTML = '<tr><td colspan="8">Fetching pending requests...</td></tr>'; 
@@ -649,7 +836,7 @@
         const requests = globalPurchases.filter(p => p.keyStatus === 'pending');
 
         if(requests.length === 0) { 
-            tbody.innerHTML = '<tr><td colspan="8">✅ All keys delivered! No pending requests.</td></tr>'; 
+            tbody.innerHTML = '<tr><td colspan="8"> All keys delivered! No pending requests.</td></tr>'; 
             return; 
         }
 
@@ -663,7 +850,7 @@
                 <td>${req.label || req.plan || 'N/A'}</td>
                 <td>₹${req.price || 0}</td>
                 <td><small>${req.date ? new Date(req.date).toLocaleDateString() : 'N/A'}</small></td>
-                <td style="color:var(--warning);">⏳ Pending</td>
+                <td style="color:var(--warning);"> Pending</td>
                 <td>
                     <button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.buyerEmail}','${req.panelName}','${req.label}')">
                         <i class="fas fa-key"></i> Deliver Key
@@ -698,7 +885,7 @@
                 deliveryType: 'manual_web',
                 deliveredAt: serverTimestamp() 
             }); 
-            showToast("✅ Key delivered manually!"); 
+            showToast(" Key delivered manually!"); 
             closeModal('key-delivery-modal'); 
             await loadDashboardStats();
             loadKeyDelivery(); 
@@ -798,9 +985,9 @@
                 screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" onclick="window.open('${payment.screenshot}', '_blank')" title="Click to view full image">`; 
             } 
 
-            let statusText = '⏳ Pending'; 
-            if(payment.status === 'approved') statusText = '✅ Approved'; 
-            if(payment.status === 'rejected') statusText = '❌ Rejected'; 
+            let statusText = ' Pending'; 
+            if(payment.status === 'approved') statusText = ' Approved'; 
+            if(payment.status === 'rejected') statusText = ' Rejected'; 
 
             let actionsHtml = ''; 
             if(payment.status === 'pending') { 
@@ -835,7 +1022,7 @@
             await set(balRef, (balSnap.val() || 0) + payment.amount); 
             await update(ref(db, `payments/${id}`), { status: 'approved', approvedAt: serverTimestamp() }); 
 
-            showToast(`✅ ₹${payment.amount} added to user balance!`); 
+            showToast(` ₹${payment.amount} added to user balance!`); 
             loadPayments(); 
             loadDashboardStats(); 
         } catch(e) { 
@@ -847,7 +1034,7 @@
         if(!confirm(`Reject payment?`)) return; 
         try { 
             await update(ref(db, `payments/${id}`), { status: 'rejected', rejectedAt: serverTimestamp() }); 
-            showToast("❌ Payment rejected!"); 
+            showToast(" Payment rejected!"); 
             loadPayments(); 
         } catch(e) { 
             showToast("Error: " + e.message, "error"); 
@@ -960,6 +1147,8 @@
     window.removePlan = removePlan;
     window.openKeyDeliveryModal = openKeyDeliveryModal;
     window.loadDashboardStats = loadDashboardStats;
+    window.loadKeyStockList = loadKeyStockList;
+    window.deleteStockKey = deleteStockKey;
 </script>
 </body>
 </html>

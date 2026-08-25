@@ -1930,6 +1930,7 @@
             document.getElementById('modal-checkout').classList.add('active');
         };
 
+        // AUTO-DELIVERY FROM KEY POOL - MODIFIED PURCHASE
         document.getElementById('confirm-purchase-btn').onclick = async function() {
             if(!currentUser) return;
 
@@ -1944,20 +1945,61 @@
                 const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
                 
                 if(result.committed) {
+                    // Check if auto-key exists in key_pool
+                    const panelId = window.currentCheckout.panelId;
+                    const planKey = window.currentCheckout.planKey;
+                    
+                    let deliveredKey = null;
+                    let deliveryType = 'pending_manual';
+                    
+                    // Check key_pool for available key
+                    const keyPoolRef = ref(db, `key_pool/${panelId}/${planKey}`);
+                    const keyPoolSnap = await get(keyPoolRef);
+                    
+                    if(keyPoolSnap.exists()) {
+                        // Find first available key
+                        let foundKeyId = null;
+                        let foundKeyData = null;
+                        
+                        keyPoolSnap.forEach((child) => {
+                            if(!foundKeyId && child.val().status === 'available') {
+                                foundKeyId = child.key;
+                                foundKeyData = child.val();
+                            }
+                        });
+                        
+                        if(foundKeyId && foundKeyData) {
+                            deliveredKey = foundKeyData.key;
+                            deliveryType = 'auto';
+                            // Mark key as used
+                            await update(ref(db, `key_pool/${panelId}/${planKey}/${foundKeyId}`), {
+                                status: 'used',
+                                usedFor: currentUser.uid,
+                                usedAt: serverTimestamp()
+                            });
+                        }
+                    }
+                    
+                    // Create purchase record
                     await push(ref(db, `purchases/${currentUser.uid}`), {
                         panelId: window.currentCheckout.panelId,
                         panelName: window.currentCheckout.panelName,
                         plan: window.currentCheckout.planKey,
                         label: window.currentCheckout.label,
                         price: price,
-                        key: "PENDING",
-                        keyStatus: "pending",
+                        key: deliveredKey || "PENDING",
+                        keyStatus: deliveredKey ? 'delivered' : 'pending',
+                        deliveryType: deliveryType,
                         link: window.currentCheckout.link,
                         date: serverTimestamp()
                     });
 
                     document.getElementById('modal-checkout').classList.remove('active');
                     document.getElementById('modal-success').classList.add('active');
+                    
+                    if(deliveredKey) {
+                        showToast("🎉 Key delivered instantly from stock!", "success");
+                    }
                 } else {
                     showToast("Insufficient balance", "error");
                 }

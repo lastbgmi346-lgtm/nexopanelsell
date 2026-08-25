@@ -1219,10 +1219,6 @@
                 <button class="btn btn-outline" onclick="closeModal('modal-checkout')">CANCEL</button>
                 <button class="btn btn-purchase" id="confirm-purchase-btn">PAY WITH BALANCE</button>
             </div>
-            <div style="margin-top:15px; text-align:center;">
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">OR DIRECT PAY VIA GATEWAY</p>
-                <button class="btn btn-primary" id="direct-gateway-pay-btn"><i class="fas fa-bolt"></i> DIRECT FAST GATEWAY PAY</button>
-            </div>
         </div>
     </div>
 
@@ -1566,31 +1562,6 @@
                 btn.innerHTML = originalText;
                 isSubmitting = false;
             }, 4000);
-        };
-
-        // Direct Purchase via Gateway
-        document.getElementById('direct-gateway-pay-btn').onclick = async function() {
-            if(!currentUser) return;
-            const price = window.currentCheckout.price;
-
-            await push(ref(db, `purchases/${currentUser.uid}`), {
-                panelId: window.currentCheckout.panelId,
-                panelName: window.currentCheckout.panelName,
-                plan: window.currentCheckout.planKey,
-                label: window.currentCheckout.label,
-                price: price,
-                key: "PENDING",
-                keyStatus: "pending",
-                link: window.currentCheckout.link,
-                paymentMode: "Direct Gateway",
-                date: serverTimestamp()
-            });
-
-            if (!paymentConfig) {
-                await loadPaymentConfig();
-            }
-
-            await initiateFamGatewayPayment(price);
         };
 
         async function loadHistory() {

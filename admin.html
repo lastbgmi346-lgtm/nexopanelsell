@@ -379,11 +379,11 @@
     <div class="input-group">
         <label>Category / Game</label>
         <select id="panel-category">
-            <option value="BGMI">BGMI</option>
-            <option value="PUBG Mobile">PUBG Mobile</option>
-            <option value="Free Fire">Free Fire</option>
-            <option value="Call of Duty">Call of Duty</option>
-            <option value="Other Games">Other Games</option>
+            <option value="ff">Free Fire</option>
+            <option value="bgmi">BGMI</option>
+            <option value="pubg">PUBG Mobile</option>
+            <option value="cod">Call of Duty</option>
+            <option value="other">Other Games</option>
         </select>
     </div>
     <div class="input-group"><label>PID (Product ID)</label><input id="panel-pid" placeholder="e.g., PID_BGMI_VIP"></div>
@@ -569,9 +569,10 @@
 
         Object.entries(globalPanels).forEach(([id,panel])=>{ 
             const row = document.createElement('tr'); 
+            const categoryDisplay = panel.category === 'ff' ? 'Free Fire' : panel.category === 'bgmi' ? 'BGMI' : panel.category || 'Other';
             row.innerHTML = `
                 <td><i class="fas fa-cube" style="color:var(--neon-cyan);"></i> <strong>${panel.name}</strong></td>
-                <td><span class="badge-auto">${panel.category || 'BGMI'}</span></td>
+                <td><span class="badge-auto">${categoryDisplay}</span></td>
                 <td><code style="color:var(--warning);">${panel.pid || 'N/A'}</code></td>
                 <td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td>
                 <td>${panel.plans ? Object.keys(panel.plans).length : 0} plans</td>
@@ -591,7 +592,7 @@
 
         document.getElementById('panel-modal-title').innerText = 'Edit Panel'; 
         document.getElementById('panel-name').value = p.name || ''; 
-        document.getElementById('panel-category').value = p.category || 'BGMI'; 
+        document.getElementById('panel-category').value = p.category || 'bgmi'; 
         document.getElementById('panel-pid').value = p.pid || ''; 
         document.getElementById('panel-desc').value = p.description || ''; 
         document.getElementById('panel-video').value = p.video || ''; 
@@ -697,7 +698,7 @@
     function resetPanelForm(){ 
         document.getElementById('panel-modal-title').innerText = 'Add Panel'; 
         document.getElementById('panel-name').value = ''; 
-        document.getElementById('panel-category').value = 'BGMI'; 
+        document.getElementById('panel-category').value = 'bgmi'; 
         document.getElementById('panel-pid').value = ''; 
         document.getElementById('panel-desc').value = ''; 
         document.getElementById('panel-video').value = ''; 
@@ -771,7 +772,7 @@
                 addedCount++;
             }
 
-            showToast(` Successfully added ${addedCount} keys to stock!`);
+            showToast(`Successfully added ${addedCount} keys to stock!`);
             document.getElementById('stock-keys-input').value = '';
             loadKeyStockList();
         } catch(e) {
@@ -836,7 +837,7 @@
         const requests = globalPurchases.filter(p => p.keyStatus === 'pending');
 
         if(requests.length === 0) { 
-            tbody.innerHTML = '<tr><td colspan="8"> All keys delivered! No pending requests.</td></tr>'; 
+            tbody.innerHTML = '<tr><td colspan="8">All keys delivered! No pending requests.</td></tr>'; 
             return; 
         }
 
@@ -850,7 +851,7 @@
                 <td>${req.label || req.plan || 'N/A'}</td>
                 <td>₹${req.price || 0}</td>
                 <td><small>${req.date ? new Date(req.date).toLocaleDateString() : 'N/A'}</small></td>
-                <td style="color:var(--warning);"> Pending</td>
+                <td style="color:var(--warning);">Pending</td>
                 <td>
                     <button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.buyerEmail}','${req.panelName}','${req.label}')">
                         <i class="fas fa-key"></i> Deliver Key
@@ -885,7 +886,7 @@
                 deliveryType: 'manual_web',
                 deliveredAt: serverTimestamp() 
             }); 
-            showToast(" Key delivered manually!"); 
+            showToast("Key delivered manually!"); 
             closeModal('key-delivery-modal'); 
             await loadDashboardStats();
             loadKeyDelivery(); 
@@ -985,9 +986,9 @@
                 screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" onclick="window.open('${payment.screenshot}', '_blank')" title="Click to view full image">`; 
             } 
 
-            let statusText = ' Pending'; 
-            if(payment.status === 'approved') statusText = ' Approved'; 
-            if(payment.status === 'rejected') statusText = ' Rejected'; 
+            let statusText = 'Pending'; 
+            if(payment.status === 'approved') statusText = 'Approved'; 
+            if(payment.status === 'rejected') statusText = 'Rejected'; 
 
             let actionsHtml = ''; 
             if(payment.status === 'pending') { 
@@ -1022,7 +1023,7 @@
             await set(balRef, (balSnap.val() || 0) + payment.amount); 
             await update(ref(db, `payments/${id}`), { status: 'approved', approvedAt: serverTimestamp() }); 
 
-            showToast(` ₹${payment.amount} added to user balance!`); 
+            showToast(`₹${payment.amount} added to user balance!`); 
             loadPayments(); 
             loadDashboardStats(); 
         } catch(e) { 
@@ -1034,7 +1035,7 @@
         if(!confirm(`Reject payment?`)) return; 
         try { 
             await update(ref(db, `payments/${id}`), { status: 'rejected', rejectedAt: serverTimestamp() }); 
-            showToast(" Payment rejected!"); 
+            showToast("Payment rejected!"); 
             loadPayments(); 
         } catch(e) { 
             showToast("Error: " + e.message, "error"); 

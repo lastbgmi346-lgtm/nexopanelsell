@@ -1456,8 +1456,7 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // Add Funds button handler - replace with this
-document// Add Funds button handler - Complete Fix
+        // Add Funds button handler - Complete Fix with better error handling
 document.getElementById('btn-submit-payment').onclick = async function() {
     if (isSubmitting) return showToast("⏳ Processing...", "warning");
     if(!currentUser) return showToast("Please login first", "error");
@@ -1500,6 +1499,12 @@ document.getElementById('btn-submit-payment').onclick = async function() {
         // ✅ API Call - Direct redirect handle karega
         const response = await fetch(`/api/create-order?amount=${amount}&order_id=${tempOrderId}`);
         
+        // ✅ Check if response is ok
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+            throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
         // ✅ Check if response is a redirect
         if (response.redirected) {
             // Browser automatically follow karega redirect
@@ -1507,17 +1512,27 @@ document.getElementById('btn-submit-payment').onclick = async function() {
             return;
         }
 
-        // ✅ Agar JSON response aaya toh
-        const data = await response.json();
-        if (data.status === 'success' && data.data && data.data.checkout_url) {
-            window.location.href = data.data.checkout_url;
+        // ✅ Try to parse as JSON
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data.status === 'success' && data.data && data.data.checkout_url) {
+                window.location.href = data.data.checkout_url;
+                return;
+            } else {
+                throw new Error(data.message || 'Payment gateway error');
+            }
         } else {
-            showToast('Payment gateway error: ' + (data.message || 'Unknown error'), 'error');
+            // HTML response - maybe redirect page
+            const html = await response.text();
+            document.body.innerHTML = html;
+            return;
         }
+
     } catch (err) {
         console.error('Checkout Error:', err);
-        showToast("Gateway error: " + err.message, "error");
-    } finally {
+        showToast("Payment error: " + err.message, "error");
+        // ✅ Reset button
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE PAYMENT';
         isSubmitting = false;

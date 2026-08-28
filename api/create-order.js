@@ -43,7 +43,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'User UID required' });
         }
 
-        const API_KEY = process.env.FAMGATEWAY_API_KEY || 'fam_7faeee60ef2a8fee0b90811fdaab21623582dbe5';
+        const API_KEY = process.env.FAMGATEWAY_API_KEY || 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
         const BASE_URL = 'https://famgateway.in';
         const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
         const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';

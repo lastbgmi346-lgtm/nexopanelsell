@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     try {
         const rawBody = JSON.stringify(req.body);
         const signature = req.headers['x-famgateway-signature'] || '';
-        const API_KEY = process.env.FAMGATEWAY_API_KEY || 'fam_7faeee60ef2a8fee0b90811fdaab21623582dbe5';
+        const API_KEY = process.env.FAMGATEWAY_API_KEY || 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
 
         console.log('📥 Webhook Received');
         console.log('📝 Raw Body:', rawBody);

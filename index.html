@@ -245,7 +245,6 @@
             background: rgba(0, 0, 0, 0.9);
         }
 
-        /* --- GAME SWITCHER SECTION (UPDATED WITH CIRCLE PNG) --- */
         .game-switch-wrapper {
             display: flex;
             justify-content: center;
@@ -278,7 +277,6 @@
             text-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
 
-        /* Circle Icon Styling for Game PNGs */
         .game-icon-img {
             width: 28px;
             height: 28px;
@@ -1258,36 +1256,15 @@
 
         let currentUser = null;
         let userData = { balance: 0, isReseller: false, preferredGame: 'ff' };
-        let currentSelectedCategory = 'ff'; // Default Free Fire
+        let currentSelectedCategory = 'ff';
         let refreshInterval = null;
         let balanceListenerUnsubscribe = null;
         let isSubmitting = false;
-
-        // ======== FAMGATEWAY CONFIG LOAD FROM JSON ========
-        let paymentConfig = null;
-
-        async function loadPaymentConfig() {
-            try {
-                const response = await fetch('config.json');
-                if (!response.ok) throw new Error('config.json not found');
-                paymentConfig = await response.json();
-                console.log('✅ Payment config loaded:', paymentConfig);
-                return paymentConfig;
-            } catch (error) {
-                console.error('❌ Config load error:', error);
-                showToast('Configuration error! Please check config.json', 'error');
-                return null;
-            }
-        }
-
-        // Load config on page start
-        loadPaymentConfig();
 
         window.setAmount = function(amt) {
             document.getElementById('add-amount').value = amt;
         };
 
-        // Game Category Switching Logic
         window.switchGameCategory = function(cat) {
             currentSelectedCategory = cat;
             const btnFF = document.getElementById('btn-tab-ff');
@@ -1479,70 +1456,7 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // Add Funds Button Click Event
-async function handleAddFunds() {
-    try {
-        const amountInput = document.getElementById('amountInput')?.value || 1;
-        const mobileInput = document.getElementById('mobileInput')?.value || '9905976008';
-        
-        if (!currentUser || !currentUser.uid) {
-            alert('Kripya pehle login karein!');
-            return;
-        }
-
-        if (amountInput < 1) {
-            alert('Minimum amount ₹1 hona chahiye!');
-            return;
-        }
-
-        const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
-        const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
-        const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
-
-        // Unique Temporary Order ID
-        const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-
-        // Firebase me Order Pending State Save Karein
-        try {
-            if (typeof db !== 'undefined' && typeof ref !== 'undefined' && typeof set !== 'undefined') {
-                await set(ref(db, `pending_orders/${tempOrderId}`), {
-                    uid: currentUser.uid,
-                    amount: parseFloat(amountInput),
-                    mobile: mobileInput,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                });
-
-                await set(ref(db, `user_orders/${currentUser.uid}/${tempOrderId}`), {
-                    order_id: tempOrderId,
-                    amount: parseFloat(amountInput),
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                });
-            }
-        } catch (dbErr) {
-            console.warn('⚠️ Firebase pre-save notice:', dbErr);
-        }
-
-        // Direct FamGateway Checkout URL (Cloudflare Bypass via User Browser)
-        const directGatewayUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amountInput}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}&order_id=${tempOrderId}`;
-
-        // Local Storage Sync Backup
-        sessionStorage.setItem('user_uid', currentUser.uid);
-        sessionStorage.setItem('current_order_id', tempOrderId);
-
-        // User ko direct payment page par bhejein
-        window.location.href = directGatewayUrl;
-
-    } catch (err) {
-        console.error('❌ Checkout Error:', err);
-        alert('Connection Error: ' + err.message);
-    }
-}
-
-
-
-        // Add Funds Button Handler
+        // Add Funds Fixed Handler
         document.getElementById('btn-submit-payment').onclick = async function() {
             if (isSubmitting) return showToast("⏳ Processing...", "warning");
             if(!currentUser) return showToast("Please login first", "error");
@@ -1550,26 +1464,42 @@ async function handleAddFunds() {
             const mobile = document.getElementById('add-mobile').value.trim();
             const amount = document.getElementById('add-amount').value;
 
-            if(!amount || amount <= 0) return showToast("Enter a valid amount", "error");
+            if(!amount || amount < 1) return showToast("Enter a valid amount (Min ₹1)", "error");
             if(!mobile || mobile.length < 10) return showToast("Enter valid 10-digit mobile number", "error");
 
             isSubmitting = true;
             const btn = this;
             btn.disabled = true;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREATING GATEWAY ORDER...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING GATEWAY...';
 
-            if (!paymentConfig) {
-                await loadPaymentConfig();
-            }
+            try {
+                const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
+                const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
+                const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
+                const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
-            await initiateFamGatewayPayment(parseFloat(amount), mobile);
+                await set(ref(db, `pending_orders/${tempOrderId}`), {
+                    uid: currentUser.uid,
+                    amount: parseFloat(amount),
+                    mobile: mobile,
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                });
 
-            setTimeout(() => {
+                const directGatewayUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}&order_id=${tempOrderId}`;
+
+                sessionStorage.setItem('user_uid', currentUser.uid);
+                sessionStorage.setItem('current_order_id', tempOrderId);
+
+                window.location.href = directGatewayUrl;
+            } catch (err) {
+                console.error('Checkout Error:', err);
+                showToast("Gateway error: " + err.message, "error");
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 isSubmitting = false;
-            }, 4000);
+            }
         };
 
         async function loadHistory() {
@@ -1764,7 +1694,6 @@ async function handleAddFunds() {
                 snapshot.forEach((child) => {
                     const p = child.val();
                     if(p && p.status === 'active') {
-                        // Category filter (if panel has category field, otherwise default ff)
                         const panelCat = (p.category || 'ff').toLowerCase();
                         if(panelCat === currentSelectedCategory) {
                             panelsList.push({ id: child.key, ...p });
@@ -1777,7 +1706,6 @@ async function handleAddFunds() {
                     return;
                 }
 
-                // SORT NEWEST FIRST
                 panelsList.sort((a, b) => {
                     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -1909,7 +1837,6 @@ async function handleAddFunds() {
             document.getElementById('modal-checkout').classList.add('active');
         };
 
-        // AUTO-DELIVERY FROM KEY POOL - MODIFIED PURCHASE
         document.getElementById('confirm-purchase-btn').onclick = async function() {
             if(!currentUser) return;
 
@@ -1924,19 +1851,16 @@ async function handleAddFunds() {
                 const result = await runTransaction(ref(db, `users/${currentUser.uid}/balance`), (bal) => bal >= price ? bal - price : undefined);
                 
                 if(result.committed) {
-                    // Check if auto-key exists in key_pool
                     const panelId = window.currentCheckout.panelId;
                     const planKey = window.currentCheckout.planKey;
                     
                     let deliveredKey = null;
                     let deliveryType = 'pending_manual';
                     
-                    // Check key_pool for available key
                     const keyPoolRef = ref(db, `key_pool/${panelId}/${planKey}`);
                     const keyPoolSnap = await get(keyPoolRef);
                     
                     if(keyPoolSnap.exists()) {
-                        // Find first available key
                         let foundKeyId = null;
                         let foundKeyData = null;
                         
@@ -1950,7 +1874,6 @@ async function handleAddFunds() {
                         if(foundKeyId && foundKeyData) {
                             deliveredKey = foundKeyData.key;
                             deliveryType = 'auto';
-                            // Mark key as used
                             await update(ref(db, `key_pool/${panelId}/${planKey}/${foundKeyId}`), {
                                 status: 'used',
                                 usedFor: currentUser.uid,
@@ -1959,7 +1882,6 @@ async function handleAddFunds() {
                         }
                     }
                     
-                    // Create purchase record
                     await push(ref(db, `purchases/${currentUser.uid}`), {
                         panelId: window.currentCheckout.panelId,
                         panelName: window.currentCheckout.panelName,
@@ -2007,7 +1929,6 @@ async function handleAddFunds() {
 
                 if (balanceListenerUnsubscribe) balanceListenerUnsubscribe();
                 
-                // Load user data including reseller status & preferred game
                 const userSnap = await get(ref(db, `users/${user.uid}`));
                 if(userSnap.exists()) {
                     userData.isReseller = userSnap.val().isReseller || false;

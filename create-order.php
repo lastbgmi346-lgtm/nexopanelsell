@@ -12,7 +12,7 @@ if ($amount <= 0) {
     exit;
 }
 
-$apiKey = "fam_7faeee60ef2a8fee0b90811fdaab21623582dbe5";
+$apiKey = "fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc";
 
 // Current protocol & host detect karke redirect URL setup karein
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";

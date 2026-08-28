@@ -1479,77 +1479,65 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // ======== FAMGATEWAY PAYMENT INTEGRATION ========
-        async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
-            if (!paymentConfig) {
-                await loadPaymentConfig();
-                if (!paymentConfig) {
-                    showToast('Payment configuration not loaded', 'error');
-                    return;
-                }
-            }
-
-            try {
-                showToast('⏳ Creating payment order...', 'warning');
-
-                if (!currentUser || !currentUser.uid) {
-                    showToast('Please login first', 'error');
-                    return;
-                }
-
-                console.log('👤 User UID:', currentUser.uid);
-
-                // Send request with explicit UID in both Body and Query string for maximum backend compatibility
-                const response = await fetch(`/api/create-order?uid=${encodeURIComponent(currentUser.uid)}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        amount: parseFloat(amount),
-                        mobile: mobile,
-                        uid: currentUser.uid,
-                        user_uid: currentUser.uid,
-                        user_id: currentUser.uid,
-                        customer_id: currentUser.uid
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('✅ Payment Response:', data);
-
-                if (data.success && data.checkout_url) {
-                    sessionStorage.setItem('user_uid', currentUser.uid);
-                    sessionStorage.setItem('current_order_id', data.order_id);
-                    sessionStorage.setItem('payable_amount', data.payable_amount);
-                    
-                    // Pre-register pending order mapping in DB as backup if server webhook requires client mapping
-                    try {
-                        if (data.order_id) {
-                            await set(ref(db, `pending_orders/${data.order_id}`), {
-                                uid: currentUser.uid,
-                                amount: parseFloat(amount),
-                                createdAt: serverTimestamp()
-                            });
-                        }
-                    } catch (e) {
-                        console.warn("Pending order sync warning:", e);
-                    }
-
-                    window.location.href = data.checkout_url;
-                } else {
-                    showToast('Payment error: ' + (data.error || 'Unknown error'), 'error');
-                }
-            } catch (err) {
-                console.error('❌ Payment Error:', err);
-                showToast('Connection Error: ' + err.message, 'error');
-            }
+        // ======== PAYMENT INTEGRATION SETUP ========
+async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
+    if (!paymentConfig) {
+        await loadPaymentConfig();
+        if (!paymentConfig) {
+            showToast('Payment configuration load nahi ho saki', 'error');
+            return;
         }
+    }
+
+    try {
+        showToast('⏳ Payment request create ho rahi hai...', 'warning');
+
+        if (!currentUser || !currentUser.uid) {
+            showToast('Kripya pehle login karein', 'error');
+            return;
+        }
+
+        // config.json me se dynamic API URL use karna
+        const apiUrl = paymentConfig.apiUrl || '/api/create-order';
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                mobile: mobile,
+                uid: currentUser.uid,
+                checkoutUrl: paymentConfig.checkoutUrl
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Server Response Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Redirect URL verify aur priority check
+        const redirectTarget = data.checkout_url || data.payment_url || paymentConfig.checkoutUrl;
+
+        if (data.success && redirectTarget) {
+            sessionStorage.setItem('user_uid', currentUser.uid);
+            if (data.order_id) sessionStorage.setItem('current_order_id', data.order_id);
+            
+            // User ko Gateway checkout par redirect karein
+            window.location.href = redirectTarget;
+        } else {
+            showToast('Payment create nahi ho saka: ' + (data.error || 'Unknown error'), 'error');
+        }
+    } catch (err) {
+        console.error('❌ Payment Error:', err);
+        showToast('Connection Error: ' + err.message, 'error');
+    }
+}
+
 
         // Add Funds Button Handler
         document.getElementById('btn-submit-payment').onclick = async function() {

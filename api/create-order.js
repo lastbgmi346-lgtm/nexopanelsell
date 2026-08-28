@@ -1,16 +1,28 @@
-// api/create-order.js
+// File: /api/create-order.js
+
 export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  try {
+    const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
+    const BASE_URL = 'https://famgateway.in';
+    const MY_WEBSITE = 'https://nexopanelsell.vercel.app';
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+    const amount = req.query.amount || 100;
+    const redirectUrl = `${MY_WEBSITE}/success.html`;
+
+    // 1. Server-to-server API Call
+    const apiReqUrl = `${BASE_URL}/api/qr.php?api_key=${encodeURIComponent(API_KEY)}&amount=${amount}&redirect_url=${encodeURIComponent(redirectUrl)}`;
+    
+    const response = await fetch(apiReqUrl);
+    const json = await response.json();
+
+    // 2. Main Fix: Direct Redirect (Raw JSON display hone se rokega)
+    if (json.status === 'success' && json.data && json.data.checkout_url) {
+      return res.redirect(302, json.data.checkout_url);
+    } else {
+      return res.status(400).json({ status: 'error', message: json.message || 'Checkout URL not generated' });
     }
-
-    return res.status(200).json({
-        success: true,
-        message: "Client-side direct checkout mode is active."
-    });
+  } catch (error) {
+    console.error('Order creation error:', error);
+    return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+  }
 }

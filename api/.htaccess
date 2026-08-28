@@ -1,0 +1,14 @@
+# .htaccess - URL Rewrite
+
+RewriteEngine On
+
+# Allow PHP files
+RewriteRule ^api/pay$ pay.php [L]
+RewriteRule ^api/webhook$ webhook.php [L]
+
+# CORS Headers
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, X-FamGateway-Signature"
+</IfModule>

@@ -1,6 +1,6 @@
 // api/create-order.js
-const { initializeApp } = require("firebase/app");
-const { getDatabase, ref, set } = require("firebase/database");
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set } from "firebase/database";
 
 // Firebase Config
 const firebaseConfig = {
@@ -17,8 +17,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig, 'createOrderApp');
 const db = getDatabase(app);
 
-// ✅ Vercel Standard Node.js Handler Export
-module.exports = async function handler(req, res) {
+// ✅ ES Module Export for Vercel
+export default async function handler(req, res) {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
 
         console.log('📤 Creating order for user:', uid);
 
-        // Gateway Call with Browser Headers
+        // Gateway Call with Browser Headers to Bypass Cloudflare
         const gatewayApiUrl = `${BASE_URL}/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}`;
 
         const response = await fetch(gatewayApiUrl, {
@@ -113,4 +113,4 @@ module.exports = async function handler(req, res) {
             error: 'Payment gateway error: ' + error.message
         });
     }
-};
+}

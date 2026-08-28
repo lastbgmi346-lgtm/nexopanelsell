@@ -1,7 +1,7 @@
 // api/create-order.js
 import crypto from 'crypto';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, update, push } from "firebase/database";
+import { getDatabase, ref, set } from "firebase/database";
 
 // Firebase Config
 const firebaseConfig = {
@@ -52,14 +52,31 @@ export default async function handler(req, res) {
         console.log('💰 Amount:', amount);
         console.log('📱 Mobile:', mobile);
 
-        // Step 1: Create order via FamGateway
-        const response = await fetch(
-            `${BASE_URL}/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}`
-        );
+        // ✅ Step 1: Create order via FamGateway with Cloudflare Bypass Headers
+        const gatewayApiUrl = `${BASE_URL}/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}`;
+
+        const response = await fetch(gatewayApiUrl, {
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+                'Sec-Ch-Ua-Mobile': '?0',
+                'Sec-Ch-Ua-Platform': '"Windows"',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1'
+            }
+        });
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ FamGateway Error:', errorText);
+            console.error('❌ FamGateway Raw Error Response:', errorText);
             throw new Error(`HTTP ${response.status}`);
         }
 
@@ -95,7 +112,6 @@ export default async function handler(req, res) {
                 console.log('✅ User order stored');
             } catch (dbError) {
                 console.error('❌ Firebase Error:', dbError);
-                // Continue even if Firebase fails
             }
 
             return res.status(200).json({

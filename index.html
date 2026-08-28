@@ -1456,51 +1456,73 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // Add Funds Fixed Handler
-        document.getElementById('btn-submit-payment').onclick = async function() {
-            if (isSubmitting) return showToast("⏳ Processing...", "warning");
-            if(!currentUser) return showToast("Please login first", "error");
+        // Add Funds button handler - replace with this
+document.getElementById('btn-submit-payment').onclick = async function() {
+    if (isSubmitting) return showToast("⏳ Processing...", "warning");
+    if(!currentUser) return showToast("Please login first", "error");
 
-            const mobile = document.getElementById('add-mobile').value.trim();
-            const amount = document.getElementById('add-amount').value;
+    const mobile = document.getElementById('add-mobile').value.trim();
+    const amount = document.getElementById('add-amount').value;
 
-            if(!amount || amount < 1) return showToast("Enter a valid amount (Min ₹1)", "error");
-            if(!mobile || mobile.length < 10) return showToast("Enter valid 10-digit mobile number", "error");
+    if(!amount || amount < 1) return showToast("Enter a valid amount (Min ₹1)", "error");
+    if(!mobile || mobile.length < 10) return showToast("Enter valid 10-digit mobile number", "error");
 
-            isSubmitting = true;
-            const btn = this;
-            btn.disabled = true;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING GATEWAY...';
+    isSubmitting = true;
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING GATEWAY...';
 
-            try {
-                const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
-                const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
-                const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
-                const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    try {
+        // ✅ Store order details in Firebase
+        const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        
+        await set(ref(db, `orders/${tempOrderId}`), {
+            user_uid: currentUser.uid,
+            amount: parseFloat(amount),
+            mobile: mobile,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
 
-                await set(ref(db, `pending_orders/${tempOrderId}`), {
-                    uid: currentUser.uid,
-                    amount: parseFloat(amount),
-                    mobile: mobile,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                });
+        await set(ref(db, `user_orders/${currentUser.uid}/${tempOrderId}`), {
+            amount: parseFloat(amount),
+            mobile: mobile,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
 
-                const directGatewayUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}&order_id=${tempOrderId}`;
-
-                sessionStorage.setItem('user_uid', currentUser.uid);
-                sessionStorage.setItem('current_order_id', tempOrderId);
-
-                window.location.href = directGatewayUrl;
-            } catch (err) {
-                console.error('Checkout Error:', err);
-                showToast("Gateway error: " + err.message, "error");
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                isSubmitting = false;
+        // ✅ API Call with amount and order_id
+        const response = await fetch(`/api/create-order?amount=${amount}&order_id=${tempOrderId}`);
+        
+        // ✅ Agar redirect ho raha hai toh browser automatically follow karega
+        // ✅ Agar HTML response aaya toh usko display karo
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('text/html')) {
+            // HTML response aaya hai - show it
+            const html = await response.text();
+            document.body.innerHTML = html;
+        } else if (response.redirected) {
+            // Redirect ho gaya - kuch nahi karna, browser handle karega
+            return;
+        } else {
+            const data = await response.json();
+            if (data.status === 'success' && data.data && data.data.upi_intent) {
+                // UPI intent se direct open karo
+                window.location.href = data.data.upi_intent;
+            } else {
+                showToast('Payment gateway error: ' + (data.message || 'Unknown error'), 'error');
             }
-        };
+        }
+    } catch (err) {
+        console.error('Checkout Error:', err);
+        showToast("Gateway error: " + err.message, "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE PAYMENT UPI';
+        isSubmitting = false;
+    }
+};
 
         async function loadHistory() {
             if(!currentUser) return;

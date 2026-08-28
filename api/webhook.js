@@ -1,7 +1,6 @@
-// api/webhook.js - COMPLETE WORKING CODE
-import crypto from 'crypto';
+// api/webhook.js
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, runTransaction, set, get, update } from "firebase/database";
+import { getDatabase, ref, runTransaction, update, get, set } from "firebase/database";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
@@ -19,7 +18,6 @@ const db = getDatabase(app);
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-FamGateway-Signature');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -30,28 +28,29 @@ export default async function handler(req, res) {
     }
 
     try {
-        const rawBody = JSON.stringify(req.body);
-        const signature = req.headers['x-famgateway-signature'] || '';
-        const API_KEY = process.env.FAMGATEWAY_API_KEY || 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
-
-        console.log('📥 Webhook Received');
-        console.log('📝 Raw Body:', rawBody);
-
         const event = req.body;
+        console.log('📥 Webhook Received:', JSON.stringify(event, null, 2));
 
-        if (event.event === 'payment.success' || event.status === 'success') {
-            const orderId = event.order_id || event.orderId;
-            const amount = parseFloat(event.amount) || 0;
-            const utr = event.utr || event.transaction_id || 'N/A';
+        // ✅ Payment success event
+        if (event.status === 'success' || event.event === 'payment.success') {
+            const orderId = event.order_id || event.orderId || event.data?.order_id;
+            const amount = parseFloat(event.amount || event.data?.amount || 0);
+            const utr = event.utr || event.transaction_id || event.data?.utr || 'N/A';
 
-            console.log(`💳 PAYMENT SUCCESS! Order: ${orderId}, Amount: ₹${amount}, UTR: ${utr}`);
+            console.log(`💳 PAYMENT SUCCESS! Order: ${orderId}, Amount: ₹${amount}`);
 
-            // ✅ STEP 1: Find user_uid from orders
+            if (!orderId) {
+                console.warn('⚠️ No order_id in webhook');
+                return res.status(200).json({ status: 'ignored', message: 'No order_id' });
+            }
+
+            // ✅ STEP 1: Get user_uid from orders
             let userUid = null;
             try {
                 const orderSnap = await get(ref(db, `orders/${orderId}`));
                 if (orderSnap.exists()) {
-                    userUid = orderSnap.val().user_uid;
+                    const orderData = orderSnap.val();
+                    userUid = orderData.user_uid;
                     console.log(`👤 Found user_uid: ${userUid} from orders`);
                 }
             } catch (e) {
@@ -78,7 +77,7 @@ export default async function handler(req, res) {
             }
 
             // ✅ STEP 3: Update balance if user_uid found
-            if (userUid) {
+            if (userUid && amount > 0) {
                 try {
                     const balanceRef = ref(db, `users/${userUid}/balance`);
                     const result = await runTransaction(balanceRef, (currentBalance) => {
@@ -104,12 +103,31 @@ export default async function handler(req, res) {
                         verified_at: new Date().toISOString()
                     });
 
+                    // ✅ Store in payments
+                    await set(ref(db, `payments/${orderId}`), {
+                        order_id: orderId,
+                        user_uid: userUid,
+                        amount: amount,
+                        utr: utr,
+                        status: 'success',
+                        received_at: new Date().toISOString()
+                    });
+
+                    return res.status(200).json({
+                        status: 'success',
+                        message: 'Payment processed successfully',
+                        user_uid: userUid,
+                        new_balance: result.snapshot.val()
+                    });
+
                 } catch (err) {
                     console.error('❌ Balance update failed:', err);
+                    return res.status(500).json({ error: 'Balance update failed' });
                 }
             } else {
                 console.warn(`⚠️ No user_uid found for order: ${orderId}`);
-                // ✅ Store in unassigned payments for manual handling
+                
+                // ✅ Store in unassigned payments
                 await set(ref(db, `unassigned_payments/${orderId}`), {
                     order_id: orderId,
                     amount: amount,
@@ -117,24 +135,13 @@ export default async function handler(req, res) {
                     received_at: new Date().toISOString(),
                     raw_event: event
                 });
+
+                return res.status(200).json({
+                    status: 'unassigned',
+                    message: 'Payment recorded but user not found',
+                    order_id: orderId
+                });
             }
-
-            // ✅ Always store payment record
-            await set(ref(db, `payments/${orderId}`), {
-                order_id: orderId,
-                amount: amount,
-                utr: utr,
-                status: 'success',
-                received_at: new Date().toISOString(),
-                raw_event: event
-            });
-
-            return res.status(200).json({
-                status: 'success',
-                message: 'Payment recorded successfully',
-                order_id: orderId,
-                user_uid: userUid || 'unassigned'
-            });
         } else {
             console.log(`ℹ️ Ignored event: ${event.event || 'unknown'}`);
             return res.status(200).json({ status: 'ignored', event: event.event });

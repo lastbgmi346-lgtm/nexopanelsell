@@ -1,3 +1,4 @@
+<!-- success.html - Updated with better webhook handling -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -108,6 +109,7 @@
         }
         .status-box.success { border-color: #00ff66; background: rgba(0, 255, 102, 0.05); }
         .status-box.error { border-color: #ff2a5f; background: rgba(255, 42, 95, 0.05); }
+        .status-box.pending { border-color: #ffb800; background: rgba(255, 184, 0, 0.05); }
     </style>
 </head>
 <body>
@@ -122,14 +124,14 @@
             <div><span class="label">Status</span><span class="value" style="color:#00ff66;">✅ Paid</span></div>
         </div>
         
-        <div id="balanceStatus" class="status-box">
-            <p style="font-size: 13px; color: #8b949e;">
+        <div id="balanceStatus" class="status-box pending">
+            <p style="font-size: 13px; color: #ffb800;">
                 <span class="loading"></span> Updating your balance...
             </p>
         </div>
         
         <p style="font-size: 12px; color: #8b949e; margin-top: 5px;">
-            Your balance has been updated. You can now purchase panels.
+            Your balance will be updated shortly. You can now purchase panels.
         </p>
         
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -139,10 +141,16 @@
     </div>
 
     <script>
+        // URL se order_id nikaalo
         const params = new URLSearchParams(window.location.search);
-        const orderId = params.get('order_id');
-        const amount = sessionStorage.getItem('payable_amount') || '₹1.00';
+        let orderId = params.get('order_id') || params.get('orderId');
         const uid = sessionStorage.getItem('user_uid');
+        const amount = sessionStorage.getItem('payable_amount') || '₹1.00';
+        
+        // ✅ Agar URL me order_id nahi hai toh session se lo
+        if (!orderId) {
+            orderId = sessionStorage.getItem('current_order_id');
+        }
         
         if (orderId) {
             document.getElementById('orderId').textContent = orderId;
@@ -151,40 +159,45 @@
 
         // ✅ Balance update karne ka function
         async function updateBalance() {
-            if (!orderId || !uid) {
+            if (!orderId) {
+                document.getElementById('balanceStatus').className = 'status-box error';
                 document.getElementById('balanceStatus').innerHTML = `
-                    <p style="font-size: 13px; color: #ffb800;">
-                        ⚠️ Missing order or user information. Please refresh.
+                    <p style="font-size: 13px; color: #ff2a5f;">
+                        ❌ Order ID not found. Please <a href="/" style="color: #00f0ff;">go to Dashboard</a>.
                     </p>
                 `;
                 return;
             }
 
             try {
-                const response = await fetch(`/api/verify-payment?order_id=${orderId}&uid=${uid}`);
+                // ✅ Webhook se balance update hua hai ya nahi check karo
+                const response = await fetch(`/api/verify-payment?order_id=${orderId}&uid=${uid || ''}`);
                 const data = await response.json();
+
+                console.log('📊 Verify Response:', data);
 
                 if (data.success) {
                     document.getElementById('balanceStatus').className = 'status-box success';
                     document.getElementById('balanceStatus').innerHTML = `
                         <p style="font-size: 13px; color: #00ff66;">
-                            ✅ Balance updated! +₹${data.amount} (New Balance: ₹${data.newBalance})
+                            ✅ Balance updated! +₹${data.amount || '0'} 
+                            ${data.newBalance ? `(New Balance: ₹${data.newBalance})` : ''}
                         </p>
                     `;
                     
-                    // ✅ Navbar balance update karo
-                    const navBalance = document.querySelector('#nav-balance');
-                    if (navBalance && data.newBalance) {
-                        navBalance.textContent = data.newBalance.toFixed(2);
-                    }
-                } else if (data.status === 'pending') {
-                    // ✅ Retry after 3 seconds
+                    // ✅ Clear session
+                    sessionStorage.removeItem('current_order_id');
+                    sessionStorage.removeItem('payable_amount');
+                    
+                } else if (data.status === 'pending' || data.message?.includes('pending')) {
+                    // ⏳ Retry after 3 seconds
                     setTimeout(updateBalance, 3000);
                 } else {
                     document.getElementById('balanceStatus').className = 'status-box error';
                     document.getElementById('balanceStatus').innerHTML = `
                         <p style="font-size: 13px; color: #ff2a5f;">
                             ❌ ${data.message || 'Failed to update balance. Please contact support.'}
+                            <br><a href="/" style="color: #00f0ff;">Go to Dashboard</a>
                         </p>
                     `;
                 }
@@ -196,9 +209,9 @@
         }
 
         // ✅ Start balance update
-        if (orderId && uid) {
+        if (orderId) {
             // ✅ Try immediately
-            updateBalance();
+            setTimeout(updateBalance, 1000);
             
             // ✅ Keep trying every 5 seconds for 2 minutes
             let attempts = 0;
@@ -207,6 +220,7 @@
                 attempts++;
                 if (attempts > maxAttempts) {
                     clearInterval(interval);
+                    document.getElementById('balanceStatus').className = 'status-box pending';
                     document.getElementById('balanceStatus').innerHTML = `
                         <p style="font-size: 13px; color: #ffb800;">
                             ⏳ Balance is being processed. It may take a few minutes.
@@ -218,16 +232,13 @@
                 }
             }, 5000);
         } else {
+            document.getElementById('balanceStatus').className = 'status-box error';
             document.getElementById('balanceStatus').innerHTML = `
                 <p style="font-size: 13px; color: #ffb800;">
                     ⚠️ Session expired. Please <a href="/" style="color: #00f0ff;">go to Dashboard</a> to check your balance.
                 </p>
             `;
         }
-
-        // ✅ Clear session storage after page load
-        sessionStorage.removeItem('current_order_id');
-        sessionStorage.removeItem('payable_amount');
     </script>
 </body>
 </html>

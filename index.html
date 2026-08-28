@@ -1480,62 +1480,30 @@
         });
 
         // ======== PAYMENT INTEGRATION SETUP ========
-async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
-    if (!paymentConfig) {
-        await loadPaymentConfig();
-        if (!paymentConfig) {
-            showToast('Payment configuration load nahi ho saki', 'error');
-            return;
-        }
+// Add Funds Button Click Event
+async function handleAddFunds() {
+    const amountInput = document.getElementById('amountInput')?.value || 1;
+    const mobileInput = document.getElementById('mobileInput')?.value || '9905976008';
+    
+    if (!currentUser || !currentUser.uid) {
+        alert('Kripya pehle login karein!');
+        return;
     }
 
-    try {
-        showToast('⏳ Payment request create ho rahi hai...', 'warning');
-
-        if (!currentUser || !currentUser.uid) {
-            showToast('Kripya pehle login karein', 'error');
-            return;
-        }
-
-        // config.json me se dynamic API URL use karna
-        const apiUrl = paymentConfig.apiUrl || '/api/create-order';
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                amount: parseFloat(amount),
-                mobile: mobile,
-                uid: currentUser.uid,
-                checkoutUrl: paymentConfig.checkoutUrl
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Server Response Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Redirect URL verify aur priority check
-        const redirectTarget = data.checkout_url || data.payment_url || paymentConfig.checkoutUrl;
-
-        if (data.success && redirectTarget) {
-            sessionStorage.setItem('user_uid', currentUser.uid);
-            if (data.order_id) sessionStorage.setItem('current_order_id', data.order_id);
-            
-            // User ko Gateway checkout par redirect karein
-            window.location.href = redirectTarget;
-        } else {
-            showToast('Payment create nahi ho saka: ' + (data.error || 'Unknown error'), 'error');
-        }
-    } catch (err) {
-        console.error('❌ Payment Error:', err);
-        showToast('Connection Error: ' + err.message, 'error');
+    if (amountInput < 1) {
+        alert('Minimum amount ₹1 hona chahiye!');
+        return;
     }
+
+    const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
+    const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
+    const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
+
+    // Direct FamGateway Checkout URL (Cloudflare Bypass via User Browser)
+    const directGatewayUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amountInput}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}`;
+
+    // User ko direct payment page par bhejein
+    window.location.href = directGatewayUrl;
 }
 
 

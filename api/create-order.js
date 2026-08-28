@@ -1,135 +1,60 @@
-// api/create-order.js
-import crypto from 'crypto';
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set } from "firebase/database";
-
-// Firebase Config
-const firebaseConfig = {
-    apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
-    authDomain: "nexo-store-6d494.firebaseapp.com",
-    databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
-    projectId: "nexo-store-6d494",
-    storageBucket: "nexo-store-6d494.firebasestorage.app",
-    messagingSenderId: "1077591470608",
-    appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
-};
-
-// ✅ Firebase Initialize
-const app = initializeApp(firebaseConfig, 'createOrderApp');
-const db = getDatabase(app);
-
-export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-FamGateway-Signature');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
+// ======== SOLUTION 2: DIRECT CLIENT-SIDE FAMGATEWAY INTEGRATION ========
+async function initiateFamGatewayPayment(amount, mobile = '9999999999') {
     try {
-        const { amount, mobile, uid } = req.body;
-
         if (!amount || amount <= 0) {
-            return res.status(400).json({ error: 'Invalid amount' });
+            showToast('Kripya valid amount darj karein', 'error');
+            return;
         }
 
-        if (!uid) {
-            return res.status(400).json({ error: 'User UID required' });
+        if (!currentUser || !currentUser.uid) {
+            showToast('Kripya pehle login karein', 'error');
+            return;
         }
 
-        const API_KEY = process.env.FAMGATEWAY_API_KEY || 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
-        const BASE_URL = 'https://famgateway.in';
+        showToast('⏳ Direct Gateway Checkout Launch Ho Raha Hai...', 'warning');
+
+        // Config Params
+        const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
         const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
         const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
 
-        console.log('📤 Creating order for user:', uid);
-        console.log('💰 Amount:', amount);
-        console.log('📱 Mobile:', mobile);
+        // Unique Temporary Order ID generate karein
+        const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
-        // ✅ Step 1: Create order via FamGateway with Cloudflare Bypass Headers
-        const gatewayApiUrl = `${BASE_URL}/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}`;
-
-        const response = await fetch(gatewayApiUrl, {
-            method: 'GET',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache',
-                'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-                'Sec-Ch-Ua-Mobile': '?0',
-                'Sec-Ch-Ua-Platform': '"Windows"',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Sec-Fetch-User': '?1',
-                'Upgrade-Insecure-Requests': '1'
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ FamGateway Raw Error Response:', errorText);
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('✅ FamGateway Response:', data);
-
-        if (data.status === 'success' && data.data) {
-            const orderId = data.data.order_id;
-            
-            // ✅ Store order in Firebase with user UID
-            try {
-                const orderRef = ref(db, `orders/${orderId}`);
-                await set(orderRef, {
-                    order_id: orderId,
-                    user_uid: uid,
+        // Firebase me Pending Order Log Save Karein (Auto-Balance Credit ke liye)
+        try {
+            if (typeof db !== 'undefined' && ref && set) {
+                await set(ref(db, `pending_orders/${tempOrderId}`), {
+                    uid: currentUser.uid,
                     amount: parseFloat(amount),
-                    mobile: mobile || 'N/A',
+                    mobile: mobile,
                     status: 'pending',
-                    payable_amount: data.data.payable_amount || amount,
-                    created_at: new Date().toISOString(),
-                    expires_at: data.data.expires_at_ist || 'N/A'
+                    created_at: new Date().toISOString()
                 });
-                console.log('✅ Order stored in Firebase');
 
-                // ✅ Also store in user's orders
-                const userOrderRef = ref(db, `user_orders/${uid}/${orderId}`);
-                await set(userOrderRef, {
-                    order_id: orderId,
+                await set(ref(db, `user_orders/${currentUser.uid}/${tempOrderId}`), {
+                    order_id: tempOrderId,
                     amount: parseFloat(amount),
                     status: 'pending',
                     created_at: new Date().toISOString()
                 });
-                console.log('✅ User order stored');
-            } catch (dbError) {
-                console.error('❌ Firebase Error:', dbError);
             }
-
-            return res.status(200).json({
-                success: true,
-                checkout_url: data.data.checkout_url || `${BASE_URL}/checkout.php?order_id=${orderId}`,
-                order_id: orderId,
-                qr_url: data.data.qr_url,
-                payable_amount: data.data.payable_amount
-            });
-        } else {
-            return res.status(500).json({
-                error: data.message || 'Failed to create payment order'
-            });
+        } catch (dbErr) {
+            console.warn('⚠️ Firebase pre-save notice:', dbErr);
         }
-    } catch (error) {
-        console.error('❌ Payment Error:', error);
-        return res.status(500).json({
-            error: 'Payment gateway error: ' + error.message
-        });
+
+        // Direct Browser Redirect URL (Bypassing Cloudflare Server-Side Block)
+        const directCheckoutUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amount}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}&order_id=${tempOrderId}`;
+
+        // Local Storage Sync Backup
+        sessionStorage.setItem('user_uid', currentUser.uid);
+        sessionStorage.setItem('current_order_id', tempOrderId);
+
+        // Direct Browser Launch
+        window.location.href = directCheckoutUrl;
+
+    } catch (err) {
+        console.error('❌ Checkout Error:', err);
+        showToast('Connection Error: ' + err.message, 'error');
     }
 }

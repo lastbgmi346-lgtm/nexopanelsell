@@ -1479,32 +1479,67 @@
             item.addEventListener('click', () => navigate(item.dataset.page));
         });
 
-        // ======== PAYMENT INTEGRATION SETUP ========
-// Add Funds Button Click Event
+        // Add Funds Button Click Event
 async function handleAddFunds() {
-    const amountInput = document.getElementById('amountInput')?.value || 1;
-    const mobileInput = document.getElementById('mobileInput')?.value || '9905976008';
-    
-    if (!currentUser || !currentUser.uid) {
-        alert('Kripya pehle login karein!');
-        return;
+    try {
+        const amountInput = document.getElementById('amountInput')?.value || 1;
+        const mobileInput = document.getElementById('mobileInput')?.value || '9905976008';
+        
+        if (!currentUser || !currentUser.uid) {
+            alert('Kripya pehle login karein!');
+            return;
+        }
+
+        if (amountInput < 1) {
+            alert('Minimum amount ₹1 hona chahiye!');
+            return;
+        }
+
+        const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
+        const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
+        const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
+
+        // Unique Temporary Order ID
+        const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+        // Firebase me Order Pending State Save Karein
+        try {
+            if (typeof db !== 'undefined' && typeof ref !== 'undefined' && typeof set !== 'undefined') {
+                await set(ref(db, `pending_orders/${tempOrderId}`), {
+                    uid: currentUser.uid,
+                    amount: parseFloat(amountInput),
+                    mobile: mobileInput,
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                });
+
+                await set(ref(db, `user_orders/${currentUser.uid}/${tempOrderId}`), {
+                    order_id: tempOrderId,
+                    amount: parseFloat(amountInput),
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                });
+            }
+        } catch (dbErr) {
+            console.warn('⚠️ Firebase pre-save notice:', dbErr);
+        }
+
+        // Direct FamGateway Checkout URL (Cloudflare Bypass via User Browser)
+        const directGatewayUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amountInput}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}&order_id=${tempOrderId}`;
+
+        // Local Storage Sync Backup
+        sessionStorage.setItem('user_uid', currentUser.uid);
+        sessionStorage.setItem('current_order_id', tempOrderId);
+
+        // User ko direct payment page par bhejein
+        window.location.href = directGatewayUrl;
+
+    } catch (err) {
+        console.error('❌ Checkout Error:', err);
+        alert('Connection Error: ' + err.message);
     }
-
-    if (amountInput < 1) {
-        alert('Minimum amount ₹1 hona chahiye!');
-        return;
-    }
-
-    const API_KEY = 'fam_2a9c0077d8c7d9e26f93fa6116ddfefc72eea8dc';
-    const REDIRECT_URL = 'https://nexopanelsell.vercel.app/success';
-    const WEBHOOK_URL = 'https://nexopanelsell.vercel.app/api/webhook';
-
-    // Direct FamGateway Checkout URL (Cloudflare Bypass via User Browser)
-    const directGatewayUrl = `https://famgateway.in/api/qr.php?api_key=${API_KEY}&amount=${amountInput}&redirect_url=${encodeURIComponent(REDIRECT_URL)}&webhook_url=${encodeURIComponent(WEBHOOK_URL)}`;
-
-    // User ko direct payment page par bhejein
-    window.location.href = directGatewayUrl;
 }
+
 
 
         // Add Funds Button Handler

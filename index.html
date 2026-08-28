@@ -1499,7 +1499,8 @@
 
                 console.log('👤 User UID:', currentUser.uid);
 
-                const response = await fetch('/api/create-order', {
+                // Send request with explicit UID in both Body and Query string for maximum backend compatibility
+                const response = await fetch(`/api/create-order?uid=${encodeURIComponent(currentUser.uid)}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1507,7 +1508,10 @@
                     body: JSON.stringify({
                         amount: parseFloat(amount),
                         mobile: mobile,
-                        uid: currentUser.uid
+                        uid: currentUser.uid,
+                        user_uid: currentUser.uid,
+                        user_id: currentUser.uid,
+                        customer_id: currentUser.uid
                     })
                 });
 
@@ -1524,6 +1528,19 @@
                     sessionStorage.setItem('current_order_id', data.order_id);
                     sessionStorage.setItem('payable_amount', data.payable_amount);
                     
+                    // Pre-register pending order mapping in DB as backup if server webhook requires client mapping
+                    try {
+                        if (data.order_id) {
+                            await set(ref(db, `pending_orders/${data.order_id}`), {
+                                uid: currentUser.uid,
+                                amount: parseFloat(amount),
+                                createdAt: serverTimestamp()
+                            });
+                        }
+                    } catch (e) {
+                        console.warn("Pending order sync warning:", e);
+                    }
+
                     window.location.href = data.checkout_url;
                 } else {
                     showToast('Payment error: ' + (data.error || 'Unknown error'), 'error');

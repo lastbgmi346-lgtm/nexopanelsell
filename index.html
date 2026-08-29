@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>NEXO STORE OFFICIAL - CYBER EDITION</title>
+    <title>dakuSTORE OFFICIAL - CYBER EDITION</title>
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1041,7 +1041,7 @@
             <div class="ring"></div>
             <i class="fas fa-bolt loader-logo"></i>
         </div>
-        <div class="loader-title">NEXO STORE<span class="dots-animated"></span></div>
+        <div class="loader-title">daku STORE<span class="dots-animated"></span></div>
     </div>
 
     <div id="toast-container"></div>
@@ -1049,7 +1049,7 @@
     <div id="auth-screen">
         <!-- LOGIN BOX -->
         <div class="auth-card glass-cyber" id="login-box">
-            <h1>NEXO <span>STORE</span></h1>
+            <h1>daku <span>STORE</span></h1>
             <p>Enter your credentials to access the terminal.</p>
             
             <div class="input-group">
@@ -1065,7 +1065,7 @@
 
         <!-- REGISTER / SIGNUP BOX -->
         <div class="auth-card glass-cyber hidden" id="signup-box">
-            <h1>JOIN <span>NEXO</span></h1>
+            <h1>JOIN <span>daku</span></h1>
             <p>Create a secure account for instant access.</p>
             
             <div class="input-group">
@@ -1096,7 +1096,7 @@
         <nav class="navbar">
             <div class="nav-left">
                 <button class="menu-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-                <div class="logo"><span>NEXO</span> STORE</div>
+                <div class="logo"><span>daku</span> STORE</div>
             </div>
             
             <div class="balance-badge">
@@ -1242,10 +1242,10 @@
 
         const firebaseConfig = {
             apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
-            authDomain: "nexo-store-6d494.firebaseapp.com",
-            databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
-            projectId: "nexo-store-6d494",
-            storageBucket: "nexo-store-6d494.firebasestorage.app",
+            authDomain: "daku-store-6d494.firebaseapp.com",
+            databaseURL: "https://daku-store-6d494-default-rtdb.firebaseio.com",
+            projectId: "daku-store-6d494",
+            storageBucket: "daku-store-6d494.firebasestorage.app",
             messagingSenderId: "1077591470608",
             appId: "1:1077591470608:web:78022588f0fd1e4aa15095"
         };
@@ -1457,83 +1457,57 @@
         });
 
         // ========================================================
-        // ✅ ADD FUNDS BUTTON - PHP HOSTING INTEGRATION
-        // ========================================================
-        document.getElementById('btn-submit-payment').onclick = async function() {
-            if (isSubmitting) return showToast("⏳ Processing...", "warning");
-            if(!currentUser) return showToast("Please login first", "error");
+// ✅ ADD FUNDS BUTTON - DIRECT REDIRECT (NO FETCH)
+// ========================================================
+document.getElementById('btn-submit-payment').onclick = async function() {
+    if (isSubmitting) return showToast("⏳ Processing...", "warning");
+    if(!currentUser) return showToast("Please login first", "error");
 
-            const mobile = document.getElementById('add-mobile').value.trim();
-            const amount = document.getElementById('add-amount').value;
+    const mobile = document.getElementById('add-mobile').value.trim();
+    const amount = document.getElementById('add-amount').value;
 
-            if(!amount || amount < 1) return showToast("Enter a valid amount (Min ₹1)", "error");
-            if(!mobile || mobile.length < 10) return showToast("Enter valid 10-digit mobile number", "error");
+    if(!amount || amount < 1) return showToast("Enter a valid amount (Min ₹1)", "error");
+    if(!mobile || mobile.length < 10) return showToast("Enter valid 10-digit mobile number", "error");
 
-            isSubmitting = true;
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING PAYMENT...';
+    isSubmitting = true;
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING PAYMENT...';
 
-            try {
-                // ✅ Store order in Firebase
-                const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-                
-                await set(ref(db, `orders/${tempOrderId}`), {
-                    user_uid: currentUser.uid,
-                    amount: parseFloat(amount),
-                    mobile: mobile,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                });
+    try {
+        const tempOrderId = 'ORD_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        
+        // ✅ Firebase me order store
+        await set(ref(db, `orders/${tempOrderId}`), {
+            user_uid: currentUser.uid,
+            amount: parseFloat(amount),
+            mobile: mobile,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
 
-                await set(ref(db, `user_orders/${currentUser.uid}/${tempOrderId}`), {
-                    amount: parseFloat(amount),
-                    mobile: mobile,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                });
+        await set(ref(db, `user_orders/${currentUser.uid}/${tempOrderId}`), {
+            amount: parseFloat(amount),
+            mobile: mobile,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
 
-                sessionStorage.setItem('current_order_id', tempOrderId);
-                sessionStorage.setItem('user_uid', currentUser.uid);
-                sessionStorage.setItem('payable_amount', amount);
+        sessionStorage.setItem('current_order_id', tempOrderId);
+        sessionStorage.setItem('user_uid', currentUser.uid);
+        sessionStorage.setItem('payable_amount', amount);
 
-                // ✅ PHP HOSTING API CALL - Cloudflare issue solved!
-                const response = await fetch(
-                    `https://nexostore.site.je/pay.php?amount=${amount}&order_id=${tempOrderId}`
-                );
+        // ✅ DIRECT REDIRECT - NO FETCH!
+        window.location.href = `https://dakustore.site.je/pay.php?amount=${amount}&order_id=${tempOrderId}`;
 
-                // ✅ Agar redirect hai toh browser handle karega
-                if (response.redirected) {
-                    window.location.href = response.url;
-                    return;
-                }
-
-                // ✅ Agar HTML response aaya toh show karo
-                const contentType = response.headers.get('content-type') || '';
-                if (contentType.includes('text/html')) {
-                    const html = await response.text();
-                    document.body.innerHTML = html;
-                    return;
-                }
-
-                // ✅ JSON response handle
-                const data = await response.json();
-                if (data.status === 'success' && data.data?.checkout_url) {
-                    window.location.href = data.data.checkout_url;
-                    return;
-                }
-                
-                showToast('Payment error: ' + (data.message || 'Unknown'), 'error');
-
-            } catch (err) {
-                console.error('Payment Error:', err);
-                showToast("Payment error: " + err.message, "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE PAYMENT';
-                isSubmitting = false;
-            }
-        };
+    } catch (err) {
+        console.error('Payment Error:', err);
+        showToast("Payment error: " + err.message, "error");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE PAYMENT';
+        isSubmitting = false;
+    }
+};
 
         async function loadHistory() {
             if(!currentUser) return;
@@ -1643,7 +1617,7 @@
                 container.innerHTML = `
                     <div class="reseller-card">
                         <div class="reseller-badge"><i class="fas fa-crown"></i> RESELLER PROGRAM</div>
-                        <div class="reseller-title">Become a NEXO Reseller</div>
+                        <div class="reseller-title">Become a daku Reseller</div>
                         <div class="reseller-text">₹499 - Get 40% discount on all premium keys + dedicated admin support</div>
                         <div class="reseller-benefit"><i class="fas fa-check"></i> All keys at 40% reduced price</div>
                         <div class="reseller-benefit"><i class="fas fa-check"></i> Priority customer support</div>
@@ -1655,7 +1629,7 @@
                 container.innerHTML = `
                     <div class="reseller-card" style="border-color:rgba(0, 255, 102, 0.5); background:rgba(0, 255, 102, 0.05);">
                         <div style="display:inline-block; background:rgba(0, 255, 102, 0.2); color:#00ff66; padding:8px 20px; border-radius:30px; font-size:11px; font-weight:800; margin-bottom:12px; text-transform:uppercase;"><i class="fas fa-check-circle"></i> ACTIVE RESELLER</div>
-                        <div class="reseller-title" style="color:#00ff66;">You're a NEXO Reseller!</div>
+                        <div class="reseller-title" style="color:#00ff66;">You're a daku Reseller!</div>
                         <div class="reseller-text">Enjoy 40% discount on all premium keys + exclusive benefits</div>
                         <div class="reseller-benefit" style="border-left-color:#00ff66; background:rgba(0, 255, 102, 0.1);"><i class="fas fa-check"></i> Saving 40% on every purchase</div>
                         <div class="reseller-benefit" style="border-left-color:#00ff66; background:rgba(0, 255, 102, 0.1);"><i class="fas fa-check"></i> Priority admin support</div>
@@ -1685,7 +1659,7 @@
                     
                     await push(ref(db, `purchases/${currentUser.uid}`), {
                         panelId: "reseller",
-                        panelName: "NEXO Reseller Status",
+                        panelName: "daku Reseller Status",
                         plan: "reseller",
                         label: "Reseller Upgrade",
                         price: resellerPrice,
@@ -1696,7 +1670,7 @@
 
                     userData.isReseller = true;
                     displayReseller();
-                    showToast("🎉 Welcome to NEXO Reseller Program! Enjoy 40% discount!", "success");
+                    showToast("🎉 Welcome to daku Reseller Program! Enjoy 40% discount!", "success");
                     fetchPanels();
                 } else {
                     showToast("Insufficient balance", "error");

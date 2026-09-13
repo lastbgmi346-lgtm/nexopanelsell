@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>NEXO STORE ADMIN - PRO PANEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+        :root {
+            --bg-color: #050508;
+            --card-bg: rgba(15, 18, 25, 0.7);
+            --card-border: rgba(0, 240, 255, 0.2);
+            --neon-cyan: #00f0ff;
+            --neon-cyan-dim: rgba(0, 240, 255, 0.4);
+            --neon-purple: #bc13fe;
+            --text-main: #ffffff;
+            --text-muted: #a0a5b5;
+            --error: #ff2a5f;
+            --success: #00ff66;
+            --warning: #ffb800;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-color); color: var(--text-main); overflow-x: hidden; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 40%, rgba(188,19,254,0.1), transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(0,240,255,0.1), transparent 50%);
+            pointer-events: none; z-index: -1; animation: bgPulse 8s ease-in-out infinite;
+        }
+        @keyframes bgPulse { 0%,100%{opacity:0.5;}50%{opacity:1;} }
+
+        .hidden { display: none !important; }
+        
+        .glass { background: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid var(--card-border); border-radius: 16px; transition: all 0.3s ease; }
+        .glass:hover { border-color: var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan-dim); }
+
+        .btn {
+            background: transparent; color: var(--neon-cyan); border: 1px solid var(--neon-cyan);
+            padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+            font-size: 13px; position: relative; overflow: hidden;
+        }
+        .btn::before {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0; border-radius: 50%;
+            background: rgba(0,240,255,0.3); transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        .btn:hover::before { width: 200px; height: 200px; }
+        .btn:hover { background: rgba(0,240,255,0.1); box-shadow: 0 0 15px var(--neon-cyan-dim); transform: translateY(-2px); }
+        .btn-primary { background: var(--neon-cyan); color: #000; font-weight: 800; }
+        .btn-primary:hover { background: #fff; border-color: #fff; box-shadow: 0 0 20px var(--neon-cyan); }
+        .btn-success { background: var(--success); border-color: var(--success); color: #000; }
+        .btn-warning { background: var(--warning); border-color: var(--warning); color: #000; }
+        .btn-danger { background: var(--error); border-color: var(--error); color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 11px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: white;
+            outline: none; font-size: 14px; transition: all 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            border-color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan-dim);
+        }
+
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,5,8,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(0,240,255,0.1); border-top-color: var(--neon-cyan); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #toast-container { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 400px; }
+        .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; font-size: 13px; background: var(--card-bg); backdrop-filter: blur(10px); border-left: 4px solid var(--neon-cyan); animation: slideUp 0.3s forwards; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        #auth-screen { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 420px; padding: 40px 30px; text-align: center; border-top: 2px solid var(--neon-cyan); animation: fadeInScale 0.5s ease; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        #admin-app { display: none; width: 100%; }
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 65px; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 1000; background: rgba(10,12,18,0.95); backdrop-filter: blur(15px); border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-image-slice: 1; }
+        .logo { font-weight: 800; font-size: 22px; }
+        .logo span { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan-dim); }
+        .logo small { font-size: 10px; color: var(--warning); margin-left: 5px; }
+        .admin-badge { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #fff; }
+        .logout-btn { background: rgba(255,42,95,0.2); border: 1px solid var(--error); color: var(--error); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s; }
+        .logout-btn:hover { background: var(--error); color: white; box-shadow: 0 0 15px var(--error); }
+
+        .sidebar { position: fixed; top: 65px; left: 0; width: 260px; height: calc(100% - 65px); background: rgba(10,12,18,0.95); backdrop-filter: blur(15px); border-right: 1px solid rgba(255,255,255,0.05); padding: 20px 0; overflow-y: auto; z-index: 99; }
+        .sidebar-item { padding: 14px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s; color: var(--text-muted); border-left: 3px solid transparent; position: relative; }
+        .sidebar-item::before { content: '▶'; position: absolute; left: -20px; opacity: 0; transition: all 0.3s; font-size: 10px; color: var(--neon-cyan); }
+        .sidebar-item:hover::before { left: 10px; opacity: 1; }
+        .sidebar-item:hover, .sidebar-item.active { background: rgba(0,240,255,0.08); color: var(--neon-cyan); border-left-color: var(--neon-cyan); padding-left: 28px; }
+        .sidebar-item i { width: 24px; font-size: 18px; }
+
+        .main-content { margin-left: 260px; padding: 85px 25px 40px; min-height: 100vh; }
+        .page-title { font-size: 26px; font-weight: 800; margin-bottom: 25px; }
+        .page-title span { color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 30px; }
+        .stat-card { padding: 20px; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); transform: scaleX(0); transition: transform 0.3s; }
+        .stat-card:hover::after { transform: scaleX(1); }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,240,255,0.2); }
+        .stat-card h3 { font-size: 28px; font-weight: 800; color: var(--neon-cyan); text-shadow: 0 0 15px var(--neon-cyan-dim); }
+        .stat-card p { font-size: 12px; color: var(--text-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 25px; transition: all 0.3s; }
+        .card:hover { border-color: var(--neon-cyan-dim); box-shadow: 0 5px 20px rgba(0,240,255,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .card-header h3 { font-size: 18px; font-weight: 700; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; font-size: 13px; }
+        th { color: var(--neon-cyan); font-weight: 600; border-bottom: 2px solid var(--neon-cyan-dim); white-space: nowrap; }
+        tr { border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; }
+        tr:hover { background: rgba(0,240,255,0.05); }
+
+        .badge-auto { background: rgba(0, 255, 102, 0.15); color: var(--success); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--success); font-size: 11px; font-weight: 600; }
+        .badge-manual { background: rgba(255, 184, 0, 0.15); color: var(--warning); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--warning); font-size: 11px; font-weight: 600; }
+
+        .plan-item { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+
+        .screenshot-thumb { 
+            max-width: 80px; max-height: 60px; border-radius: 4px; cursor: pointer; 
+            border: 1px solid var(--neon-cyan-dim); transition: all 0.3s;
+        }
+        .screenshot-thumb:hover { opacity: 0.8; transform: scale(1.05); border-color: var(--neon-cyan); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.3s; }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal { background: rgba(20,24,34,0.98); border: 1px solid var(--neon-cyan); width: 95%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 25px; border-radius: 20px; animation: modalPop 0.3s ease; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .close-modal { background: none; border: none; color: white; font-size: 28px; cursor: pointer; transition: all 0.3s; }
+        .close-modal:hover { color: var(--error); transform: rotate(90deg); }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0 5px;
+            cursor: pointer;
+        }
+        .toggle-wrap input[type="checkbox"] {
+            width: 44px;
+            height: 24px;
+            appearance: none;
+            background: #333;
+            border-radius: 12px;
+            position: relative;
+            outline: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .toggle-wrap input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #888;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .toggle-wrap input[type="checkbox"]:checked {
+            background: var(--neon-cyan);
+        }
+        .toggle-wrap input[type="checkbox"]:checked::after {
+            left: 22px;
+            background: #fff;
+        }
+        .toggle-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-item span { display: none; } .sidebar-item i { width: auto; font-size: 20px; } .main-content { margin-left: 70px; } }
+        @media (max-width: 480px) { .main-content { padding: 75px 15px 30px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .stat-card h3 { font-size: 22px; } .navbar { padding: 0 15px; } .logo { font-size: 16px; } }
+    </style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div><p style="margin-top:20px;color:var(--neon-cyan);font-weight:600;">FAST LOADING NEXO ADMIN...</p></div>
+<div id="toast-container"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+    <div class="auth-card glass">
+        <div style="margin-bottom:20px;"><i class="fas fa-shield-alt" style="font-size:60px;color:var(--neon-cyan);text-shadow:0 0 20px var(--neon-cyan-dim);"></i></div>
+        <h1>NEXO <span style="color:var(--neon-cyan);">ADMIN</span></h1>
+        <p style="margin-bottom:20px;color:var(--text-muted);">Secure Administrator Access Only</p>
+        <div class="input-group"><input id="admin-email" placeholder="Admin Email" type="email"></div>
+        <div class="input-group"><input id="admin-pass" placeholder="Password" type="password"></div>
+        <button class="btn btn-primary" id="admin-login-btn"><i class="fas fa-shield-alt"></i> Admin Login</button>
+    </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+    <nav class="navbar">
+        <div class="logo"><span>NEXO</span> ADMIN <small>PRO PANEL</small></div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <span class="admin-badge" id="admin-email-display">admin@nexo.com</span>
+            <button class="logout-btn" id="admin-logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </nav>
+
+    <div class="sidebar">
+        <div class="sidebar-item active" data-page="dashboard"><i class="fas fa-chart-line"></i><span> Dashboard & Revenue</span></div>
+        <div class="sidebar-item" data-page="panels"><i class="fas fa-box"></i><span> Panel Management</span></div>
+        <div class="sidebar-item" data-page="key-stock"><i class="fas fa-database"></i><span> Key Stock (Bulk)</span></div>
+        <div class="sidebar-item" data-page="promotions"><i class="fas fa-sliders-h"></i><span> Promotions</span></div>
+        <div class="sidebar-item" data-page="key-delivery"><i class="fas fa-key"></i><span> Key Delivery</span></div>
+        <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
+        <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
+        <div class="sidebar-item" data-page="users"><i class="fas fa-users"></i><span> Users</span></div>
+        <div class="sidebar-item" data-page="supplier-test"><i class="fas fa-plug"></i><span> Supplier API Test</span></div>
+    </div>
+
+    <div class="main-content">
+        <!-- DASHBOARD & REVENUE -->
+        <div id="dashboard-page">
+            <h2 class="page-title">NEXO <span>Analytics & Revenue</span></h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card glass"><h3 id="monthly-revenue">₹0</h3><p><i class="fas fa-coins"></i> Monthly Revenue</p></div>
+                <div class="stat-card glass"><h3 id="total-keys-sold">0</h3><p><i class="fas fa-tags"></i> Total Keys Sold</p></div>
+                <div class="stat-card glass"><h3 id="auto-keys-count">0</h3><p><i class="fas fa-robot"></i> Auto Delivered Keys</p></div>
+                <div class="stat-card glass"><h3 id="manual-keys-count">0</h3><p><i class="fas fa-user-check"></i> Manual Keys Given</p></div>
+                <div class="stat-card glass"><h3 id="total-users">0</h3><p><i class="fas fa-users"></i> Total Users</p></div>
+                <div class="stat-card glass"><h3 id="pending-keys">0</h3><p><i class="fas fa-clock"></i> Pending Keys</p></div>
+            </div>
+
+            <!-- KEY SALES LEDGER -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-receipt" style="color:var(--neon-cyan);"></i> Key Purchase & Delivery History</h3>
+                    <button class="btn btn-sm" onclick="loadDashboardStats()"><i class="fas fa-sync"></i> Refresh Data</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <th>Buyer Email</th>
+                            <th>Panel</th>
+                            <th>PID</th>
+                            <th>Plan</th>
+                            <th>Price</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                        </thead>
+                        <tbody id="sales-history-list">
+                            <tr><td colspan="7">Loading sales report...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANELS MANAGEMENT -->
+        <div id="panels-page" class="hidden">
+            <div class="card-header"><h3>Panel Management (BGMI & Games)</h3><button class="btn btn-primary" id="add-panel-btn"><i class="fas fa-plus"></i> Add Panel</button></div>
+            <div class="table-responsive"><table id="panels-table"><thead><th>Name</th><th>Category</th><th>PID</th><th>Status</th><th>Plans</th><th>Actions</th></thead><tbody id="panels-list"></tbody></table></div>
+        </div>
+
+        <!-- BULK KEY STOCK MANAGEMENT -->
+        <div id="key-stock-page" class="hidden">
+            <h2 class="page-title">Bulk <span>Key Stock</span> Management</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-plus-circle" style="color:var(--neon-cyan);"></i> Add Keys to Stock (Auto Instant Delivery)</h3>
+                </div>
+                <div class="input-group">
+                    <label>Select Panel</label>
+                    <select id="stock-panel-select" onchange="loadPanelPlansForStock()">
+                        <option value="">-- Select Panel --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Select Plan</label>
+                    <select id="stock-plan-select">
+                        <option value="">-- Select Plan First --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Paste License Keys (One key per line)</label>
+                    <textarea id="stock-keys-input" rows="8" placeholder="NEXO-KEY-1111&#10;NEXO-KEY-2222&#10;NEXO-KEY-3333"></textarea>
+                </div>
+                <button class="btn btn-primary" id="save-stock-keys-btn"><i class="fas fa-save"></i> Save Keys to Pool</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-boxes" style="color:var(--neon-cyan);"></i> Available Keys in Stock</h3>
+                    <button class="btn btn-sm" onclick="loadKeyStockList()"><i class="fas fa-sync"></i> Refresh Stock</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <th>Panel</th>
+                            <th>Plan</th>
+                            <th>License Key</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </thead>
+                        <tbody id="key-stock-list">
+                            <tr><td colspan="5">Select a panel or load stock...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROMOTIONS -->
+        <div id="promotions-page" class="hidden">
+            <div class="card-header"><h3>Promotions</h3><button class="btn btn-primary" id="add-promo-btn"><i class="fas fa-plus"></i> Add Promotion</button></div>
+            <div class="table-responsive"><table><thead><th>Title</th><th>Image</th><th>Status</th><th>Actions</th></thead><tbody id="promotions-list"></tbody></table></div>
+        </div>
+
+        <!-- KEY DELIVERY PAGE -->
+        <div id="key-delivery-page" class="hidden">
+            <div class="card-header"><h3><i class="fas fa-key"></i> Pending Key Deliveries</h3></div>
+            <div class="table-responsive">
+                <table>
+                    <thead><th>User</th><th>Panel</th><th>PID</th><th>Plan</th><th>Amount</th><th>Purchase Date</th><th>Status</th><th>Action</th></thead>
+                    <tbody id="key-delivery-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PAYMENTS -->
+        <div id="payments-page" class="hidden">
+            <div class="card-header"><h3>Payment Requests</h3></div>
+            <div class="table-responsive">
+                <table>
+                    <thead><th>User</th><th>Amount</th><th>Phone</th><th>Screenshot</th><th>Status</th><th>Actions</th></thead>
+                    <tbody id="payments-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settings-page" class="hidden">
+            <div class="card"><div class="card-header"><h3>Payment Settings</h3></div><div class="input-group"><label>UPI ID</label><input id="setting-upi" placeholder="Enter UPI ID"></div><div class="input-group"><label>QR Image URL</label><input id="setting-qr" placeholder="https://..."></div><button class="btn btn-primary" id="save-payment-settings">Save</button></div>
+            
+            <div class="card">
+                <div class="card-header"><h3>Device ID Requirement <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(Force Android ID / Device ID on purchase)</span></h3></div>
+                <div class="toggle-wrap" id="device-id-toggle-wrap">
+                    <input type="checkbox" id="device-id-toggle">
+                    <span class="toggle-label">Require Device ID for all purchases</span>
+                </div>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">When enabled, users must enter a Device ID (Android ID) before completing any purchase.</p>
+                <button class="btn btn-primary" id="save-device-id-setting" style="margin-top:15px;"><i class="fas fa-save"></i> Save Device ID Setting</button>
+            </div>
+
+            <div class="card"><div class="card-header"><h3>Support Links</h3></div><div class="input-group"><label>WhatsApp</label><input id="setting-wa" placeholder="https://wa.me/..."></div><div class="input-group"><label>Telegram (Login)</label><input id="setting-tg-login" placeholder="https://t.me/..."></div><div class="input-group"><label>Telegram (Dashboard)</label><input id="setting-tg-dash" placeholder="https://t.me/..."></div><button class="btn btn-primary" id="save-support-links">Save</button></div>
+        </div>
+
+        <!-- USERS -->
+        <div id="users-page" class="hidden">
+            <div class="card-header"><h3>Users</h3></div>
+            <div class="table-responsive"><table><thead><th>Email</th><th>Balance</th><th>Purchases</th><th>Joined</th><th>Actions</th></thead><tbody id="users-list"></tbody></table></div>
+        </div>
+        
+        <!-- SUPPLIER API TEST -->
+        <div id="supplier-test-page" class="hidden">
+            <h2 class="page-title">Supplier <span>API Test</span></h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-vial" style="color:var(--neon-cyan);"></i> Connection & Purchase Test</h3>
+                </div>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Run a safe test against the supplier API without modifying customer balances.</p>
+                
+                <div class="input-group">
+                    <label>Test Supplier PID</label>
+                    <input id="test-supplier-pid" placeholder="Enter a PID from the supplier">
+                </div>
+                <div class="input-group">
+                    <label>Test Supplier Duration</label>
+                    <input id="test-supplier-duration" value="1 Day" placeholder="e.g. 1 Day">
+                </div>
+                
+                <button class="btn btn-primary" id="run-supplier-test-btn" style="margin-bottom:20px;"><i class="fas fa-play"></i> Run Test</button>
+                
+                <div id="test-results" class="hidden" style="background:rgba(0,0,0,0.4); padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
+                    <h4 style="margin-bottom:15px; color:var(--neon-cyan);">Test Results</h4>
+                    <div style="display:flex; flex-direction:column; gap:10px; font-family:monospace; font-size:14px;">
+                        <div><strong>Connection:</strong> <span id="test-res-conn">...</span></div>
+                        <div><strong>HTTP Status:</strong> <span id="test-res-http">...</span></div>
+                        <div><strong>Supplier Response:</strong> <span id="test-res-resp">...</span></div>
+                        <div><strong>Purchase Test:</strong> <span id="test-res-purch">...</span></div>
+                        <div><strong>Reason:</strong> <span id="test-res-reason" style="color:var(--warning);">...</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="panel-modal"><div class="modal"><div class="modal-header"><h3 id="panel-modal-title">Add Panel</h3><button class="close-modal" onclick="closeModal('panel-modal')">&times;</button></div>
+    <div class="input-group"><label>Panel Name</label><input id="panel-name" placeholder="e.g., BGMI VIP Mod, FF Hack"></div>
+    <div class="input-group">
+        <label>Category / Game</label>
+        <select id="panel-category">
+            <option value="ff">Free Fire</option>
+            <option value="bgmi">BGMI</option>
+            <option value="pubg">PUBG Mobile</option>
+            <option value="cod">Call of Duty</option>
+            <option value="other">Other Games</option>
+        </select>
+    </div>
+    <div class="input-group"><label>PID (Product ID)</label><input id="panel-pid" placeholder="e.g., PID_BGMI_VIP"></div>
+    <div class="input-group"><label>Description</label><textarea id="panel-desc" rows="2" placeholder="Aimbot, ESP, Wallhack, No Recoil"></textarea></div>
+    <div class="input-group"><label>Video Link</label><input id="panel-video" placeholder="https://youtu.be/..."></div>
+    <div class="input-group"><label>CHECK UPDATE Link</label><input id="panel-check-update" placeholder="https://..."></div>
+    <div class="input-group"><label>VIDEO/FEEDBACK Link</label><input id="panel-video-feedback" placeholder="https://..."></div>
+    <div class="input-group"><label>Status</label><select id="panel-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <div class="input-group"><label>Plans (Set Pricing & PID)</label></div>
+    <div id="plans-container"></div>
+    <button class="btn btn-primary btn-sm" id="add-plan-btn" style="margin-top:5px;"><i class="fas fa-plus"></i> Add Plan Field</button>
+    <button class="btn btn-primary" id="save-panel-btn" style="margin-top:15px; width:100%;">Save Panel</button>
+    <input type="hidden" id="edit-panel-id">
+</div></div>
+
+<div class="modal-overlay" id="promo-modal"><div class="modal"><div class="modal-header"><h3 id="promo-modal-title">Add Promotion</h3><button class="close-modal" onclick="closeModal('promo-modal')">&times;</button></div><div class="input-group"><label>Title</label><input id="promo-title" placeholder="Special Offer"></div><div class="input-group"><label>Image URL</label><input id="promo-image" placeholder="https://..."></div><div class="input-group"><label>Link</label><input id="promo-link" placeholder="https://..."></div><div class="input-group"><label>Status</label><select id="promo-status"><option value="true">Active</option><option value="false">Inactive</option></select></div><button class="btn btn-primary" id="save-promo-btn" style="width:100%;">Save</button><input type="hidden" id="edit-promo-id"></div></div>
+
+<!-- KEY DELIVERY MODAL -->
+<div class="modal-overlay" id="key-delivery-modal"><div class="modal"><div class="modal-header"><h3>Deliver License Key Manually</h3><button class="close-modal" onclick="closeModal('key-delivery-modal')">&times;</button></div><div class="input-group"><label>User Email</label><input id="kd-user-email" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Panel & PID</label><input id="kd-panel-name" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>Plan</label><input id="kd-plan" readonly style="background:rgba(0,0,0,0.3);"></div><div class="input-group"><label>License Key</label><input id="kd-key" placeholder="Enter license key (e.g., ABC12-XYZ34-MNOP5)"></div><button class="btn btn-success" id="kd-confirm-btn" style="width:100%;">Deliver Key</button><input type="hidden" id="kd-purchase-id"></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, push, remove, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
+        authDomain: "nexo-store-6d494.firebaseapp.com",
+        databaseURL: "https://nexo-store-6d494-default-rtdb.firebaseio.com",
+        projectId: "nexo-store-6d494",
+        storageBucket: "nexo-store-6d494.firebasestorage.app",
+        messagingSenderId: "1077591470608",
+        appId: "1:1077591470608:web:78022588f0fd1e4aa15095",
+        measurementId: "G-ECKWJSX1TB"    
+    };
+
+    const app = initializeApp(firebaseConfig, 'adminApp');
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    
+    let currentAdmin = null;
+    let plansCount = 0;
+    const adminEmails = ["nexomodsss@gmail.com"];
+
+    let globalPurchases = [];
+    let globalUsers = {};
+    let globalPanels = {};
+
+    function showToast(msg, type='success') { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=`<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+
+    document.getElementById('admin-login-btn').onclick = async () => { 
+        const e=document.getElementById('admin-email').value.trim(), p=document.getElementById('admin-pass').value; 
+        if(!e||!p) return showToast("Enter credentials","error"); 
+        if(!adminEmails.includes(e)) return showToast("Not Authorized","error"); 
+        try{ await signInWithEmailAndPassword(auth,e,p); showToast("Login Successful!"); } catch(e){ showToast("Invalid credentials","error"); } 
+    };
+    
+    document.getElementById('admin-logout-btn').onclick = async () => { await signOut(auth); };
+
+    onAuthStateChanged(auth, async (user) => { 
+        const l=document.getElementById('loader'), as=document.getElementById('auth-screen'), aa=document.getElementById('admin-app'); 
+        if(user && adminEmails.includes(user.email)){ 
+            currentAdmin=user; 
+            document.getElementById('admin-email-display').innerText=user.email; 
+            as.style.display='none'; aa.style.display='block'; l.style.display='none'; 
+            
+            await loadDashboardStats(); 
+            navigateAdmin('dashboard'); 
+        } else { 
+            if(user) await signOut(auth);
+            as.style.display='flex'; aa.style.display='none'; l.style.display='none'; 
+        } 
+    });
+
+    function navigateAdmin(page){ 
+        document.querySelectorAll('.main-content > div').forEach(d=>d.classList.add('hidden')); 
+        document.getElementById(`${page}-page`).classList.remove('hidden'); 
+        document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); 
+        document.querySelector(`.sidebar-item[data-page="${page}"]`).classList.add('active'); 
+
+        if(page === 'panels') loadPanels();
+        if(page === 'key-stock') loadKeyStockPage();
+        if(page === 'promotions') loadPromotions();
+        if(page === 'key-delivery') loadKeyDelivery();
+        if(page === 'payments') loadPayments();
+        if(page === 'users') loadUsers();
+        if(page === 'settings') { loadSettings(); loadDeviceIDSetting(); }
+    }
+
+    document.querySelectorAll('.sidebar-item').forEach(i=>{ i.addEventListener('click',()=>navigateAdmin(i.dataset.page)); });
+
+    async function loadDashboardStats(){ 
+        try {
+            const [uSnap, purchasesSnap] = await Promise.all([
+                get(ref(db,'users')),
+                get(ref(db,'purchases'))
+            ]);
+
+            let totalUsers = uSnap.exists() ? Object.keys(uSnap.val()).length : 0;
+            globalUsers = uSnap.exists() ? uSnap.val() : {};
+
+            let currentMonthRevenue = 0;
+            let totalKeysSold = 0;
+            let autoKeysCount = 0;
+            let manualKeysCount = 0;
+            let pendingKeysCount = 0;
+
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            globalPurchases = [];
+            const historyTbody = document.getElementById('sales-history-list');
+            historyTbody.innerHTML = '';
+
+            if(purchasesSnap.exists()){
+                Object.entries(purchasesSnap.val()).forEach(([uid, uPurchases]) => {
+                    const buyerEmail = globalUsers[uid]?.email || uid.substring(0,8);
+                    Object.entries(uPurchases).forEach(([pid, pur]) => {
+                        const itemDate = pur.date ? new Date(pur.date) : new Date();
+                        const isThisMonth = (itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear);
+
+                        globalPurchases.push({ uid, pid, buyerEmail, ...pur });
+
+                        if(pur.keyStatus === 'delivered' || pur.key) {
+                            totalKeysSold++;
+                            if(isThisMonth) {
+                                currentMonthRevenue += parseFloat(pur.price || 0);
+                            }
+
+                            if(pur.deliveryType === 'auto' || pur.isAuto) {
+                                autoKeysCount++;
+                            } else {
+                                manualKeysCount++;
+                            }
+                        } else if(pur.keyStatus === 'pending') {
+                            pendingKeysCount++;
+                        }
+                    });
+                });
+            }
+
+            document.getElementById('monthly-revenue').innerText = `₹${currentMonthRevenue.toLocaleString()}`;
+            document.getElementById('total-keys-sold').innerText = totalKeysSold;
+            document.getElementById('auto-keys-count').innerText = autoKeysCount;
+            document.getElementById('manual-keys-count').innerText = manualKeysCount;
+            document.getElementById('total-users').innerText = totalUsers;
+            document.getElementById('pending-keys').innerText = pendingKeysCount;
+
+            if(globalPurchases.length === 0) {
+                historyTbody.innerHTML = '<tr><td colspan="7">No key sales found.</td></tr>';
+            } else {
+                globalPurchases.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+                globalPurchases.slice(0, 15).forEach(item => {
+                    const tr = document.createElement('tr');
+                    const isAuto = item.deliveryType === 'auto' || item.isAuto;
+                    tr.innerHTML = `
+                        <td><strong>${item.buyerEmail}</strong></td>
+                        <td>${item.panelName || 'N/A'}</td>
+                        <td><code style="color:var(--neon-cyan);">${item.pidCode || item.pid || 'N/A'}</code></td>
+                        <td>${item.label || item.plan || 'Standard'}</td>
+                        <td>₹${item.price || 0}</td>
+                        <td><span class="${isAuto ? 'badge-auto' : 'badge-manual'}">${isAuto ? '🤖 AUTO' : '👤 MANUAL'}</span></td>
+                        <td><small>${item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}</small></td>
+                    `;
+                    historyTbody.appendChild(tr);
+                });
+            }
+        } catch(e) {
+            console.error("Dashboard Load Error:", e);
+        }
+    }
+
+    async function loadPanels(){ 
+        const snap = await get(ref(db,'panels')); 
+        const tbody = document.getElementById('panels-list'); 
+        tbody.innerHTML = ''; 
+        if(!snap.exists()) return; 
+
+        globalPanels = snap.val();
+
+        Object.entries(globalPanels).forEach(([id,panel])=>{ 
+            const row = document.createElement('tr'); 
+            const categoryDisplay = panel.category === 'ff' ? 'Free Fire' : panel.category === 'bgmi' ? 'BGMI' : panel.category || 'Other';
+            row.innerHTML = `
+                <td><i class="fas fa-cube" style="color:var(--neon-cyan);"></i> <strong>${panel.name}</strong></td>
+                <td><span class="badge-auto">${categoryDisplay}</span></td>
+                <td><code style="color:var(--warning);">${panel.pid || 'N/A'}</code></td>
+                <td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td>
+                <td>${panel.plans ? Object.keys(panel.plans).length : 0} plans</td>
+                <td>
+                    <button class="btn btn-sm" onclick="editPanel('${id}')"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deletePanel('${id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            `; 
+            tbody.appendChild(row); 
+        }); 
+    }
+
+    window.editPanel = async(id) => { 
+        const snap = await get(ref(db,`panels/${id}`)); 
+        const p = snap.val(); 
+        if(!p) return; 
+
+        document.getElementById('panel-modal-title').innerText = 'Edit Panel'; 
+        document.getElementById('panel-name').value = p.name || ''; 
+        document.getElementById('panel-category').value = p.category || 'bgmi'; 
+        document.getElementById('panel-pid').value = p.pid || ''; 
+        document.getElementById('panel-desc').value = p.description || ''; 
+        document.getElementById('panel-video').value = p.video || ''; 
+        document.getElementById('panel-check-update').value = p.checkUpdateLink || ''; 
+        document.getElementById('panel-video-feedback').value = p.videoFeedbackLink || ''; 
+        document.getElementById('panel-status').value = p.status || 'active'; 
+        document.getElementById('edit-panel-id').value = id; 
+
+        document.getElementById('plans-container').innerHTML = ''; 
+        if(p.plans){ 
+            let idx = 0; 
+            Object.entries(p.plans).forEach(([key,plan])=>{ 
+                addPlanField(
+                    plan.label || '', 
+                    plan.price || '', 
+                    plan.supplierPid || plan.pid || '', 
+                    plan.duration || '', 
+                    plan.supplierDuration || '', 
+                    plan.requiresAndroidId || false, 
+                    plan.deliveryMode || 'supplier_api'
+                ); 
+                idx++; 
+            }); 
+            plansCount = idx; 
+        } else {
+            addPlanField(); 
+        }
+        openModal('panel-modal'); 
+    };
+
+    window.deletePanel = async(id) => { 
+        if(confirm('Delete this Panel?')){ 
+            await remove(ref(db,`panels/${id}`)); 
+            showToast('Panel deleted!'); 
+            loadPanels(); 
+            loadDashboardStats(); 
+        } 
+    };
+
+    function addPlanField(label='', price='', planPid='', duration='', supplierDuration='', requiresAndroidId=false, deliveryMode='supplier_api'){ 
+        const div = document.createElement('div'); 
+        div.className = 'plan-item'; 
+        div.id = `plan-row-${plansCount}`;
+        div.style.flexWrap = 'wrap';
+        div.style.background = 'rgba(255,255,255,0.05)';
+        div.style.padding = '10px';
+        div.style.borderRadius = '8px';
+        div.style.border = '1px solid rgba(255,255,255,0.1)';
+        
+        div.innerHTML = `
+            <div style="display:flex; gap:8px; width:100%; margin-bottom:8px;">
+                <input placeholder="Label (e.g., 1 Day)" value="${label}" id="plan-label-${plansCount}" style="flex:1;">
+                <input placeholder="Price ₹" type="number" value="${price}" id="plan-price-${plansCount}" style="width:100px;">
+                <input placeholder="Customer Duration" value="${duration}" id="plan-duration-${plansCount}" style="flex:1;">
+                <button class="btn btn-danger btn-sm" onclick="removePlan(${plansCount})" style="width:40px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="display:flex; gap:8px; width:100%; align-items:center;">
+                <input placeholder="Supplier PID" value="${planPid}" id="plan-pid-${plansCount}" style="flex:1;">
+                <input placeholder="Supplier Duration" value="${supplierDuration}" id="plan-sduration-${plansCount}" style="flex:1;">
+                <select id="plan-delivery-${plansCount}" style="width:140px; padding:8px;">
+                    <option value="supplier_api" ${deliveryMode === 'supplier_api' ? 'selected' : ''}>Supplier API</option>
+                    <option value="manual" ${deliveryMode === 'manual' ? 'selected' : ''}>Manual/Key Pool</option>
+                </select>
+                <div class="toggle-wrap" style="margin:0;">
+                    <input type="checkbox" id="plan-android-${plansCount}" ${requiresAndroidId ? 'checked' : ''}>
+                    <span class="toggle-label" style="font-size:11px;">Req. Android ID</span>
+                </div>
+            </div>
+        `; 
+        document.getElementById('plans-container').appendChild(div); 
+        plansCount++; 
+    }
+
+    window.removePlan = (idx) => { 
+        const el = document.getElementById(`plan-row-${idx}`); 
+        if(el) el.remove(); 
+    };
+
+    document.getElementById('add-plan-btn').onclick = () => addPlanField();
+
+    document.getElementById('save-panel-btn').onclick = async() => { 
+        const id = document.getElementById('edit-panel-id').value;
+        const name = document.getElementById('panel-name').value.trim(); 
+        const category = document.getElementById('panel-category').value; 
+        const panelPid = document.getElementById('panel-pid').value.trim(); 
+
+        if(!name) return showToast("Name required","error"); 
+
+        const plans = {}; 
+        for(let i=0; i<plansCount; i++){ 
+            const l = document.getElementById(`plan-label-${i}`); 
+            const p = document.getElementById(`plan-price-${i}`); 
+            const dur = document.getElementById(`plan-duration-${i}`); 
+            const sPid = document.getElementById(`plan-pid-${i}`); 
+            const sDur = document.getElementById(`plan-sduration-${i}`); 
+            const android = document.getElementById(`plan-android-${i}`); 
+            const delivery = document.getElementById(`plan-delivery-${i}`); 
+
+            if(l && p && l.value && p.value) {
+                plans[`plan_${i}`] = { 
+                    label: l.value, 
+                    price: parseFloat(p.value),
+                    duration: dur ? dur.value : '',
+                    supplierPid: sPid ? sPid.value : panelPid,
+                    supplierDuration: sDur ? sDur.value : '',
+                    requiresAndroidId: android ? android.checked : false,
+                    deliveryMode: delivery ? delivery.value : 'supplier_api'
+                }; 
+            }
+        } 
+
+        const data = {
+            name,
+            category,
+            pid: panelPid,
+            description: document.getElementById('panel-desc').value,
+            video: document.getElementById('panel-video').value,
+            checkUpdateLink: document.getElementById('panel-check-update').value,
+            videoFeedbackLink: document.getElementById('panel-video-feedback').value,
+            status: document.getElementById('panel-status').value,
+            plans,
+            updatedAt: serverTimestamp()
+        }; 
+
+        if(id){ 
+            await update(ref(db,`panels/${id}`), data); 
+            showToast('Panel Updated!'); 
+        } else { 
+            await push(ref(db,'panels'), data); 
+            showToast('Panel Added!'); 
+        } 
+        closeModal('panel-modal'); 
+        loadPanels(); 
+        loadDashboardStats(); 
+        resetPanelForm(); 
+    };
+
+    document.getElementById('add-panel-btn').onclick = () => { resetPanelForm(); openModal('panel-modal'); };
+
+    function resetPanelForm(){ 
+        document.getElementById('panel-modal-title').innerText = 'Add Panel'; 
+        document.getElementById('panel-name').value = ''; 
+        document.getElementById('panel-category').value = 'bgmi'; 
+        document.getElementById('panel-pid').value = ''; 
+        document.getElementById('panel-desc').value = ''; 
+        document.getElementById('panel-video').value = ''; 
+        document.getElementById('panel-check-update').value = ''; 
+        document.getElementById('panel-video-feedback').value = ''; 
+        document.getElementById('panel-status').value = 'active'; 
+        document.getElementById('edit-panel-id').value = ''; 
+        document.getElementById('plans-container').innerHTML = ''; 
+        plansCount = 0; 
+        addPlanField();
+    }
+
+    /* KEY STOCK SYSTEM */
+    async function loadKeyStockPage() {
+        const snap = await get(ref(db, 'panels'));
+        const select = document.getElementById('stock-panel-select');
+        select.innerHTML = '<option value="">-- Select Panel --</option>';
+
+        if(snap.exists()) {
+            globalPanels = snap.val();
+            Object.entries(globalPanels).forEach(([pId, panel]) => {
+                const opt = document.createElement('option');
+                opt.value = pId;
+                opt.innerText = `${panel.name} (${panel.category || 'Game'})`;
+                select.appendChild(opt);
+            });
+        }
+
+        loadKeyStockList();
+    }
+
+    window.loadPanelPlansForStock = () => {
+        const panelId = document.getElementById('stock-panel-select').value;
+        const planSelect = document.getElementById('stock-plan-select');
+        planSelect.innerHTML = '<option value="">-- Select Plan --</option>';
+
+        if(!panelId || !globalPanels[panelId] || !globalPanels[panelId].plans) return;
+
+        Object.entries(globalPanels[panelId].plans).forEach(([planKey, plan]) => {
+            const opt = document.createElement('option');
+            opt.value = planKey;
+            opt.innerText = `${plan.label} - ₹${plan.price}`;
+            planSelect.appendChild(opt);
+        });
+    };
+
+    document.getElementById('save-stock-keys-btn').onclick = async () => {
+        const panelId = document.getElementById('stock-panel-select').value;
+        const planKey = document.getElementById('stock-plan-select').value;
+        const rawText = document.getElementById('stock-keys-input').value.trim();
+
+        if(!panelId) return showToast("Select a Panel", "error");
+        if(!planKey) return showToast("Select a Plan", "error");
+        if(!rawText) return showToast("Enter at least one key", "error");
+
+        const keysArray = rawText.split('\n').map(k => k.trim()).filter(k => k.length > 0);
+
+        if(keysArray.length === 0) return showToast("No valid keys found", "error");
+
+        try {
+            let addedCount = 0;
+            for(let keyStr of keysArray) {
+                const newKeyRef = push(ref(db, `key_pool/${panelId}/${planKey}`));
+                await set(newKeyRef, {
+                    key: keyStr,
+                    status: 'available',
+                    createdAt: serverTimestamp()
+                });
+                addedCount++;
+            }
+
+            showToast(`Successfully added ${addedCount} keys to stock!`);
+            document.getElementById('stock-keys-input').value = '';
+            loadKeyStockList();
+        } catch(e) {
+            showToast("Error adding keys: " + e.message, "error");
+        }
+    };
+
+    async function loadKeyStockList() {
+        const tbody = document.getElementById('key-stock-list');
+        tbody.innerHTML = '<tr><td colspan="5">Loading key stock...</td></tr>';
+
+        const snap = await get(ref(db, 'key_pool'));
+        if(!snap.exists()) {
+            tbody.innerHTML = '<tr><td colspan="5">No keys in stock pool yet. Add some above!</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        const poolData = snap.val();
+        let totalCount = 0;
+
+        Object.entries(poolData).forEach(([pId, plansObj]) => {
+            const panelName = globalPanels[pId]?.name || pId;
+            Object.entries(plansObj).forEach(([planKey, keysObj]) => {
+                const planLabel = globalPanels[pId]?.plans?.[planKey]?.label || planKey;
+                
+                Object.entries(keysObj).forEach(([kId, kData]) => {
+                    totalCount++;
+                    const row = document.createElement('tr');
+                    const isAvail = kData.status === 'available';
+                    row.innerHTML = `
+                        <td><strong>${panelName}</strong></td>
+                        <td>${planLabel}</td>
+                        <td><code style="color:var(--neon-cyan);">${kData.key}</code></td>
+                        <td><span style="color:${isAvail ? '#0f0' : '#ff2a5f'}">${isAvail ? '🟢 Available' : '🔴 Used/Delivered'}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteStockKey('${pId}','${planKey}','${kId}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        });
+
+        if(totalCount === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">No keys in stock pool yet.</td></tr>';
+        }
+    }
+
+    window.deleteStockKey = async (panelId, planKey, kId) => {
+        if(confirm('Delete this key from stock?')) {
+            await remove(ref(db, `key_pool/${panelId}/${planKey}/${kId}`));
+            showToast('Key deleted from stock!');
+            loadKeyStockList();
+        }
+    };
+
+    async function loadKeyDelivery(){ 
+        const tbody = document.getElementById('key-delivery-list'); 
+        tbody.innerHTML = '<tr><td colspan="8">Fetching pending requests...</td></tr>'; 
+        
+        const requests = globalPurchases.filter(p => p.keyStatus === 'pending');
+
+        if(requests.length === 0) { 
+            tbody.innerHTML = '<tr><td colspan="8">All keys delivered! No pending requests.</td></tr>'; 
+            return; 
+        }
+
+        tbody.innerHTML = '';
+        requests.forEach(req => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${req.buyerEmail}</strong></td>
+                <td>${req.panelName || 'N/A'}</td>
+                <td><code>${req.pidCode || req.pid || 'N/A'}</code></td>
+                <td>${req.label || req.plan || 'N/A'}</td>
+                <td>₹${req.price || 0}</td>
+                <td><small>${req.date ? new Date(req.date).toLocaleDateString() : 'N/A'}</small></td>
+                <td style="color:var(--warning);">Pending</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.buyerEmail}','${req.panelName}','${req.label}')">
+                        <i class="fas fa-key"></i> Deliver Key
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    window.openKeyDeliveryModal = (uid,pid,email,panelName,plan)=>{ 
+        document.getElementById('kd-user-email').value = email; 
+        document.getElementById('kd-panel-name').value = panelName; 
+        document.getElementById('kd-plan').value = plan; 
+        document.getElementById('kd-purchase-id').value = pid; 
+        document.getElementById('kd-key').value = ''; 
+        document.getElementById('kd-confirm-btn').dataset.uid = uid; 
+        openModal('key-delivery-modal'); 
+    };
+
+    document.getElementById('kd-confirm-btn').onclick = async ()=>{
+        const pid = document.getElementById('kd-purchase-id').value;
+        const uid = document.getElementById('kd-confirm-btn').dataset.uid;
+        const key = document.getElementById('kd-key').value.trim();
+
+        if(!key) return showToast("Enter license key","error");
+
+        try { 
+            await update(ref(db, `purchases/${uid}/${pid}`), { 
+                key: key, 
+                keyStatus: 'delivered',
+                deliveryType: 'manual_web',
+                deliveredAt: serverTimestamp() 
+            }); 
+            showToast("Key delivered manually!"); 
+            closeModal('key-delivery-modal'); 
+            await loadDashboardStats();
+            loadKeyDelivery(); 
+        } catch(e) { 
+            showToast("Error: " + e.message, "error"); 
+        }
+    };
+
+    async function loadPromotions(){ 
+        const snap = await get(ref(db,'promotions')); 
+        const tbody = document.getElementById('promotions-list'); 
+        tbody.innerHTML = ''; 
+        if(!snap.exists()) return; 
+
+        Object.entries(snap.val()).forEach(([id,p])=>{ 
+            const row = document.createElement('tr'); 
+            row.innerHTML = `
+                <td>${p.title||'-'}</td>
+                <td>${p.image?'<img src="'+p.image+'" style="width:40px;height:30px;object-fit:cover;border-radius:4px;">':'-'}</td>
+                <td><span style="color:${p.status?'#0f0':'#f00'}">● ${p.status?'Active':'Inactive'}</span></td>
+                <td>
+                    <button class="btn btn-sm" onclick="editPromo('${id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deletePromo('${id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            `; 
+            tbody.appendChild(row); 
+        }); 
+    }
+
+    window.editPromo = async(id)=>{ 
+        const snap = await get(ref(db,`promotions/${id}`)); 
+        const p = snap.val(); 
+        document.getElementById('promo-modal-title').innerText = 'Edit Promotion'; 
+        document.getElementById('promo-title').value = p.title||''; 
+        document.getElementById('promo-image').value = p.image||''; 
+        document.getElementById('promo-link').value = p.link||''; 
+        document.getElementById('promo-status').value = p.status?'true':'false'; 
+        document.getElementById('edit-promo-id').value = id; 
+        openModal('promo-modal'); 
+    };
+
+    window.deletePromo = async(id)=>{ 
+        if(confirm('Delete Promotion?')){ 
+            await remove(ref(db,`promotions/${id}`)); 
+            showToast('Deleted!'); 
+            loadPromotions(); 
+        } 
+    };
+
+    document.getElementById('save-promo-btn').onclick = async()=>{ 
+        const id = document.getElementById('edit-promo-id').value; 
+        const data = {
+            title: document.getElementById('promo-title').value,
+            image: document.getElementById('promo-image').value,
+            link: document.getElementById('promo-link').value,
+            status: document.getElementById('promo-status').value==='true'
+        }; 
+
+        if(id){ 
+            await update(ref(db,`promotions/${id}`),data); 
+            showToast('Updated!'); 
+        } else { 
+            await push(ref(db,'promotions'),data); 
+            showToast('Added!'); 
+        } 
+        closeModal('promo-modal'); 
+        loadPromotions(); 
+    };
+
+    document.getElementById('add-promo-btn').onclick = ()=>{ 
+        document.getElementById('promo-modal-title').innerText = 'Add Promotion'; 
+        document.getElementById('promo-title').value = ''; 
+        document.getElementById('promo-image').value = ''; 
+        document.getElementById('promo-link').value = ''; 
+        document.getElementById('promo-status').value = 'true'; 
+        document.getElementById('edit-promo-id').value = ''; 
+        openModal('promo-modal'); 
+    };
+
+    async function loadPayments(){ 
+        const snap = await get(ref(db,'payments')); 
+        const tbody = document.getElementById('payments-list'); 
+        tbody.innerHTML = ''; 
+
+        if(!snap.exists()){ 
+            tbody.innerHTML = '<tr><td colspan="6">No payment requests</td></tr>'; 
+            return; 
+        } 
+
+        const payments = Object.entries(snap.val()).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0)); 
+
+        for(let [id, payment] of payments){ 
+            const row = document.createElement('tr'); 
+            let screenshotHtml = '-'; 
+
+            if(payment.screenshot) { 
+                screenshotHtml = `<img src="${payment.screenshot}" class="screenshot-thumb" onclick="window.open('${payment.screenshot}', '_blank')" title="Click to view full image">`; 
+            } 
+
+            let statusText = 'Pending'; 
+            if(payment.status === 'approved') statusText = 'Approved'; 
+            if(payment.status === 'rejected') statusText = 'Rejected'; 
+
+            let actionsHtml = ''; 
+            if(payment.status === 'pending') { 
+                actionsHtml = `<button class="btn btn-success btn-sm" onclick="approvePayment('${id}')"><i class="fas fa-check"></i> Approve</button><button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')"><i class="fas fa-times"></i> Reject</button>`; 
+            } else if(payment.status === 'approved') { 
+                actionsHtml = `<button class="btn btn-danger btn-sm" onclick="rejectApprovedPayment('${id}')"><i class="fas fa-undo"></i> Revoke</button>`; 
+            } else { 
+                actionsHtml = `<span style="color:var(--error);">Rejected</span>`; 
+            } 
+
+            row.innerHTML = `
+                <td><strong>${payment.email || payment.uid?.substring(0,8)}</strong></td>
+                <td>₹${payment.amount}</td>
+                <td>${payment.phone || '-'}</td>
+                <td>${screenshotHtml}</td>
+                <td>${statusText}</td>
+                <td>${actionsHtml}</td>
+            `; 
+            tbody.appendChild(row); 
+        } 
+    }
+
+    window.approvePayment = async (id) => { 
+        if(!confirm(`Approve payment?`)) return; 
+        try { 
+            const snap = await get(ref(db, `payments/${id}`)); 
+            const payment = snap.val(); 
+            if(!payment) return showToast("Payment not found", "error"); 
+
+            const balRef = ref(db, `users/${payment.uid}/balance`); 
+            const balSnap = await get(balRef); 
+            await set(balRef, (balSnap.val() || 0) + payment.amount); 
+            await update(ref(db, `payments/${id}`), { status: 'approved', approvedAt: serverTimestamp() }); 
+
+            showToast(`₹${payment.amount} added to user balance!`); 
+            loadPayments(); 
+            loadDashboardStats(); 
+        } catch(e) { 
+            showToast("Error: " + e.message, "error"); 
+        } 
+    };
+
+    window.rejectPayment = async (id) => { 
+        if(!confirm(`Reject payment?`)) return; 
+        try { 
+            await update(ref(db, `payments/${id}`), { status: 'rejected', rejectedAt: serverTimestamp() }); 
+            showToast("Payment rejected!"); 
+            loadPayments(); 
+        } catch(e) { 
+            showToast("Error: " + e.message, "error"); 
+        } 
+    };
+
+    window.rejectApprovedPayment = async (id) => { 
+        if(!confirm(`Deduct amount from user balance and reject?`)) return; 
+        try { 
+            const snap = await get(ref(db, `payments/${id}`)); 
+            const payment = snap.val(); 
+            const balRef = ref(db, `users/${payment.uid}/balance`); 
+            const balSnap = await get(balRef); 
+            const newBalance = Math.max(0, (balSnap.val() || 0) - payment.amount); 
+
+            await set(balRef, newBalance); 
+            await update(ref(db, `payments/${id}`), { status: 'rejected' }); 
+            showToast(`Deducted ₹${payment.amount} from user.`); 
+            loadPayments(); 
+            loadDashboardStats(); 
+        } catch(e) { 
+            showToast("Error: " + e.message, "error"); 
+        } 
+    };
+
+    async function loadUsers(){ 
+        const snap = await get(ref(db,'users')); 
+        const tbody = document.getElementById('users-list'); 
+        tbody.innerHTML = ''; 
+        if(!snap.exists()) return; 
+
+        for(let [uid,user] of Object.entries(snap.val())){ 
+            const purchasesSnap = await get(ref(db,`purchases/${uid}`)); 
+            let purchaseCount = purchasesSnap.exists() ? Object.keys(purchasesSnap.val()).length : 0; 
+
+            const row = document.createElement('tr'); 
+            row.innerHTML = `
+                <td>${user.email}</td>
+                <td style="color:var(--success);">₹${user.balance||0}</td>
+                <td>${purchaseCount}</td>
+                <td><small>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</small></td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="addUserBalance('${uid}')"><i class="fas fa-plus"></i> Add ₹</button>
+                </td>
+            `; 
+            tbody.appendChild(row); 
+        } 
+    }
+
+    window.addUserBalance = async(uid) => { 
+        const amt = prompt('Enter amount to add:'); 
+        if(amt && !isNaN(amt) && amt > 0){ 
+            const balRef = ref(db,`users/${uid}/balance`); 
+            const snap = await get(balRef); 
+            await set(balRef,(snap.val()||0) + parseFloat(amt)); 
+            showToast(`₹${amt} added!`); 
+            loadUsers(); 
+            loadDashboardStats(); 
+        } 
+    };
+
+    async function loadSettings(){ 
+        const ps = await get(ref(db,'settings/payment')); 
+        if(ps.exists()){ 
+            document.getElementById('setting-upi').value = ps.val().upiId || ''; 
+            document.getElementById('setting-qr').value = ps.val().qrImage || ''; 
+        } 
+        const ss = await get(ref(db,'support_links')); 
+        if(ss.exists()){ 
+            document.getElementById('setting-wa').value = ss.val().whatsapp || ''; 
+            document.getElementById('setting-tg-login').value = ss.val().telegram_login || ''; 
+            document.getElementById('setting-tg-dash').value = ss.val().telegram_dashboard || ''; 
+        } 
+    }
+
+    async function loadDeviceIDSetting(){
+        const snap = await get(ref(db, 'settings/deviceID'));
+        const toggle = document.getElementById('device-id-toggle');
+        if(snap.exists()) {
+            toggle.checked = snap.val().enabled === true;
+        } else {
+            toggle.checked = false;
+        }
+    }
+
+    document.getElementById('save-device-id-setting').onclick = async () => {
+        const enabled = document.getElementById('device-id-toggle').checked;
+        await set(ref(db, 'settings/deviceID'), { enabled });
+        showToast(`Device ID requirement ${enabled ? 'ENABLED' : 'DISABLED'}!`);
+    };
+
+    document.getElementById('save-payment-settings').onclick = async() => { 
+        await set(ref(db,'settings/payment'), {
+            upiId: document.getElementById('setting-upi').value,
+            qrImage: document.getElementById('setting-qr').value
+        }); 
+        showToast('Payment settings saved!'); 
+    };
+
+    document.getElementById('save-support-links').onclick = async() => { 
+        await set(ref(db,'support_links'), {
+            whatsapp: document.getElementById('setting-wa').value,
+            telegram_login: document.getElementById('setting-tg-login').value,
+            telegram_dashboard: document.getElementById('setting-tg-dash').value
+        }); 
+        showToast('Support links saved!'); 
+    };
+
+    document.getElementById('run-supplier-test-btn').onclick = async () => {
+        const testPid = document.getElementById('test-supplier-pid').value.trim();
+        const testDuration = document.getElementById('test-supplier-duration').value.trim();
+        
+        if (!testPid) return showToast("Enter a Test Supplier PID", "error");
+        
+        const btn = document.getElementById('run-supplier-test-btn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running Test...';
+        btn.disabled = true;
+        
+        const resultsDiv = document.getElementById('test-results');
+        resultsDiv.classList.remove('hidden');
+        document.getElementById('test-res-conn').innerHTML = 'Testing...';
+        document.getElementById('test-res-http').innerHTML = 'Testing...';
+        document.getElementById('test-res-resp').innerHTML = 'Testing...';
+        document.getElementById('test-res-purch').innerHTML = 'Testing...';
+        document.getElementById('test-res-reason').innerHTML = 'Testing...';
+        
+        try {
+            const token = await currentAdmin.getIdToken();
+            const res = await fetch('/api/admin_test.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    idToken: token,
+                    testPid: testPid,
+                    testDuration: testDuration
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (data.success) {
+                document.getElementById('test-res-conn').innerHTML = `<span style="color:${data.connection === 'ONLINE' ? 'var(--success)' : 'var(--error)'}">${data.connection}</span>`;
+                document.getElementById('test-res-http').innerHTML = data.httpStatus;
+                document.getElementById('test-res-resp').innerHTML = `<span style="color:${data.supplierResponse === 'RECEIVED' ? 'var(--success)' : 'var(--error)'}">${data.supplierResponse}</span>`;
+                document.getElementById('test-res-purch').innerHTML = `<span style="color:${data.purchaseTest === 'SUCCESS' ? 'var(--success)' : 'var(--error)'}">${data.purchaseTest}</span>`;
+                document.getElementById('test-res-reason').innerHTML = data.reason;
+                showToast("Test completed!");
+            } else {
+                showToast(data.message || "Test execution failed.", "error");
+                document.getElementById('test-res-reason').innerHTML = data.message;
+            }
+        } catch(e) {
+            showToast("Server error during test.", "error");
+            document.getElementById('test-res-reason').innerHTML = e.message;
+        } finally {
+            btn.innerHTML = '<i class="fas fa-play"></i> Run Test';
+            btn.disabled = false;
+        }
+    };
+
+    window.addPlanField = addPlanField;
+    window.removePlan = removePlan;
+    window.openKeyDeliveryModal = openKeyDeliveryModal;
+    window.loadDashboardStats = loadDashboardStats;
+    window.loadKeyStockList = loadKeyStockList;
+    window.deleteStockKey = deleteStockKey;
+</script>
+</body>
+</html>

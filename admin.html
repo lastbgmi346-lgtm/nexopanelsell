@@ -711,9 +711,7 @@
         addPlanField();
     }
 
-    /* ========================================================
-       KEY STOCK (BULK ADD & AUTO-DELIVERY STOCK) SYSTEM
-    ======================================================== */
+    /* KEY STOCK SYSTEM */
     async function loadKeyStockPage() {
         const snap = await get(ref(db, 'panels'));
         const select = document.getElementById('stock-panel-select');

@@ -225,7 +225,6 @@
         <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
         <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
         <div class="sidebar-item" data-page="users"><i class="fas fa-users"></i><span> Users</span></div>
-        <div class="sidebar-item" data-page="supplier-test"><i class="fas fa-plug"></i><span> Supplier API Test</span></div>
     </div>
 
     <div class="main-content">
@@ -370,39 +369,6 @@
         <div id="users-page" class="hidden">
             <div class="card-header"><h3>Users</h3></div>
             <div class="table-responsive"><table><thead><th>Email</th><th>Balance</th><th>Purchases</th><th>Joined</th><th>Actions</th></thead><tbody id="users-list"></tbody></table></div>
-        </div>
-        
-        <!-- SUPPLIER API TEST -->
-        <div id="supplier-test-page" class="hidden">
-            <h2 class="page-title">Supplier <span>API Test</span></h2>
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-vial" style="color:var(--neon-cyan);"></i> Connection & Purchase Test</h3>
-                </div>
-                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Run a safe test against the supplier API without modifying customer balances.</p>
-                
-                <div class="input-group">
-                    <label>Test Supplier PID</label>
-                    <input id="test-supplier-pid" placeholder="Enter a PID from the supplier">
-                </div>
-                <div class="input-group">
-                    <label>Test Supplier Duration</label>
-                    <input id="test-supplier-duration" value="1 Day" placeholder="e.g. 1 Day">
-                </div>
-                
-                <button class="btn btn-primary" id="run-supplier-test-btn" style="margin-bottom:20px;"><i class="fas fa-play"></i> Run Test</button>
-                
-                <div id="test-results" class="hidden" style="background:rgba(0,0,0,0.4); padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
-                    <h4 style="margin-bottom:15px; color:var(--neon-cyan);">Test Results</h4>
-                    <div style="display:flex; flex-direction:column; gap:10px; font-family:monospace; font-size:14px;">
-                        <div><strong>Connection:</strong> <span id="test-res-conn">...</span></div>
-                        <div><strong>HTTP Status:</strong> <span id="test-res-http">...</span></div>
-                        <div><strong>Supplier Response:</strong> <span id="test-res-resp">...</span></div>
-                        <div><strong>Purchase Test:</strong> <span id="test-res-purch">...</span></div>
-                        <div><strong>Reason:</strong> <span id="test-res-reason" style="color:var(--warning);">...</span></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -639,15 +605,7 @@
         if(p.plans){ 
             let idx = 0; 
             Object.entries(p.plans).forEach(([key,plan])=>{ 
-                addPlanField(
-                    plan.label || '', 
-                    plan.price || '', 
-                    plan.supplierPid || plan.pid || '', 
-                    plan.duration || '', 
-                    plan.supplierDuration || '', 
-                    plan.requiresAndroidId || false, 
-                    plan.deliveryMode || 'supplier_api'
-                ); 
+                addPlanField(plan.label, plan.price, plan.pid || ''); 
                 idx++; 
             }); 
             plansCount = idx; 
@@ -666,35 +624,15 @@
         } 
     };
 
-    function addPlanField(label='', price='', planPid='', duration='', supplierDuration='', requiresAndroidId=false, deliveryMode='supplier_api'){ 
+    function addPlanField(label='', price='', planPid=''){ 
         const div = document.createElement('div'); 
         div.className = 'plan-item'; 
         div.id = `plan-row-${plansCount}`;
-        div.style.flexWrap = 'wrap';
-        div.style.background = 'rgba(255,255,255,0.05)';
-        div.style.padding = '10px';
-        div.style.borderRadius = '8px';
-        div.style.border = '1px solid rgba(255,255,255,0.1)';
-        
         div.innerHTML = `
-            <div style="display:flex; gap:8px; width:100%; margin-bottom:8px;">
-                <input placeholder="Label (e.g., 1 Day)" value="${label}" id="plan-label-${plansCount}" style="flex:1;">
-                <input placeholder="Price ₹" type="number" value="${price}" id="plan-price-${plansCount}" style="width:100px;">
-                <input placeholder="Customer Duration" value="${duration}" id="plan-duration-${plansCount}" style="flex:1;">
-                <button class="btn btn-danger btn-sm" onclick="removePlan(${plansCount})" style="width:40px;"><i class="fas fa-times"></i></button>
-            </div>
-            <div style="display:flex; gap:8px; width:100%; align-items:center;">
-                <input placeholder="Supplier PID" value="${planPid}" id="plan-pid-${plansCount}" style="flex:1;">
-                <input placeholder="Supplier Duration" value="${supplierDuration}" id="plan-sduration-${plansCount}" style="flex:1;">
-                <select id="plan-delivery-${plansCount}" style="width:140px; padding:8px;">
-                    <option value="supplier_api" ${deliveryMode === 'supplier_api' ? 'selected' : ''}>Supplier API</option>
-                    <option value="manual" ${deliveryMode === 'manual' ? 'selected' : ''}>Manual/Key Pool</option>
-                </select>
-                <div class="toggle-wrap" style="margin:0;">
-                    <input type="checkbox" id="plan-android-${plansCount}" ${requiresAndroidId ? 'checked' : ''}>
-                    <span class="toggle-label" style="font-size:11px;">Req. Android ID</span>
-                </div>
-            </div>
+            <input placeholder="Label (e.g., 1 Day)" value="${label}" id="plan-label-${plansCount}">
+            <input placeholder="Price ₹" type="number" value="${price}" id="plan-price-${plansCount}" style="width:90px;">
+            <input placeholder="PID (Optional)" value="${planPid}" id="plan-pid-${plansCount}" style="width:110px;">
+            <button class="btn btn-danger btn-sm" onclick="removePlan(${plansCount})"><i class="fas fa-times"></i></button>
         `; 
         document.getElementById('plans-container').appendChild(div); 
         plansCount++; 
@@ -719,21 +657,12 @@
         for(let i=0; i<plansCount; i++){ 
             const l = document.getElementById(`plan-label-${i}`); 
             const p = document.getElementById(`plan-price-${i}`); 
-            const dur = document.getElementById(`plan-duration-${i}`); 
-            const sPid = document.getElementById(`plan-pid-${i}`); 
-            const sDur = document.getElementById(`plan-sduration-${i}`); 
-            const android = document.getElementById(`plan-android-${i}`); 
-            const delivery = document.getElementById(`plan-delivery-${i}`); 
-
+            const pPid = document.getElementById(`plan-pid-${i}`); 
             if(l && p && l.value && p.value) {
                 plans[`plan_${i}`] = { 
                     label: l.value, 
                     price: parseFloat(p.value),
-                    duration: dur ? dur.value : '',
-                    supplierPid: sPid ? sPid.value : panelPid,
-                    supplierDuration: sDur ? sDur.value : '',
-                    requiresAndroidId: android ? android.checked : false,
-                    deliveryMode: delivery ? delivery.value : 'supplier_api'
+                    pid: pPid ? pPid.value : panelPid
                 }; 
             }
         } 
@@ -782,7 +711,9 @@
         addPlanField();
     }
 
-    /* KEY STOCK SYSTEM */
+    /* ========================================================
+       KEY STOCK (BULK ADD & AUTO-DELIVERY STOCK) SYSTEM
+    ======================================================== */
     async function loadKeyStockPage() {
         const snap = await get(ref(db, 'panels'));
         const select = document.getElementById('stock-panel-select');
@@ -1179,6 +1110,92 @@
             document.getElementById('setting-tg-dash').value = ss.val().telegram_dashboard || ''; 
         } 
     }
+    
+<!-- Admin Panel: API Settings Section -->
+<div class="page-content" id="page-api-settings">
+    <h2 class="page-title">BANTIBHAIYA <span>API SETTINGS</span></h2>
+    <div class="glass-cyber" style="padding:25px; max-width:600px; margin:0 auto;">
+        <div class="input-group">
+            <label><i class="fas fa-key" style="color:var(--neon-cyan);"></i> Bantibhaiya API Key</label>
+            <input id="banti-api-key" placeholder="Enter your Bantibhaiya API Key" type="text">
+        </div>
+        <div class="input-group">
+            <label><i class="fas fa-shield-alt" style="color:var(--neon-cyan);"></i> Master Key (Header)</label>
+            <input id="banti-master-key" placeholder="x-master-key" type="text" value="a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8">
+        </div>
+        <button class="btn btn-primary" onclick="saveApiConfig()"><i class="fas fa-save"></i> SAVE CONFIG</button>
+    </div>
+
+    <!-- Product PID Mapping Table -->
+    <h3 style="margin:30px 0 15px; color:var(--neon-cyan);">Product PID Mapping</h3>
+    <div class="glass-cyber" style="padding:20px;">
+        <div id="pid-mapping-list"></div>
+        <button class="btn btn-outline" style="margin-top:15px;" onclick="addPidMapping()"><i class="fas fa-plus"></i> ADD MAPPING</button>
+    </div>
+</div>
+
+<script>
+// Admin: Save API Config
+async function saveApiConfig() {
+    const apiKey = document.getElementById('banti-api-key').value.trim();
+    const masterKey = document.getElementById('banti-master-key').value.trim();
+    if(!apiKey) return alert("API Key required");
+    
+    await set(ref(db, 'settings/api_config'), {
+        banti_api_key: apiKey,
+        banti_master_key: masterKey,
+        updated_at: new Date().toISOString()
+    });
+    alert("✅ API Config Saved!");
+}
+
+// Admin: Load API Config
+onValue(ref(db, 'settings/api_config'), (snap) => {
+    if(snap.exists()) {
+        document.getElementById('banti-api-key').value = snap.val().banti_api_key || '';
+        document.getElementById('banti-master-key').value = snap.val().banti_master_key || 'a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8';
+    }
+});
+
+// Admin: PID Mapping
+async function addPidMapping() {
+    const panelId = prompt("Enter Panel ID (Firebase panel key):");
+    const pid = prompt("Enter Bantibhaiya Product PID:");
+    const duration = prompt("Enter Duration (e.g. 1 Day, 3 Hours):");
+    if(!panelId || !pid) return;
+    
+    await set(ref(db, `settings/pid_mapping/${panelId}`), {
+        pid: pid,
+        duration: duration || '1 Day'
+    });
+    alert("✅ Mapping Added!");
+    loadPidMappings();
+}
+
+async function loadPidMappings() {
+    const snap = await get(ref(db, 'settings/pid_mapping'));
+    const container = document.getElementById('pid-mapping-list');
+    container.innerHTML = '';
+    if(!snap.exists()) return container.innerHTML = '<p style="color:var(--text-muted);">No mappings yet.</p>';
+    
+    snap.forEach(child => {
+        const d = child.val();
+        container.innerHTML += `
+            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                <span><b>${child.key}</b> → PID: ${d.pid} (${d.duration})</span>
+                <button class="btn btn-sm btn-outline" onclick="deleteMapping('${child.key}')"><i class="fas fa-trash"></i></button>
+            </div>`;
+    });
+}
+
+async function deleteMapping(key) {
+    if(confirm("Delete this mapping?")) {
+        await remove(ref(db, `settings/pid_mapping/${key}`));
+        loadPidMappings();
+    }
+}
+loadPidMappings();
+</script>
 
     async function loadDeviceIDSetting(){
         const snap = await get(ref(db, 'settings/deviceID'));
@@ -1211,58 +1228,6 @@
             telegram_dashboard: document.getElementById('setting-tg-dash').value
         }); 
         showToast('Support links saved!'); 
-    };
-
-    document.getElementById('run-supplier-test-btn').onclick = async () => {
-        const testPid = document.getElementById('test-supplier-pid').value.trim();
-        const testDuration = document.getElementById('test-supplier-duration').value.trim();
-        
-        if (!testPid) return showToast("Enter a Test Supplier PID", "error");
-        
-        const btn = document.getElementById('run-supplier-test-btn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running Test...';
-        btn.disabled = true;
-        
-        const resultsDiv = document.getElementById('test-results');
-        resultsDiv.classList.remove('hidden');
-        document.getElementById('test-res-conn').innerHTML = 'Testing...';
-        document.getElementById('test-res-http').innerHTML = 'Testing...';
-        document.getElementById('test-res-resp').innerHTML = 'Testing...';
-        document.getElementById('test-res-purch').innerHTML = 'Testing...';
-        document.getElementById('test-res-reason').innerHTML = 'Testing...';
-        
-        try {
-            const token = await currentAdmin.getIdToken();
-            const res = await fetch('/api/admin_test.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    idToken: token,
-                    testPid: testPid,
-                    testDuration: testDuration
-                })
-            });
-            
-            const data = await res.json();
-            
-            if (data.success) {
-                document.getElementById('test-res-conn').innerHTML = `<span style="color:${data.connection === 'ONLINE' ? 'var(--success)' : 'var(--error)'}">${data.connection}</span>`;
-                document.getElementById('test-res-http').innerHTML = data.httpStatus;
-                document.getElementById('test-res-resp').innerHTML = `<span style="color:${data.supplierResponse === 'RECEIVED' ? 'var(--success)' : 'var(--error)'}">${data.supplierResponse}</span>`;
-                document.getElementById('test-res-purch').innerHTML = `<span style="color:${data.purchaseTest === 'SUCCESS' ? 'var(--success)' : 'var(--error)'}">${data.purchaseTest}</span>`;
-                document.getElementById('test-res-reason').innerHTML = data.reason;
-                showToast("Test completed!");
-            } else {
-                showToast(data.message || "Test execution failed.", "error");
-                document.getElementById('test-res-reason').innerHTML = data.message;
-            }
-        } catch(e) {
-            showToast("Server error during test.", "error");
-            document.getElementById('test-res-reason').innerHTML = e.message;
-        } finally {
-            btn.innerHTML = '<i class="fas fa-play"></i> Run Test';
-            btn.disabled = false;
-        }
     };
 
     window.addPlanField = addPlanField;

@@ -223,7 +223,6 @@
         <div class="sidebar-item" data-page="promotions"><i class="fas fa-sliders-h"></i><span> Promotions</span></div>
         <div class="sidebar-item" data-page="key-delivery"><i class="fas fa-key"></i><span> Key Delivery</span></div>
         <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
-        <div class="sidebar-item" data-page="api-settings"><i class="fas fa-key"></i><span> API Settings</span></div>
         <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
         <div class="sidebar-item" data-page="users"><i class="fas fa-users"></i><span> Users</span></div>
     </div>
@@ -346,47 +345,6 @@
                     <thead><th>User</th><th>Amount</th><th>Phone</th><th>Screenshot</th><th>Status</th><th>Actions</th></thead>
                     <tbody id="payments-list"></tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- ✅ API SETTINGS PAGE (NEW) -->
-        <div id="api-settings-page" class="hidden">
-            <h2 class="page-title">API <span>Settings</span> (Bantibhaiya)</h2>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-key" style="color:var(--neon-cyan);"></i> API Credentials</h3>
-                </div>
-                <div class="input-group">
-                    <label>Bantibhaiya API Key</label>
-                    <input id="banti-api-key" placeholder="Enter your Bantibhaiya API Key" type="text">
-                </div>
-                <div class="input-group">
-                    <label>Master Key (Header)</label>
-                    <input id="banti-master-key" placeholder="x-master-key" type="text" value="a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8">
-                </div>
-                <button class="btn btn-primary" onclick="saveApiConfig()"><i class="fas fa-save"></i> SAVE CONFIG</button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-link" style="color:var(--neon-cyan);"></i> Product PID Mapping</h3>
-                    <button class="btn btn-primary btn-sm" onclick="addPidMapping()"><i class="fas fa-plus"></i> ADD MAPPING</button>
-                </div>
-                <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Map your Firebase Panel ID to Bantibhaiya Product PID and Duration.</p>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <th>Panel ID (Firebase Key)</th>
-                            <th>Bantibhaiya PID</th>
-                            <th>Duration</th>
-                            <th>Action</th>
-                        </thead>
-                        <tbody id="pid-mapping-list">
-                            <tr><td colspan="4">No mappings yet. Click "Add Mapping" to start.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
 
@@ -513,7 +471,6 @@
         if(page === 'promotions') loadPromotions();
         if(page === 'key-delivery') loadKeyDelivery();
         if(page === 'payments') loadPayments();
-        if(page === 'api-settings') loadApiSettings();
         if(page === 'users') loadUsers();
         if(page === 'settings') { loadSettings(); loadDeviceIDSetting(); }
     }
@@ -1187,91 +1144,12 @@
         showToast('Support links saved!'); 
     };
 
-    /* ========================================================
-       ✅ NEW: API SETTINGS (BANTIBHAIYA) LOGIC
-    ======================================================== */
-    async function loadApiSettings() {
-        // Load API Config
-        const configSnap = await get(ref(db, 'settings/api_config'));
-        if(configSnap.exists()) {
-            document.getElementById('banti-api-key').value = configSnap.val().banti_api_key || '';
-            document.getElementById('banti-master-key').value = configSnap.val().banti_master_key || 'a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8';
-        }
-        // Load PID Mappings
-        loadPidMappings();
-    }
-
-    window.saveApiConfig = async () => {
-        const apiKey = document.getElementById('banti-api-key').value.trim();
-        const masterKey = document.getElementById('banti-master-key').value.trim();
-        if(!apiKey) return showToast("API Key required", "error");
-        
-        await set(ref(db, 'settings/api_config'), {
-            banti_api_key: apiKey,
-            banti_master_key: masterKey,
-            updated_at: new Date().toISOString()
-        });
-        showToast("✅ API Config Saved!");
-    };
-
-    window.addPidMapping = async () => {
-        const panelId = prompt("Enter Firebase Panel ID (e.g., -Nxxxxxxxx):");
-        if(!panelId) return;
-        const pid = prompt("Enter Bantibhaiya Product PID:");
-        if(!pid) return;
-        const duration = prompt("Enter Duration (e.g., 1 Day, 3 Hours):", "1 Day");
-        if(!duration) return;
-        
-        await set(ref(db, `settings/pid_mapping/${panelId}`), {
-            pid: pid,
-            duration: duration
-        });
-        showToast("✅ Mapping Added!");
-        loadPidMappings();
-    };
-
-    async function loadPidMappings() {
-        const snap = await get(ref(db, 'settings/pid_mapping'));
-        const tbody = document.getElementById('pid-mapping-list');
-        tbody.innerHTML = '';
-        
-        if(!snap.exists()) {
-            tbody.innerHTML = '<tr><td colspan="4">No mappings yet. Click "Add Mapping" to start.</td></tr>';
-            return;
-        }
-        
-        Object.entries(snap.val()).forEach(([panelId, data]) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><code style="color:var(--neon-cyan);">${panelId}</code></td>
-                <td><code style="color:var(--warning);">${data.pid}</code></td>
-                <td>${data.duration}</td>
-                <td>
-                    <button class="btn btn-danger btn-sm" onclick="deletePidMapping('${panelId}')"><i class="fas fa-trash"></i></button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
-
-    window.deletePidMapping = async (panelId) => {
-        if(confirm("Delete this mapping?")) {
-            await remove(ref(db, `settings/pid_mapping/${panelId}`));
-            showToast("Mapping deleted!");
-            loadPidMappings();
-        }
-    };
-
     window.addPlanField = addPlanField;
     window.removePlan = removePlan;
     window.openKeyDeliveryModal = openKeyDeliveryModal;
     window.loadDashboardStats = loadDashboardStats;
     window.loadKeyStockList = loadKeyStockList;
     window.deleteStockKey = deleteStockKey;
-    window.loadApiSettings = loadApiSettings;
-    window.saveApiConfig = saveApiConfig;
-    window.addPidMapping = addPidMapping;
-    window.deletePidMapping = deletePidMapping;
 </script>
 </body>
 </html>

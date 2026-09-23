@@ -125,6 +125,7 @@
 
         .badge-auto { background: rgba(0, 255, 102, 0.15); color: var(--success); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--success); font-size: 11px; font-weight: 600; }
         .badge-manual { background: rgba(255, 184, 0, 0.15); color: var(--warning); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--warning); font-size: 11px; font-weight: 600; }
+        .badge-maintenance { background: rgba(255, 42, 95, 0.15); color: var(--error); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--error); font-size: 11px; font-weight: 600; }
 
         .plan-item { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
 
@@ -185,6 +186,34 @@
             color: var(--text-muted);
         }
 
+        .search-bar-wrap {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .search-bar-wrap input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .search-bar-wrap input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan-dim);
+        }
+        .search-bar-wrap i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
+            pointer-events: none;
+        }
+
         @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-item span { display: none; } .sidebar-item i { width: auto; font-size: 20px; } .main-content { margin-left: 70px; } }
         @media (max-width: 480px) { .main-content { padding: 75px 15px 30px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .stat-card h3 { font-size: 22px; } .navbar { padding: 0 15px; } .logo { font-size: 16px; } }
     </style>
@@ -223,8 +252,8 @@
         <div class="sidebar-item" data-page="promotions"><i class="fas fa-sliders-h"></i><span> Promotions</span></div>
         <div class="sidebar-item" data-page="key-delivery"><i class="fas fa-key"></i><span> Key Delivery</span></div>
         <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
-        <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
         <div class="sidebar-item" data-page="users"><i class="fas fa-users"></i><span> Users</span></div>
+        <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
     </div>
 
     <div class="main-content">
@@ -241,7 +270,6 @@
                 <div class="stat-card glass"><h3 id="pending-keys">0</h3><p><i class="fas fa-clock"></i> Pending Keys</p></div>
             </div>
 
-            <!-- KEY SALES LEDGER -->
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-receipt" style="color:var(--neon-cyan);"></i> Key Purchase & Delivery History</h3>
@@ -348,6 +376,35 @@
             </div>
         </div>
 
+        <!-- USERS (IMPROVED) -->
+        <div id="users-page" class="hidden">
+            <div class="card-header">
+                <h3><i class="fas fa-users" style="color:var(--neon-cyan);"></i> Users Management</h3>
+                <button class="btn btn-sm" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+
+            <div class="search-bar-wrap">
+                <i class="fas fa-search"></i>
+                <input id="user-search-input" placeholder="Search by email or phone number..." oninput="filterUsers()">
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Balance</th>
+                        <th>Purchases</th>
+                        <th>Total Spent</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </thead>
+                    <tbody id="users-list"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SETTINGS -->
         <div id="settings-page" class="hidden">
             <div class="card"><div class="card-header"><h3>Payment Settings</h3></div><div class="input-group"><label>UPI ID</label><input id="setting-upi" placeholder="Enter UPI ID"></div><div class="input-group"><label>QR Image URL</label><input id="setting-qr" placeholder="https://..."></div><button class="btn btn-primary" id="save-payment-settings">Save</button></div>
@@ -363,12 +420,6 @@
             </div>
 
             <div class="card"><div class="card-header"><h3>Support Links</h3></div><div class="input-group"><label>WhatsApp</label><input id="setting-wa" placeholder="https://wa.me/..."></div><div class="input-group"><label>Telegram (Login)</label><input id="setting-tg-login" placeholder="https://t.me/..."></div><div class="input-group"><label>Telegram (Dashboard)</label><input id="setting-tg-dash" placeholder="https://t.me/..."></div><button class="btn btn-primary" id="save-support-links">Save</button></div>
-        </div>
-
-        <!-- USERS -->
-        <div id="users-page" class="hidden">
-            <div class="card-header"><h3>Users</h3></div>
-            <div class="table-responsive"><table><thead><th>Email</th><th>Balance</th><th>Purchases</th><th>Joined</th><th>Actions</th></thead><tbody id="users-list"></tbody></table></div>
         </div>
     </div>
 </div>
@@ -392,6 +443,16 @@
     <div class="input-group"><label>CHECK UPDATE Link</label><input id="panel-check-update" placeholder="https://..."></div>
     <div class="input-group"><label>VIDEO/FEEDBACK Link</label><input id="panel-video-feedback" placeholder="https://..."></div>
     <div class="input-group"><label>Status</label><select id="panel-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+
+    <!-- ✅ NEW: Maintenance Toggle -->
+    <div class="input-group">
+        <label style="color:var(--warning);"><i class="fas fa-tools"></i> Maintenance Mode</label>
+        <div class="toggle-wrap" id="maintenance-toggle-wrap">
+            <input type="checkbox" id="panel-maintenance">
+            <span class="toggle-label">Enable Maintenance (Panel sabse neeche chala jayega, key buy nahi hogi)</span>
+        </div>
+    </div>
+
     <div class="input-group"><label>Plans (Set Pricing & PID)</label></div>
     <div id="plans-container"></div>
     <button class="btn btn-primary btn-sm" id="add-plan-btn" style="margin-top:5px;"><i class="fas fa-plus"></i> Add Plan Field</button>
@@ -431,6 +492,7 @@
     let globalPurchases = [];
     let globalUsers = {};
     let globalPanels = {};
+    let allUsersData = {};
 
     function showToast(msg, type='success') { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=`<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
     window.closeModal = (id) => document.getElementById(id).classList.remove('active');
@@ -570,11 +632,14 @@
         Object.entries(globalPanels).forEach(([id,panel])=>{ 
             const row = document.createElement('tr'); 
             const categoryDisplay = panel.category === 'ff' ? 'Free Fire' : panel.category === 'bgmi' ? 'BGMI' : panel.category || 'Other';
+            const maintenanceBadge = panel.maintenance === true 
+                ? '<span class="badge-maintenance"><i class="fas fa-tools"></i> MAINTENANCE</span>' 
+                : '<span style="color:#0f0">● Active</span>';
             row.innerHTML = `
                 <td><i class="fas fa-cube" style="color:var(--neon-cyan);"></i> <strong>${panel.name}</strong></td>
                 <td><span class="badge-auto">${categoryDisplay}</span></td>
                 <td><code style="color:var(--warning);">${panel.pid || 'N/A'}</code></td>
-                <td><span style="color:${panel.status==='active'?'#0f0':'#f00'}">● ${panel.status}</span></td>
+                <td>${maintenanceBadge}</td>
                 <td>${panel.plans ? Object.keys(panel.plans).length : 0} plans</td>
                 <td>
                     <button class="btn btn-sm" onclick="editPanel('${id}')"><i class="fas fa-edit"></i> Edit</button>
@@ -601,14 +666,15 @@
         document.getElementById('panel-status').value = p.status || 'active'; 
         document.getElementById('edit-panel-id').value = id; 
 
+        // ✅ Maintenance toggle set karo
+        document.getElementById('panel-maintenance').checked = p.maintenance === true;
+
         document.getElementById('plans-container').innerHTML = ''; 
+        plansCount = 0;
         if(p.plans){ 
-            let idx = 0; 
             Object.entries(p.plans).forEach(([key,plan])=>{ 
                 addPlanField(plan.label, plan.price, plan.pid || ''); 
-                idx++; 
             }); 
-            plansCount = idx; 
         } else {
             addPlanField(); 
         }
@@ -653,19 +719,24 @@
 
         if(!name) return showToast("Name required","error"); 
 
+        // ✅ FIX: Plans ko sahi se collect karo (dynamic index based)
         const plans = {}; 
-        for(let i=0; i<plansCount; i++){ 
-            const l = document.getElementById(`plan-label-${i}`); 
-            const p = document.getElementById(`plan-price-${i}`); 
-            const pPid = document.getElementById(`plan-pid-${i}`); 
-            if(l && p && l.value && p.value) {
-                plans[`plan_${i}`] = { 
-                    label: l.value, 
-                    price: parseFloat(p.value),
-                    pid: pPid ? pPid.value : panelPid
-                }; 
+        const planRows = document.querySelectorAll('#plans-container .plan-item');
+        planRows.forEach((row, idx) => {
+            const labelInput = row.querySelector('input[id^="plan-label-"]');
+            const priceInput = row.querySelector('input[id^="plan-price-"]');
+            const pidInput = row.querySelector('input[id^="plan-pid-"]');
+            
+            if(labelInput && priceInput && labelInput.value && priceInput.value) {
+                plans[`plan_${idx}`] = {
+                    label: labelInput.value,
+                    price: parseFloat(priceInput.value),
+                    pid: pidInput ? pidInput.value : panelPid
+                };
             }
-        } 
+        });
+
+        const isMaintenance = document.getElementById('panel-maintenance').checked;
 
         const data = {
             name,
@@ -676,6 +747,7 @@
             checkUpdateLink: document.getElementById('panel-check-update').value,
             videoFeedbackLink: document.getElementById('panel-video-feedback').value,
             status: document.getElementById('panel-status').value,
+            maintenance: isMaintenance,
             plans,
             updatedAt: serverTimestamp()
         }; 
@@ -705,6 +777,7 @@
         document.getElementById('panel-check-update').value = ''; 
         document.getElementById('panel-video-feedback').value = ''; 
         document.getElementById('panel-status').value = 'active'; 
+        document.getElementById('panel-maintenance').checked = false;
         document.getElementById('edit-panel-id').value = ''; 
         document.getElementById('plans-container').innerHTML = ''; 
         plansCount = 0; 
@@ -1061,29 +1134,83 @@
         } 
     };
 
+    // ============================================
+    // ✅ IMPROVED USERS MANAGEMENT
+    // ============================================
     async function loadUsers(){ 
         const snap = await get(ref(db,'users')); 
         const tbody = document.getElementById('users-list'); 
         tbody.innerHTML = ''; 
         if(!snap.exists()) return; 
 
-        for(let [uid,user] of Object.entries(snap.val())){ 
+        allUsersData = snap.val();
+        const paymentsSnap = await get(ref(db, 'payments'));
+        const allPayments = paymentsSnap.exists() ? paymentsSnap.val() : {};
+
+        for(let [uid,user] of Object.entries(allUsersData)){ 
             const purchasesSnap = await get(ref(db,`purchases/${uid}`)); 
-            let purchaseCount = purchasesSnap.exists() ? Object.keys(purchasesSnap.val()).length : 0; 
+            let purchaseCount = 0;
+            let totalSpent = 0;
+            
+            if(purchasesSnap.exists()) {
+                const purchases = purchasesSnap.val();
+                purchaseCount = Object.keys(purchases).length;
+                Object.values(purchases).forEach(p => {
+                    if(p.keyStatus === 'delivered' || p.key) {
+                        totalSpent += parseFloat(p.price || 0);
+                    }
+                });
+            }
+
+            // ✅ Phone number nikaalo (payments se)
+            let userPhone = '-';
+            let userPayments = [];
+            Object.entries(allPayments).forEach(([pid, pay]) => {
+                if(pay.uid === uid) {
+                    userPayments.push(pay);
+                    if(pay.phone && userPhone === '-') userPhone = pay.phone;
+                }
+            });
+
+            // ✅ Blocked status
+            const isBlocked = user.blocked === true;
+            const statusBadge = isBlocked 
+                ? '<span class="badge-maintenance"><i class="fas fa-ban"></i> BLOCKED</span>' 
+                : '<span style="color:#0f0">● Active</span>';
 
             const row = document.createElement('tr'); 
+            row.dataset.email = (user.email || '').toLowerCase();
+            row.dataset.phone = userPhone;
             row.innerHTML = `
-                <td>${user.email}</td>
+                <td>${user.email || '-'}</td>
+                <td>${userPhone}</td>
                 <td style="color:var(--success);">₹${user.balance||0}</td>
                 <td>${purchaseCount}</td>
+                <td style="color:var(--warning);">₹${totalSpent.toFixed(2)}</td>
                 <td><small>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</small></td>
+                <td>${statusBadge}</td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="addUserBalance('${uid}')"><i class="fas fa-plus"></i> Add ₹</button>
+                    <button class="btn btn-primary btn-sm" onclick="addUserBalance('${uid}')" title="Add Balance"><i class="fas fa-plus"></i></button>
+                    <button class="btn btn-warning btn-sm" onclick="deductUserBalance('${uid}')" title="Deduct Balance"><i class="fas fa-minus"></i></button>
+                    <button class="btn ${isBlocked ? 'btn-success' : 'btn-danger'} btn-sm" onclick="toggleBlockUser('${uid}', ${isBlocked})" title="${isBlocked ? 'Unblock' : 'Block'}">
+                        <i class="fas ${isBlocked ? 'fa-unlock' : 'fa-ban'}"></i>
+                    </button>
+                    <button class="btn btn-sm" onclick="viewUserPayments('${uid}')" title="View Payments"><i class="fas fa-receipt"></i></button>
                 </td>
             `; 
             tbody.appendChild(row); 
         } 
     }
+
+    window.filterUsers = () => {
+        const term = document.getElementById('user-search-input').value.toLowerCase();
+        document.querySelectorAll('#users-list tr').forEach(row => {
+            const email = row.dataset.email || '';
+            const phone = row.dataset.phone || '';
+            const match = email.includes(term) || phone.includes(term);
+            row.style.display = match ? '' : 'none';
+        });
+    };
 
     window.addUserBalance = async(uid) => { 
         const amt = prompt('Enter amount to add:'); 
@@ -1095,6 +1222,59 @@
             loadUsers(); 
             loadDashboardStats(); 
         } 
+    };
+
+    // ✅ NEW: Balance Deduct
+    window.deductUserBalance = async(uid) => { 
+        const amt = prompt('Enter amount to deduct:'); 
+        if(amt && !isNaN(amt) && amt > 0){ 
+            const balRef = ref(db,`users/${uid}/balance`); 
+            const snap = await get(balRef); 
+            const newBal = Math.max(0, (snap.val()||0) - parseFloat(amt));
+            await set(balRef, newBal); 
+            showToast(`₹${amt} deducted!`); 
+            loadUsers(); 
+            loadDashboardStats(); 
+        } 
+    };
+
+    // ✅ NEW: Block/Unblock User
+    window.toggleBlockUser = async(uid, isBlocked) => {
+        const action = isBlocked ? 'unblock' : 'block';
+        if(!confirm(`Are you sure you want to ${action} this user?`)) return;
+        try {
+            await update(ref(db, `users/${uid}`), { blocked: !isBlocked });
+            showToast(`User ${action}ed successfully!`);
+            loadUsers();
+        } catch(e) {
+            showToast("Error: " + e.message, "error");
+        }
+    };
+
+    // ✅ NEW: View User Payments
+    window.viewUserPayments = async(uid) => {
+        const paymentsSnap = await get(ref(db, 'payments'));
+        if(!paymentsSnap.exists()) return showToast('No payments found', 'warning');
+        
+        const allPayments = paymentsSnap.val();
+        const userPayments = [];
+        Object.entries(allPayments).forEach(([pid, pay]) => {
+            if(pay.uid === uid) userPayments.push({ id: pid, ...pay });
+        });
+        
+        if(userPayments.length === 0) return showToast('No payments for this user', 'warning');
+        
+        userPayments.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        let msg = `📋 Payment History:\n\n`;
+        userPayments.slice(0, 10).forEach((p, i) => {
+            const date = p.timestamp ? new Date(p.timestamp).toLocaleString() : 'N/A';
+            msg += `${i+1}. ₹${p.amount} | ${p.status || 'pending'} | ${date}\n`;
+            if(p.phone) msg += `   📱 ${p.phone}\n`;
+            if(p.utr) msg += `   UTR: ${p.utr}\n`;
+            msg += `\n`;
+        });
+        alert(msg);
     };
 
     async function loadSettings(){ 

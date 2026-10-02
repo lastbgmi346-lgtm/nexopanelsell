@@ -252,6 +252,8 @@
         <div class="sidebar-item" data-page="promotions"><i class="fas fa-sliders-h"></i><span> Promotions</span></div>
         <div class="sidebar-item" data-page="key-delivery"><i class="fas fa-key"></i><span> Key Delivery</span></div>
         <div class="sidebar-item" data-page="payments"><i class="fas fa-money-bill-wave"></i><span> Payments</span></div>
+        <div class="sidebar-item" data-page="payment-history"><i class="fas fa-receipt"></i><span> Payment History</span></div>
+        <div class="sidebar-item" data-page="fund-history"><i class="fas fa-wallet"></i><span> Fund Add History</span></div>
         <div class="sidebar-item" data-page="users"><i class="fas fa-users"></i><span> Users</span></div>
         <div class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i><span> Settings</span></div>
     </div>
@@ -285,9 +287,10 @@
                             <th>Price</th>
                             <th>Type</th>
                             <th>Date</th>
+                            <th>Time</th>
                         </thead>
                         <tbody id="sales-history-list">
-                            <tr><td colspan="7">Loading sales report...</td></tr>
+                            <tr><td colspan="8">Loading sales report...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -359,7 +362,7 @@
             <div class="card-header"><h3><i class="fas fa-key"></i> Pending Key Deliveries</h3></div>
             <div class="table-responsive">
                 <table>
-                    <thead><th>User</th><th>Panel</th><th>PID</th><th>Plan</th><th>Amount</th><th>Purchase Date</th><th>Status</th><th>Action</th></thead>
+                    <thead><th>User</th><th>Panel</th><th>PID</th><th>Plan</th><th>Amount</th><th>Purchase Date</th><th>Time</th><th>Status</th><th>Action</th></thead>
                     <tbody id="key-delivery-list"></tbody>
                 </table>
             </div>
@@ -367,16 +370,98 @@
 
         <!-- PAYMENTS -->
         <div id="payments-page" class="hidden">
-            <div class="card-header"><h3>Payment Requests</h3></div>
+            <h2 class="page-title">PAYMENT <span>Requests</span></h2>
             <div class="search-bar-wrap">
                 <i class="fas fa-search"></i>
                 <input id="payment-search-input" placeholder="Search by email or phone..." oninput="filterPayments()">
             </div>
             <div class="table-responsive">
                 <table>
-                    <thead><th>User</th><th>Amount</th><th>Phone</th><th>Screenshot</th><th>Status</th><th>Actions</th></thead>
+                    <thead><th>User</th><th>Amount</th><th>Phone</th><th>Date & Time</th><th>Screenshot</th><th>Status</th><th>Actions</th></thead>
                     <tbody id="payments-list"></tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- PAYMENT HISTORY (NEW) -->
+        <div id="payment-history-page" class="hidden">
+            <h2 class="page-title">PAYMENT <span>History</span></h2>
+
+            <div class="stats-grid">
+                <div class="stat-card glass"><h3 id="ph-total-amount">₹0</h3><p><i class="fas fa-coins"></i> Total Collected</p></div>
+                <div class="stat-card glass"><h3 id="ph-today-amount">₹0</h3><p><i class="fas fa-calendar-day"></i> Today</p></div>
+                <div class="stat-card glass"><h3 id="ph-month-amount">₹0</h3><p><i class="fas fa-chart-line"></i> This Month</p></div>
+                <div class="stat-card glass"><h3 id="ph-total-count">0</h3><p><i class="fas fa-receipt"></i> Total Payments</p></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-receipt" style="color:var(--neon-cyan);"></i> All Payments (Amount + Date/Time)</h3>
+                    <button class="btn btn-sm" onclick="loadPaymentHistory()"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="search-bar-wrap">
+                    <i class="fas fa-search"></i>
+                    <input id="ph-search-input" placeholder="Search by email, order id, UTR or txn id..." oninput="filterPaymentHistory()">
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>Amount Paid</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Method</th>
+                            <th>UTR / Txn ID</th>
+                            <th>Order ID</th>
+                            <th>Status</th>
+                        </thead>
+                        <tbody id="payment-history-list">
+                            <tr><td colspan="9">Loading payment history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUND ADD HISTORY -->
+        <div id="fund-history-page" class="hidden">
+            <h2 class="page-title">FUND ADD <span>History</span></h2>
+
+            <div class="stats-grid">
+                <div class="stat-card glass"><h3 id="fh-total-amount">&#8377;0</h3><p><i class="fas fa-coins"></i> Total Added</p></div>
+                <div class="stat-card glass"><h3 id="fh-today-amount">&#8377;0</h3><p><i class="fas fa-calendar-day"></i> Today</p></div>
+                <div class="stat-card glass"><h3 id="fh-month-amount">&#8377;0</h3><p><i class="fas fa-chart-line"></i> This Month</p></div>
+                <div class="stat-card glass"><h3 id="fh-total-count">0</h3><p><i class="fas fa-receipt"></i> Total Transactions</p></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-wallet" style="color:var(--neon-cyan);"></i> All Fund Top-Ups (Amount + Date/Time)</h3>
+                    <button class="btn btn-sm" onclick="loadFundHistory()"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="search-bar-wrap">
+                    <i class="fas fa-search"></i>
+                    <input id="fh-search-input" placeholder="Search by email, order id, UTR or txn id..." oninput="filterFundHistory()">
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <th>#</th>
+                            <th>User Email</th>
+                            <th>Amount Added</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Method</th>
+                            <th>UTR / Txn ID</th>
+                            <th>Order ID</th>
+                            <th>Status</th>
+                        </thead>
+                        <tbody id="fund-history-list">
+                            <tr><td colspan="9">Loading fund history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -497,7 +582,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, push, remove, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, get, push, remove, update, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDES_57EvH2ao97UKgLkbuKQA71NXB5CM0",
@@ -563,6 +648,8 @@
         if(page === 'promotions') loadPromotions();
         if(page === 'key-delivery') loadKeyDelivery();
         if(page === 'payments') loadPayments();
+        if(page === 'payment-history') loadPaymentHistory();
+        if(page === 'fund-history') loadFundHistory();
         if(page === 'users') loadUsers();
         if(page === 'settings') { loadSettings(); loadDeviceIDSetting(); loadAPIConfig(); }
     }
@@ -628,20 +715,30 @@
             document.getElementById('pending-keys').innerText = pendingKeysCount;
 
             if(globalPurchases.length === 0) {
-                historyTbody.innerHTML = '<tr><td colspan="7">No key sales found.</td></tr>';
+                historyTbody.innerHTML = '<tr><td colspan="8">No key sales found.</td></tr>';
             } else {
                 globalPurchases.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
                 globalPurchases.slice(0, 15).forEach(item => {
                     const tr = document.createElement('tr');
                     const isAuto = item.deliveryType === 'auto' || item.isAuto;
-                    tr.innerHTML = `
+                    const dFmt = (v) => {
+                            if(!v) return { d:'N/A', t:'N/A' };
+                            const dt = new Date(v);
+                            if(isNaN(dt.getTime())) return { d:'N/A', t:'N/A' };
+                            const dd = String(dt.getDate()).padStart(2,'0');
+                            const mm = String(dt.getMonth()+1).padStart(2,'0');
+                            let hh = dt.getHours(); const ap = hh>=12?'PM':'AM'; hh = hh%12; if(hh===0) hh=12;
+                            return { d:`${dd}-${mm}-${dt.getFullYear()}`, t:`${String(hh).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}:${String(dt.getSeconds()).padStart(2,'0')} ${ap}` };
+                        };
+                        tr.innerHTML = `
                         <td><strong>${item.buyerEmail}</strong></td>
                         <td>${item.panelName || 'N/A'}</td>
                         <td><code style="color:var(--neon-cyan);">${item.pidCode || item.pid || 'N/A'}</code></td>
                         <td>${item.label || item.plan || 'Standard'}</td>
                         <td>₹${item.price || 0}</td>
                         <td><span class="${isAuto ? 'badge-auto' : 'badge-manual'}">${isAuto ? '🤖 AUTO' : '👤 MANUAL'}</span></td>
-                        <td><small>${item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}</small></td>
+                        <td><small>${(()=>{const f=dFmt(item.date);return f.d;})()}</small></td>
+                        <td><small>${(()=>{const f=dFmt(item.date);return f.t;})()}</small></td>
                     `;
                     historyTbody.appendChild(tr);
                 });
@@ -933,25 +1030,39 @@
 
     async function loadKeyDelivery(){ 
         const tbody = document.getElementById('key-delivery-list'); 
-        tbody.innerHTML = '<tr><td colspan="8">Fetching pending requests...</td></tr>'; 
+        tbody.innerHTML = '<tr><td colspan="9">Fetching pending requests...</td></tr>'; 
         
         const requests = globalPurchases.filter(p => p.keyStatus === 'pending');
 
         if(requests.length === 0) { 
-            tbody.innerHTML = '<tr><td colspan="8">All keys delivered! No pending requests.</td></tr>'; 
+            tbody.innerHTML = '<tr><td colspan="9">All keys delivered! No pending requests.</td></tr>'; 
             return; 
         }
 
         tbody.innerHTML = '';
         requests.forEach(req => {
             const row = document.createElement('tr');
+            const fmtT = (v) => {
+                if(!v) return 'N/A';
+                const dt = new Date(v);
+                if(isNaN(dt.getTime())) return 'N/A';
+                let hh = dt.getHours(); const ap = hh>=12?'PM':'AM'; hh = hh%12; if(hh===0) hh=12;
+                return `${String(hh).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}:${String(dt.getSeconds()).padStart(2,'0')} ${ap}`;
+            };
+            const fmtD = (v) => {
+                if(!v) return 'N/A';
+                const dt = new Date(v);
+                if(isNaN(dt.getTime())) return 'N/A';
+                return `${String(dt.getDate()).padStart(2,'0')}-${String(dt.getMonth()+1).padStart(2,'0')}-${dt.getFullYear()}`;
+            };
             row.innerHTML = `
                 <td><strong>${req.buyerEmail}</strong></td>
                 <td>${req.panelName || 'N/A'}</td>
                 <td><code>${req.pidCode || req.pid || 'N/A'}</code></td>
                 <td>${req.label || req.plan || 'N/A'}</td>
                 <td>₹${req.price || 0}</td>
-                <td><small>${req.date ? new Date(req.date).toLocaleDateString() : 'N/A'}</small></td>
+                <td><small>${fmtD(req.date)}</small></td>
+                <td><small>${fmtT(req.date)}</small></td>
                 <td style="color:var(--warning);">Pending</td>
                 <td>
                     <button class="btn btn-warning btn-sm" onclick="openKeyDeliveryModal('${req.uid}','${req.pid}','${req.buyerEmail}','${req.panelName}','${req.label}')">
@@ -1070,13 +1181,13 @@
     // ✅ FIXED: Payments load (fast + searchable)
     async function loadPayments(){ 
         const tbody = document.getElementById('payments-list'); 
-        tbody.innerHTML = '<tr><td colspan="6">Loading payments...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7">Loading payments...</td></tr>';
 
         const snap = await get(ref(db,'payments')); 
         tbody.innerHTML = ''; 
 
         if(!snap.exists()){ 
-            tbody.innerHTML = '<tr><td colspan="6">No payment requests</td></tr>'; 
+            tbody.innerHTML = '<tr><td colspan="7">No payment requests</td></tr>'; 
             return; 
         } 
 
@@ -1092,8 +1203,8 @@
             } 
 
             let statusText = 'Pending'; 
-            if(payment.status === 'approved') statusText = 'Approved'; 
-            if(payment.status === 'rejected') statusText = 'Rejected'; 
+            if(payment.status === 'approved') statusText = '<span style="color:var(--success);font-weight:600;">&#10004; Approved</span>'; 
+            if(payment.status === 'rejected') statusText = '<span style="color:var(--error);">&#10006; Rejected</span>'; 
 
             let actionsHtml = ''; 
             if(payment.status === 'pending') { 
@@ -1104,12 +1215,31 @@
                 actionsHtml = `<span style="color:var(--error);">Rejected</span>`; 
             } 
 
+            // Format date/time
+            let dateTimeStr = '-';
+            const ts = payment.timestamp;
+            if(ts) {
+                const dt = new Date(typeof ts === 'number' && ts < 9999999999 ? ts * 1000 : ts);
+                if(!isNaN(dt.getTime())) {
+                    const dd = String(dt.getDate()).padStart(2,'0');
+                    const mm = String(dt.getMonth()+1).padStart(2,'0');
+                    const yyyy = dt.getFullYear();
+                    let hh = dt.getHours();
+                    const ampm = hh >= 12 ? 'PM' : 'AM';
+                    hh = hh % 12 || 12;
+                    const mi = String(dt.getMinutes()).padStart(2,'0');
+                    const ss = String(dt.getSeconds()).padStart(2,'0');
+                    dateTimeStr = `${dd}-${mm}-${yyyy}<br><small style="color:var(--text-muted);">${String(hh).padStart(2,'0')}:${mi}:${ss} ${ampm}</small>`;
+                }
+            }
+
             row.dataset.email = (payment.email || '').toLowerCase();
             row.dataset.phone = (payment.phone || '');
             row.innerHTML = `
                 <td><strong>${payment.email || payment.uid?.substring(0,8)}</strong></td>
-                <td>₹${payment.amount}</td>
+                <td style="color:var(--success);font-weight:700;">&#8377;${payment.amount}</td>
                 <td>${payment.phone || '-'}</td>
+                <td>${dateTimeStr}</td>
                 <td>${screenshotHtml}</td>
                 <td>${statusText}</td>
                 <td>${actionsHtml}</td>
@@ -1128,21 +1258,398 @@
         });
     };
 
+    // ============================================
+    // PAYMENT HISTORY (NEW) - amount + date + time
+    // ============================================
+    let allPaymentHistory = [];
+
+    function phFmtDate(dObj){
+        if(!dObj || isNaN(dObj.getTime())) return { date:'N/A', time:'N/A' };
+        const dd = String(dObj.getDate()).padStart(2,'0');
+        const mm = String(dObj.getMonth()+1).padStart(2,'0');
+        const yyyy = dObj.getFullYear();
+        let hh = dObj.getHours(); const ampm = hh >= 12 ? 'PM' : 'AM';
+        hh = hh % 12; if(hh === 0) hh = 12;
+        const mi = String(dObj.getMinutes()).padStart(2,'0');
+        const ss = String(dObj.getSeconds()).padStart(2,'0');
+        return { date:`${dd}-${mm}-${yyyy}`, time:`${String(hh).padStart(2,'0')}:${mi}:${ss} ${ampm}` };
+    }
+
+    function phResolveDate(p){
+        if(typeof p.timestamp === 'number' && p.timestamp > 0) return new Date(p.timestamp * 1000);
+        if(typeof p.created_ms === 'number' && p.created_ms > 0)  return new Date(p.created_ms);
+        if(typeof p.date === 'number' && p.date > 0)            return new Date(p.date);
+        if(typeof p.credited_at === 'string' && p.credited_at)   return new Date(p.credited_at.replace(' ','T'));
+        if(typeof p.completed_at === 'string' && p.completed_at) return new Date(p.completed_at.replace(' ','T'));
+        if(typeof p.date === 'string' && p.date)                  return new Date(p.date.replace(' ','T'));
+        if(typeof p.payment_time === 'string' && p.payment_time && p.payment_time !== 'N/A'){
+            const d = new Date(p.payment_time.replace(' ','T'));
+            if(!isNaN(d.getTime())) return d;
+        }
+        return null;
+    }
+
+    function phMethodLabel(m){
+        const s = String(m || '').toLowerCase();
+        if(s.includes('gmail') || s.includes('imap')) return 'Gmail Auto-Verify';
+        if(s.includes('webhook'))  return 'FamGateway Webhook';
+        if(s.includes('api_verify')) return 'Gateway API';
+        if(s.includes('upi'))      return 'UPI';
+        if(!m) return 'N/A';
+        return m;
+    }
+async function loadPaymentHistory(){
+        const tbody = document.getElementById('payment-history-list');
+        if(!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="9"><i class="fas fa-spinner fa-spin"></i> Loading payments...</td></tr>';
+
+        try{
+            // payment_history = naye orders (exactly-once engine likhta hai)
+            // orders           = fallback + purane completed orders
+            const [histSnap, ordersSnap, usersSnap] = await Promise.all([
+                get(ref(db,'payment_history')),
+                get(ref(db,'orders')),
+                get(ref(db,'users'))
+            ]);
+
+            const users = usersSnap.exists() ? usersSnap.val() : {};
+            const merged = new Map();
+
+            if(histSnap.exists()){
+                Object.entries(histSnap.val()).forEach(([oid, rec])=>{
+                    if(!rec) return;
+                    merged.set(oid, { ...rec, order_id: rec.order_id || oid });
+                });
+            }
+
+            if(ordersSnap.exists()){
+                Object.entries(ordersSnap.val()).forEach(([oid, o])=>{
+                    if(!o || typeof o !== 'object') return;
+                    if(merged.has(oid)){
+                        const ex = merged.get(oid);
+                        ex.utr    = ex.utr    || o.utr    || 'N/A';
+                        ex.txn_id = ex.txn_id || o.txn_id || 'N/A';
+                        ex.method = ex.method || o.payment_method || '';
+                        ex.uid    = ex.uid    || o.user_uid || '';
+                        ex._raw   = o;
+                        return;
+                    }
+                    const status = String(o.status || '').toLowerCase();
+                    if(status !== 'completed' && o.credited !== true) return;
+                    merged.set(oid, {
+                        order_id: oid,
+                        uid: o.user_uid || '',
+                        amount: o.amount || 0,
+                        status: 'completed',
+                        method: o.payment_method || '',
+                        utr: o.utr || 'N/A',
+                        txn_id: o.txn_id || 'N/A',
+                        sender_name: o.sender_name || 'N/A',
+                        new_balance: o.new_balance ?? null,
+                        _raw: o
+                    });
+                });
+            }
+// Rows banao
+            const rows = Array.from(merged.values()).map(p=>{
+                const source = p._raw ? Object.assign({}, p._raw, p) : p;
+                const dt = phResolveDate(source);
+                const { date, time } = phFmtDate(dt);
+                return {
+                    order_id: p.order_id,
+                    uid: p.uid || '',
+                    userEmail: users[p.uid]?.email || (p.uid ? String(p.uid).substring(0,10) : 'Unknown'),
+                    amount: Number(p.amount || 0),
+                    status: p.status || 'completed',
+                    method: p.method || '',
+                    utr: p.utr || 'N/A',
+                    txn_id: p.txn_id || 'N/A',
+                    dateStr: date,
+                    timeStr: time,
+                    ts: dt ? dt.getTime() : 0
+                };
+            });
+
+            rows.sort((a,b)=> b.ts - a.ts);
+            allPaymentHistory = rows;
+            renderPaymentHistory();
+
+            // ---- Stats ----
+            const total = rows.reduce((s,p)=>s+p.amount, 0);
+            const now = new Date();
+            const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            const today = rows.filter(p=>p.ts >= startToday).reduce((s,p)=>s+p.amount,0);
+            const month = rows.filter(p=>p.ts >= startMonth).reduce((s,p)=>s+p.amount,0);
+            const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits:2});
+
+            document.getElementById('ph-total-amount').innerText = fmt(total);
+            document.getElementById('ph-today-amount').innerText = fmt(today);
+            document.getElementById('ph-month-amount').innerText = fmt(month);
+            document.getElementById('ph-total-count').innerText = rows.length;
+
+        }catch(e){
+            console.error('Payment history error:', e);
+            tbody.innerHTML = '<tr><td colspan="9" style="color:var(--error);">Failed to load: ' + (e.message||e) + '</td></tr>';
+        }
+    }
+
+    function renderPaymentHistory(){
+        const tbody = document.getElementById('payment-history-list');
+        if(!tbody) return;
+
+        if(allPaymentHistory.length === 0){
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted);">Abhi tak koi payment record nahi hai.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        allPaymentHistory.forEach((p, i)=>{
+            const row = document.createElement('tr');
+            const badge = p.status === 'completed'
+                ? '<span style="color:#0f0;font-weight:600;">&#10004; Success</span>'
+                : '<span style="color:var(--warning);">Pending</span>';
+            const refId = (p.utr && p.utr !== 'N/A') ? p.utr : (p.txn_id && p.txn_id !== 'N/A' ? p.txn_id : 'N/A');
+
+            row.dataset.search = [p.userEmail, p.order_id, refId].join(' ').toLowerCase();
+            row.innerHTML = `
+                <td>${i+1}</td>
+                <td><strong>${p.userEmail}</strong></td>
+                <td style="color:var(--success);font-weight:700;">&#8377;${p.amount.toLocaleString('en-IN')}</td>
+                <td>${p.dateStr}</td>
+                <td>${p.timeStr}</td>
+                <td><small>${phMethodLabel(p.method)}</small></td>
+                <td><code style="font-size:11px;color:var(--neon-cyan);">${refId}</code></td>
+                <td><small style="font-size:10px;color:var(--text-muted);">${p.order_id}</small></td>
+                <td>${badge}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    window.filterPaymentHistory = () => {
+        const term = (document.getElementById('ph-search-input').value || '').toLowerCase().trim();
+        document.querySelectorAll('#payment-history-list tr').forEach(row=>{
+            const hay = row.dataset.search || '';
+            row.style.display = (!term || hay.includes(term)) ? '' : 'none';
+        });
+    };
+
+    window.loadPaymentHistory = loadPaymentHistory;
+
+    // ============================================
+    // FUND ADD HISTORY — jab bhi user ne fund add
+    // kiya (balance top-up), wo yahan dikhega with
+    // date + time + amount + method
+    // ============================================
+    let allFundHistory = [];
+
+    async function loadFundHistory() {
+        const tbody = document.getElementById('fund-history-list');
+        if(!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="9"><i class="fas fa-spinner fa-spin"></i> Loading fund history...</td></tr>';
+
+        try {
+            const [histSnap, ordersSnap, usersSnap, manualSnap] = await Promise.all([
+                get(ref(db, 'payment_history')),
+                get(ref(db, 'orders')),
+                get(ref(db, 'users')),
+                get(ref(db, 'payments'))
+            ]);
+
+            const users = usersSnap.exists() ? usersSnap.val() : {};
+            const merged = new Map();
+
+            // From payment_history (auto top-ups via FamGateway / Gmail)
+            if(histSnap.exists()) {
+                Object.entries(histSnap.val()).forEach(([oid, rec]) => {
+                    if(!rec) return;
+                    merged.set(oid, { ...rec, order_id: rec.order_id || oid, _src: 'auto' });
+                });
+            }
+
+            // From orders (completed fund adds not yet in payment_history)
+            if(ordersSnap.exists()) {
+                Object.entries(ordersSnap.val()).forEach(([oid, o]) => {
+                    if(!o || typeof o !== 'object') return;
+                    if(merged.has(oid)) {
+                        const ex = merged.get(oid);
+                        ex.utr    = ex.utr    || o.utr    || 'N/A';
+                        ex.txn_id = ex.txn_id || o.txn_id || 'N/A';
+                        ex.method = ex.method || o.payment_method || '';
+                        ex.uid    = ex.uid    || o.user_uid || '';
+                        ex._raw   = o;
+                        return;
+                    }
+                    const status = String(o.status || '').toLowerCase();
+                    if(status !== 'completed' && o.credited !== true) return;
+                    merged.set(oid, {
+                        order_id: oid,
+                        uid: o.user_uid || '',
+                        amount: o.amount || 0,
+                        status: 'completed',
+                        method: o.payment_method || '',
+                        utr: o.utr || 'N/A',
+                        txn_id: o.txn_id || 'N/A',
+                        sender_name: o.sender_name || 'N/A',
+                        new_balance: o.new_balance ?? null,
+                        _raw: o,
+                        _src: 'order'
+                    });
+                });
+            }
+
+            // From payments (manual screenshot approvals)
+            if(manualSnap.exists()) {
+                Object.entries(manualSnap.val()).forEach(([pid, pay]) => {
+                    if(!pay || pay.status !== 'approved') return;
+                    const manualKey = 'MANUAL_' + pid;
+                    if(!merged.has(manualKey)) {
+                        const ts = pay.timestamp ? (pay.timestamp < 9999999999 ? pay.timestamp * 1000 : pay.timestamp) : 0;
+                        merged.set(manualKey, {
+                            order_id: manualKey,
+                            uid: pay.uid || '',
+                            amount: Number(pay.amount || 0),
+                            status: 'completed',
+                            method: 'Manual Request (UPI Screenshot)',
+                            utr: pay.utr || pay.txnId || 'N/A',
+                            txn_id: pay.txnId || 'N/A',
+                            sender_name: pay.name || 'N/A',
+                            created_ms: ts,
+                            timestamp: Math.floor(ts / 1000),
+                            _src: 'manual'
+                        });
+                    }
+                });
+            }
+
+            // Build rows
+            const rows = Array.from(merged.values()).map(p => {
+                const source = p._raw ? Object.assign({}, p._raw, p) : p;
+                const dt = phResolveDate(source);
+                const { date, time } = phFmtDate(dt);
+                return {
+                    order_id: p.order_id,
+                    uid: p.uid || '',
+                    userEmail: users[p.uid]?.email || (p.uid ? String(p.uid).substring(0, 10) : 'Unknown'),
+                    amount: Number(p.amount || 0),
+                    status: p.status || 'completed',
+                    method: p.method || '',
+                    utr: p.utr || 'N/A',
+                    txn_id: p.txn_id || 'N/A',
+                    dateStr: date,
+                    timeStr: time,
+                    ts: dt ? dt.getTime() : 0
+                };
+            });
+
+            rows.sort((a, b) => b.ts - a.ts);
+            allFundHistory = rows;
+            renderFundHistory();
+
+            // Stats
+            const total = rows.reduce((s, p) => s + p.amount, 0);
+            const now = new Date();
+            const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            const today = rows.filter(p => p.ts >= startToday).reduce((s, p) => s + p.amount, 0);
+            const month = rows.filter(p => p.ts >= startMonth).reduce((s, p) => s + p.amount, 0);
+            const fmt = n => '&#8377;' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+
+            document.getElementById('fh-total-amount').innerHTML = fmt(total);
+            document.getElementById('fh-today-amount').innerHTML = fmt(today);
+            document.getElementById('fh-month-amount').innerHTML = fmt(month);
+            document.getElementById('fh-total-count').innerText = rows.length;
+
+        } catch(e) {
+            console.error('Fund history error:', e);
+            tbody.innerHTML = `<tr><td colspan="9" style="color:var(--error);">Failed to load: ${e.message || e}</td></tr>`;
+        }
+    }
+
+    function renderFundHistory() {
+        const tbody = document.getElementById('fund-history-list');
+        if(!tbody) return;
+
+        if(allFundHistory.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted);">Abhi tak koi fund add record nahi hai.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        allFundHistory.forEach((p, i) => {
+            const row = document.createElement('tr');
+            const badge = p.status === 'completed'
+                ? '<span style="color:#0f0;font-weight:600;">&#10004; Success</span>'
+                : '<span style="color:var(--warning);">Pending</span>';
+            const refId = (p.utr && p.utr !== 'N/A') ? p.utr : (p.txn_id && p.txn_id !== 'N/A' ? p.txn_id : 'N/A');
+
+            row.dataset.search = [p.userEmail, p.order_id, refId].join(' ').toLowerCase();
+            row.innerHTML = `
+                <td>${i + 1}</td>
+                <td><strong>${p.userEmail}</strong></td>
+                <td style="color:var(--success);font-weight:700;">&#8377;${p.amount.toLocaleString('en-IN')}</td>
+                <td><span style="color:var(--neon-cyan);">${p.dateStr}</span></td>
+                <td><span style="color:var(--warning);">${p.timeStr}</span></td>
+                <td><small>${phMethodLabel(p.method)}</small></td>
+                <td><code style="font-size:11px;color:var(--neon-cyan);">${refId}</code></td>
+                <td><small style="font-size:10px;color:var(--text-muted);">${p.order_id}</small></td>
+                <td>${badge}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    window.filterFundHistory = () => {
+        const term = (document.getElementById('fh-search-input').value || '').toLowerCase().trim();
+        document.querySelectorAll('#fund-history-list tr').forEach(row => {
+            const hay = row.dataset.search || '';
+            row.style.display = (!term || hay.includes(term)) ? '' : 'none';
+        });
+    };
+
+    window.loadFundHistory = loadFundHistory;
+
     window.approvePayment = async (id) => { 
         if(!confirm(`Approve payment?`)) return; 
         try { 
             const snap = await get(ref(db, `payments/${id}`)); 
             const payment = snap.val(); 
             if(!payment) return showToast("Payment not found", "error"); 
+            if(payment.status === 'approved') return showToast("Already approved!", "warning"); 
 
-            const balRef = ref(db, `users/${payment.uid}/balance`); 
-            const balSnap = await get(balRef); 
-            await set(balRef, (balSnap.val() || 0) + payment.amount); 
-            await update(ref(db, `payments/${id}`), { status: 'approved', approvedAt: serverTimestamp() }); 
+            // ✅ ATOMIC balance add (puraha get->set race condition tha)
+            let newBalance = null;
+            await runTransaction(ref(db, `users/${payment.uid}/balance`), (cur) => {
+                const v = Number(cur || 0) + Number(payment.amount || 0);
+                newBalance = v;
+                return v;
+            });
+
+            const ts = Date.now();
+            await update(ref(db, `payments/${id}`), { status: 'approved', approvedAt: serverTimestamp() });
+
+            // ✅ Payment history me record (admin panel me dikhega)
+            await set(ref(db, `payment_history/MANUAL_${id}`), {
+                order_id: `MANUAL_${id}`,
+                uid: payment.uid || '',
+                amount: Number(payment.amount || 0),
+                currency: 'INR',
+                status: 'completed',
+                method: 'Manual Request (UPI Screenshot)',
+                source: 'admin_approve',
+                utr: payment.utr || payment.txnId || 'N/A',
+                txn_id: payment.txnId || 'N/A',
+                sender_name: payment.name || 'N/A',
+                new_balance: newBalance,
+                date: new Date().toLocaleString('en-GB'),
+                timestamp: Math.floor(ts / 1000),
+                created_ms: ts
+            });
 
             showToast(`₹${payment.amount} added to user balance!`); 
             loadPayments(); 
-            loadDashboardStats(); 
+            loadDashboardStats();
         } catch(e) { 
             showToast("Error: " + e.message, "error"); 
         } 

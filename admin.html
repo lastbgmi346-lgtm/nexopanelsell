@@ -1259,9 +1259,20 @@
     };
 
     // ============================================
-    // PAYMENT HISTORY (NEW) - amount + date + time
+    // PAYMENT & FUND HISTORY HELPERS (RESILIENT)
     // ============================================
     let allPaymentHistory = [];
+    let allFundHistory = [];
+
+    async function safeDbRead(path) {
+        try {
+            const snap = await get(ref(db, path));
+            return snap.exists() ? (snap.val() || {}) : {};
+        } catch (e) {
+            console.warn('safeDbRead note for ' + path + ':', e.message || e);
+            return {};
+        }
+    }
 
     function phFmtDate(dObj){
         if(!dObj || isNaN(dObj.getTime())) return { date:'N/A', time:'N/A' };
@@ -1278,54 +1289,58 @@
     function phResolveDate(p){
         if(typeof p.timestamp === 'number' && p.timestamp > 0) return new Date(p.timestamp * 1000);
         if(typeof p.created_ms === 'number' && p.created_ms > 0)  return new Date(p.created_ms);
+        if(typeof p.created_ts === 'number' && p.created_ts > 0)  return new Date(p.created_ts * 1000);
         if(typeof p.date === 'number' && p.date > 0)            return new Date(p.date);
         if(typeof p.credited_at === 'string' && p.credited_at)   return new Date(p.credited_at.replace(' ','T'));
         if(typeof p.completed_at === 'string' && p.completed_at) return new Date(p.completed_at.replace(' ','T'));
+        if(typeof p.created_at === 'string' && p.created_at)     return new Date(p.created_at.replace(' ','T'));
         if(typeof p.date === 'string' && p.date)                  return new Date(p.date.replace(' ','T'));
         if(typeof p.payment_time === 'string' && p.payment_time && p.payment_time !== 'N/A'){
             const d = new Date(p.payment_time.replace(' ','T'));
             if(!isNaN(d.getTime())) return d;
         }
-        return null;
+        return new Date();
     }
 
     function phMethodLabel(m){
         const s = String(m || '').toLowerCase();
-        if(s.includes('gmail') || s.includes('imap')) return 'Gmail Auto-Verify';
-        if(s.includes('webhook'))  return 'FamGateway Webhook';
-        if(s.includes('api_verify')) return 'Gateway API';
-        if(s.includes('upi'))      return 'UPI';
-        if(!m) return 'N/A';
+        if(s.includes('gmail') || s.includes('imap')) return '<span style="color:var(--neon-cyan);"><i class="fas fa-envelope-open-text"></i> Gmail Auto</span>';
+        if(s.includes('webhook'))  return '<span style="color:var(--success);"><i class="fas fa-bolt"></i> FamGateway</span>';
+        if(s.includes('api_verify')) return '<span style="color:var(--neon-cyan);"><i class="fas fa-code"></i> Gateway API</span>';
+        if(s.includes('manual'))   return '<span style="color:var(--warning);"><i class="fas fa-user-check"></i> Manual</span>';
+        if(s.includes('upi'))      return '<span style="color:var(--neon-cyan);"><i class="fas fa-qrcode"></i> UPI</span>';
+        if(!m) return '<span style="color:var(--text-muted);">UPI Instant</span>';
         return m;
     }
-async function loadPaymentHistory(){
+
+    async function loadPaymentHistory(){
         const tbody = document.getElementById('payment-history-list');
         if(!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="9"><i class="fas fa-spinner fa-spin"></i> Loading payments...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:25px;"><i class="fas fa-spinner fa-spin" style="color:var(--neon-cyan);font-size:18px;"></i> Loading payments...</td></tr>';
 
-        try{
-            // payment_history = naye orders (exactly-once engine likhta hai)
-            // orders           = fallback + purane completed orders
-            const [histSnap, ordersSnap, usersSnap] = await Promise.all([
-                get(ref(db,'payment_history')),
-                get(ref(db,'orders')),
-                get(ref(db,'users'))
+        try {
+            const [histVal, ordersVal, usersVal] = await Promise.all([
+                safeDbRead('payment_history'),
+                safeDbRead('orders'),
+                safeDbRead('users')
             ]);
 
-            const users = usersSnap.exists() ? usersSnap.val() : {};
+            const users = usersVal || {};
             const merged = new Map();
 
-            if(histSnap.exists()){
-                Object.entries(histSnap.val()).forEach(([oid, rec])=>{
+            // 1. From payment_history
+            if(histVal && typeof histVal === 'object') {
+                Object.entries(histVal).forEach(([oid, rec]) => {
                     if(!rec) return;
                     merged.set(oid, { ...rec, order_id: rec.order_id || oid });
                 });
             }
 
-            if(ordersSnap.exists()){
-                Object.entries(ordersSnap.val()).forEach(([oid, o])=>{
+            // 2. From orders
+            if(ordersVal && typeof ordersVal === 'object') {
+                Object.entries(ordersVal).forEach(([oid, o]) => {
                     if(!o || typeof o !== 'object') return;
-                    if(merged.has(oid)){
+                    if(merged.has(oid)) {
                         const ex = merged.get(oid);
                         ex.utr    = ex.utr    || o.utr    || 'N/A';
                         ex.txn_id = ex.txn_id || o.txn_id || 'N/A';
@@ -1350,18 +1365,20 @@ async function loadPaymentHistory(){
                     });
                 });
             }
-// Rows banao
-            const rows = Array.from(merged.values()).map(p=>{
+
+            const rows = Array.from(merged.values()).map(p => {
                 const source = p._raw ? Object.assign({}, p._raw, p) : p;
                 const dt = phResolveDate(source);
                 const { date, time } = phFmtDate(dt);
+                const uid = p.uid || p.user_uid || '';
+                const uEmail = users[uid]?.email || (uid ? String(uid).substring(0, 10) : 'Unknown');
                 return {
                     order_id: p.order_id,
-                    uid: p.uid || '',
-                    userEmail: users[p.uid]?.email || (p.uid ? String(p.uid).substring(0,10) : 'Unknown'),
+                    uid: uid,
+                    userEmail: uEmail,
                     amount: Number(p.amount || 0),
                     status: p.status || 'completed',
-                    method: p.method || '',
+                    method: p.method || p.payment_method || '',
                     utr: p.utr || 'N/A',
                     txn_id: p.txn_id || 'N/A',
                     dateStr: date,
@@ -1370,27 +1387,27 @@ async function loadPaymentHistory(){
                 };
             });
 
-            rows.sort((a,b)=> b.ts - a.ts);
+            rows.sort((a, b) => b.ts - a.ts);
             allPaymentHistory = rows;
             renderPaymentHistory();
 
-            // ---- Stats ----
-            const total = rows.reduce((s,p)=>s+p.amount, 0);
+            // Stats
+            const total = rows.reduce((s, p) => s + p.amount, 0);
             const now = new Date();
             const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            const today = rows.filter(p=>p.ts >= startToday).reduce((s,p)=>s+p.amount,0);
-            const month = rows.filter(p=>p.ts >= startMonth).reduce((s,p)=>s+p.amount,0);
-            const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits:2});
+            const today = rows.filter(p => p.ts >= startToday).reduce((s, p) => s + p.amount, 0);
+            const month = rows.filter(p => p.ts >= startMonth).reduce((s, p) => s + p.amount, 0);
+            const fmt = n => '₹' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
-            document.getElementById('ph-total-amount').innerText = fmt(total);
-            document.getElementById('ph-today-amount').innerText = fmt(today);
-            document.getElementById('ph-month-amount').innerText = fmt(month);
-            document.getElementById('ph-total-count').innerText = rows.length;
+            const elTot = document.getElementById('ph-total-amount'); if(elTot) elTot.innerText = fmt(total);
+            const elTod = document.getElementById('ph-today-amount'); if(elTod) elTod.innerText = fmt(today);
+            const elMon = document.getElementById('ph-month-amount'); if(elMon) elMon.innerText = fmt(month);
+            const elCnt = document.getElementById('ph-total-count'); if(elCnt) elCnt.innerText = rows.length;
 
-        }catch(e){
+        } catch (e) {
             console.error('Payment history error:', e);
-            tbody.innerHTML = '<tr><td colspan="9" style="color:var(--error);">Failed to load: ' + (e.message||e) + '</td></tr>';
+            renderPaymentHistory();
         }
     }
 
@@ -1398,29 +1415,29 @@ async function loadPaymentHistory(){
         const tbody = document.getElementById('payment-history-list');
         if(!tbody) return;
 
-        if(allPaymentHistory.length === 0){
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted);">Abhi tak koi payment record nahi hai.</td></tr>';
+        if(!allPaymentHistory || allPaymentHistory.length === 0){
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fas fa-receipt" style="font-size:24px;margin-bottom:8px;display:block;"></i>Abhi tak koi payment record nahi hai.</td></tr>';
             return;
         }
 
         tbody.innerHTML = '';
-        allPaymentHistory.forEach((p, i)=>{
+        allPaymentHistory.forEach((p, i) => {
             const row = document.createElement('tr');
             const badge = p.status === 'completed'
-                ? '<span style="color:#0f0;font-weight:600;">&#10004; Success</span>'
-                : '<span style="color:var(--warning);">Pending</span>';
+                ? '<span style="color:#00ff66;font-weight:700;"><i class="fas fa-check-circle"></i> Success</span>'
+                : '<span style="color:var(--warning);font-weight:700;"><i class="fas fa-clock"></i> Pending</span>';
             const refId = (p.utr && p.utr !== 'N/A') ? p.utr : (p.txn_id && p.txn_id !== 'N/A' ? p.txn_id : 'N/A');
 
             row.dataset.search = [p.userEmail, p.order_id, refId].join(' ').toLowerCase();
             row.innerHTML = `
-                <td>${i+1}</td>
+                <td>${i + 1}</td>
                 <td><strong>${p.userEmail}</strong></td>
-                <td style="color:var(--success);font-weight:700;">&#8377;${p.amount.toLocaleString('en-IN')}</td>
-                <td>${p.dateStr}</td>
-                <td>${p.timeStr}</td>
+                <td style="color:var(--success);font-weight:700;font-size:14px;">₹${p.amount.toLocaleString('en-IN')}</td>
+                <td><span style="color:var(--neon-cyan);">${p.dateStr}</span></td>
+                <td><span style="color:var(--warning);">${p.timeStr}</span></td>
                 <td><small>${phMethodLabel(p.method)}</small></td>
-                <td><code style="font-size:11px;color:var(--neon-cyan);">${refId}</code></td>
-                <td><small style="font-size:10px;color:var(--text-muted);">${p.order_id}</small></td>
+                <td><code style="font-size:11px;color:var(--neon-cyan);background:rgba(0,240,255,0.08);padding:3px 6px;border-radius:4px;">${refId}</code></td>
+                <td><small style="font-size:11px;color:var(--text-muted);">${p.order_id}</small></td>
                 <td>${badge}</td>
             `;
             tbody.appendChild(row);
@@ -1428,8 +1445,8 @@ async function loadPaymentHistory(){
     }
 
     window.filterPaymentHistory = () => {
-        const term = (document.getElementById('ph-search-input').value || '').toLowerCase().trim();
-        document.querySelectorAll('#payment-history-list tr').forEach(row=>{
+        const term = (document.getElementById('ph-search-input')?.value || '').toLowerCase().trim();
+        document.querySelectorAll('#payment-history-list tr').forEach(row => {
             const hay = row.dataset.search || '';
             row.style.display = (!term || hay.includes(term)) ? '' : 'none';
         });
@@ -1438,39 +1455,35 @@ async function loadPaymentHistory(){
     window.loadPaymentHistory = loadPaymentHistory;
 
     // ============================================
-    // FUND ADD HISTORY — jab bhi user ne fund add
-    // kiya (balance top-up), wo yahan dikhega with
-    // date + time + amount + method
+    // FUND ADD HISTORY
     // ============================================
-    let allFundHistory = [];
-
     async function loadFundHistory() {
         const tbody = document.getElementById('fund-history-list');
         if(!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="9"><i class="fas fa-spinner fa-spin"></i> Loading fund history...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:25px;"><i class="fas fa-spinner fa-spin" style="color:var(--neon-cyan);font-size:18px;"></i> Loading fund history...</td></tr>';
 
         try {
-            const [histSnap, ordersSnap, usersSnap, manualSnap] = await Promise.all([
-                get(ref(db, 'payment_history')),
-                get(ref(db, 'orders')),
-                get(ref(db, 'users')),
-                get(ref(db, 'payments'))
+            const [histVal, ordersVal, usersVal, manualVal] = await Promise.all([
+                safeDbRead('payment_history'),
+                safeDbRead('orders'),
+                safeDbRead('users'),
+                safeDbRead('payments')
             ]);
 
-            const users = usersSnap.exists() ? usersSnap.val() : {};
+            const users = usersVal || {};
             const merged = new Map();
 
-            // From payment_history (auto top-ups via FamGateway / Gmail)
-            if(histSnap.exists()) {
-                Object.entries(histSnap.val()).forEach(([oid, rec]) => {
+            // 1. From payment_history (auto top-ups)
+            if(histVal && typeof histVal === 'object') {
+                Object.entries(histVal).forEach(([oid, rec]) => {
                     if(!rec) return;
                     merged.set(oid, { ...rec, order_id: rec.order_id || oid, _src: 'auto' });
                 });
             }
 
-            // From orders (completed fund adds not yet in payment_history)
-            if(ordersSnap.exists()) {
-                Object.entries(ordersSnap.val()).forEach(([oid, o]) => {
+            // 2. From orders (completed fund adds)
+            if(ordersVal && typeof ordersVal === 'object') {
+                Object.entries(ordersVal).forEach(([oid, o]) => {
                     if(!o || typeof o !== 'object') return;
                     if(merged.has(oid)) {
                         const ex = merged.get(oid);
@@ -1499,9 +1512,9 @@ async function loadPaymentHistory(){
                 });
             }
 
-            // From payments (manual screenshot approvals)
-            if(manualSnap.exists()) {
-                Object.entries(manualSnap.val()).forEach(([pid, pay]) => {
+            // 3. From payments (manual approvals)
+            if(manualVal && typeof manualVal === 'object') {
+                Object.entries(manualVal).forEach(([pid, pay]) => {
                     if(!pay || pay.status !== 'approved') return;
                     const manualKey = 'MANUAL_' + pid;
                     if(!merged.has(manualKey)) {
@@ -1528,13 +1541,15 @@ async function loadPaymentHistory(){
                 const source = p._raw ? Object.assign({}, p._raw, p) : p;
                 const dt = phResolveDate(source);
                 const { date, time } = phFmtDate(dt);
+                const uid = p.uid || p.user_uid || '';
+                const uEmail = users[uid]?.email || (uid ? String(uid).substring(0, 10) : 'Unknown');
                 return {
                     order_id: p.order_id,
-                    uid: p.uid || '',
-                    userEmail: users[p.uid]?.email || (p.uid ? String(p.uid).substring(0, 10) : 'Unknown'),
+                    uid: uid,
+                    userEmail: uEmail,
                     amount: Number(p.amount || 0),
                     status: p.status || 'completed',
-                    method: p.method || '',
+                    method: p.method || p.payment_method || '',
                     utr: p.utr || 'N/A',
                     txn_id: p.txn_id || 'N/A',
                     dateStr: date,
@@ -1554,16 +1569,16 @@ async function loadPaymentHistory(){
             const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
             const today = rows.filter(p => p.ts >= startToday).reduce((s, p) => s + p.amount, 0);
             const month = rows.filter(p => p.ts >= startMonth).reduce((s, p) => s + p.amount, 0);
-            const fmt = n => '&#8377;' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+            const fmt = n => '₹' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
-            document.getElementById('fh-total-amount').innerHTML = fmt(total);
-            document.getElementById('fh-today-amount').innerHTML = fmt(today);
-            document.getElementById('fh-month-amount').innerHTML = fmt(month);
-            document.getElementById('fh-total-count').innerText = rows.length;
+            const fhTot = document.getElementById('fh-total-amount'); if(fhTot) fhTot.innerText = fmt(total);
+            const fhTod = document.getElementById('fh-today-amount'); if(fhTod) fhTod.innerText = fmt(today);
+            const fhMon = document.getElementById('fh-month-amount'); if(fhMon) fhMon.innerText = fmt(month);
+            const fhCnt = document.getElementById('fh-total-count'); if(fhCnt) fhCnt.innerText = rows.length;
 
         } catch(e) {
             console.error('Fund history error:', e);
-            tbody.innerHTML = `<tr><td colspan="9" style="color:var(--error);">Failed to load: ${e.message || e}</td></tr>`;
+            renderFundHistory();
         }
     }
 
@@ -1571,8 +1586,8 @@ async function loadPaymentHistory(){
         const tbody = document.getElementById('fund-history-list');
         if(!tbody) return;
 
-        if(allFundHistory.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted);">Abhi tak koi fund add record nahi hai.</td></tr>';
+        if(!allFundHistory || allFundHistory.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fas fa-wallet" style="font-size:24px;margin-bottom:8px;display:block;"></i>Abhi tak koi fund add record nahi hai.</td></tr>';
             return;
         }
 
@@ -1580,20 +1595,20 @@ async function loadPaymentHistory(){
         allFundHistory.forEach((p, i) => {
             const row = document.createElement('tr');
             const badge = p.status === 'completed'
-                ? '<span style="color:#0f0;font-weight:600;">&#10004; Success</span>'
-                : '<span style="color:var(--warning);">Pending</span>';
+                ? '<span style="color:#00ff66;font-weight:700;"><i class="fas fa-check-circle"></i> Success</span>'
+                : '<span style="color:var(--warning);font-weight:700;"><i class="fas fa-clock"></i> Pending</span>';
             const refId = (p.utr && p.utr !== 'N/A') ? p.utr : (p.txn_id && p.txn_id !== 'N/A' ? p.txn_id : 'N/A');
 
             row.dataset.search = [p.userEmail, p.order_id, refId].join(' ').toLowerCase();
             row.innerHTML = `
                 <td>${i + 1}</td>
                 <td><strong>${p.userEmail}</strong></td>
-                <td style="color:var(--success);font-weight:700;">&#8377;${p.amount.toLocaleString('en-IN')}</td>
+                <td style="color:var(--success);font-weight:700;font-size:14px;">₹${p.amount.toLocaleString('en-IN')}</td>
                 <td><span style="color:var(--neon-cyan);">${p.dateStr}</span></td>
                 <td><span style="color:var(--warning);">${p.timeStr}</span></td>
                 <td><small>${phMethodLabel(p.method)}</small></td>
-                <td><code style="font-size:11px;color:var(--neon-cyan);">${refId}</code></td>
-                <td><small style="font-size:10px;color:var(--text-muted);">${p.order_id}</small></td>
+                <td><code style="font-size:11px;color:var(--neon-cyan);background:rgba(0,240,255,0.08);padding:3px 6px;border-radius:4px;">${refId}</code></td>
+                <td><small style="font-size:11px;color:var(--text-muted);">${p.order_id}</small></td>
                 <td>${badge}</td>
             `;
             tbody.appendChild(row);
@@ -1601,7 +1616,7 @@ async function loadPaymentHistory(){
     }
 
     window.filterFundHistory = () => {
-        const term = (document.getElementById('fh-search-input').value || '').toLowerCase().trim();
+        const term = (document.getElementById('fh-search-input')?.value || '').toLowerCase().trim();
         document.querySelectorAll('#fund-history-list tr').forEach(row => {
             const hay = row.dataset.search || '';
             row.style.display = (!term || hay.includes(term)) ? '' : 'none';

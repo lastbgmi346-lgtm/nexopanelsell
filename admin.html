@@ -858,69 +858,114 @@
                     </div>
                 </div>
 
-                <!-- ✅ FAMPAY LIVE SCANNER & 10-SLOT AUTO-ROTATION CARD -->
-                <div class="card" style="border: 1.5px solid rgba(0, 240, 255, 0.35); background: rgba(14, 18, 27, 0.95); margin-bottom: 25px; box-shadow: 0 0 25px rgba(0, 240, 255, 0.1);">
-                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <h3><i class="fas fa-qrcode" style="color:var(--neon-cyan);"></i> FamPay Live Scanner & 10-Slot Auto-Rotation</h3>
-                        <button class="btn btn-sm" onclick="loadFamPayStatus()" style="background:rgba(0,240,255,0.1); color:var(--neon-cyan);"><i class="fas fa-sync"></i> Refresh Status</button>
+                <!-- ✅ FAMPAY LIVE SCANNER & 1-SLOT AUTO-ROTATION CARD -->
+                <div class="card"
+                    style="border: 1.5px solid rgba(0, 240, 255, 0.35); background: rgba(14, 18, 27, 0.95); margin-bottom: 25px; box-shadow: 0 0 25px rgba(0, 240, 255, 0.1);">
+                    <div class="card-header"
+                        style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <h3><i class="fas fa-qrcode" style="color:var(--neon-cyan);"></i> FamPay Live Scanner & 1-Slot
+                            Auto-Rotation</h3>
+                        <button class="btn btn-sm" onclick="loadFamPayStatus()"
+                            style="background:rgba(0,240,255,0.1); color:var(--neon-cyan);"><i class="fas fa-sync"></i>
+                            Refresh Status</button>
                     </div>
 
-                    <div style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.18); border-radius:12px; padding:18px; margin:15px 0;">
-                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; margin-bottom:15px;">
+                    <div
+                        style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.18); border-radius:12px; padding:18px; margin:15px 0;">
+                        <div
+                            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; margin-bottom:15px;">
                             <div>
-                                <span style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Active Website Scanner:</span>
+                                <span
+                                    style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Active
+                                    Website Scanner:</span>
                                 <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                                    <span class="status-indicator" style="width:10px; height:10px; border-radius:50%; background:var(--success); display:inline-block; box-shadow:0 0 8px var(--success);"></span>
-                                    <strong id="adm-fampay-active-upi" style="font-family:var(--font-tech); font-size:17px; color:var(--neon-cyan);">aditya802@fam</strong>
+                                    <span class="status-indicator"
+                                        style="width:10px; height:10px; border-radius:50%; background:var(--success); display:inline-block; box-shadow:0 0 8px var(--success);"></span>
+                                    <strong id="adm-fampay-active-upi"
+                                        style="font-family:var(--font-tech); font-size:17px; color:var(--neon-cyan);">aditya802@fam</strong>
                                 </div>
-                                <small id="adm-fampay-active-account-title" style="color:var(--text-muted); font-size:12px;">Account 1 (adityakumar73699065@gmail.com)</small>
+                                <small id="adm-fampay-active-account-title"
+                                    style="color:var(--text-muted); font-size:12px;">Account 1
+                                    (adityakumar73699065@gmail.com)</small>
                             </div>
                             <div>
-                                <span style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Payments Remaining:</span>
+                                <span
+                                    style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Payments
+                                    Remaining:</span>
                                 <div style="margin-top:4px;">
-                                    <strong id="adm-fampay-remaining" style="font-family:var(--font-tech); font-size:18px; color:var(--warning);">10 Payments Left</strong>
+                                    <strong id="adm-fampay-remaining"
+                                        style="font-family:var(--font-tech); font-size:18px; color:var(--warning);">1
+                                        Payment Left</strong>
                                 </div>
-                                <small id="adm-fampay-auto-switch-hint" style="color:var(--text-muted); font-size:12px;">Auto-switches to Account 2 with fresh 10 slots</small>
+                                <small id="adm-fampay-auto-switch-hint"
+                                    style="color:var(--text-muted); font-size:12px;">Auto-switches to other account after each successful payment</small>
                             </div>
                             <div>
-                                <span style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Total Slot Capacity:</span>
+                                <span
+                                    style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Total
+                                    Slot Capacity:</span>
                                 <div style="margin-top:4px;">
-                                    <strong id="adm-fampay-limit-display" style="font-family:var(--font-tech); font-size:18px; color:#fff;">10 Fixed Slots</strong>
+                                    <strong id="adm-fampay-limit-display"
+                                        style="font-family:var(--font-tech); font-size:18px; color:#fff;">1 Slot (Alternating)</strong>
                                 </div>
-                                <small style="color:var(--text-muted); font-size:12px;">10 payments per account cycle</small>
+                                <small style="color:var(--text-muted); font-size:12px;">Alternates every 1 payment between accounts</small>
                             </div>
                         </div>
 
                         <!-- Progress Bar -->
                         <div style="margin-top:10px;">
-                            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:6px;">
-                                <span>Completed Payments: <strong id="adm-fampay-progress-text" style="color:#fff;">0 / 10</strong></span>
-                                <span id="adm-fampay-percent-text" style="color:var(--neon-cyan); font-weight:700;">0%</span>
+                            <div
+                                style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:6px;">
+                                <span>Completed Payments: <strong id="adm-fampay-progress-text" style="color:#fff;">0 /
+                                        1</strong></span>
+                                <span id="adm-fampay-percent-text"
+                                    style="color:var(--neon-cyan); font-weight:700;">0%</span>
                             </div>
-                            <div style="background:rgba(255,255,255,0.1); height:10px; border-radius:5px; overflow:hidden;">
-                                <div id="adm-fampay-bar" style="background:linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); height:100%; width:0%; transition:width 0.4s ease;"></div>
+                            <div
+                                style="background:rgba(255,255,255,0.1); height:10px; border-radius:5px; overflow:hidden;">
+                                <div id="adm-fampay-bar"
+                                    style="background:linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); height:100%; width:0%; transition:width 0.4s ease;">
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Action Controls -->
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:15px; margin-top:15px;">
-                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
-                            <label style="color:#fff; font-size:13px; font-weight:600; display:block; margin-bottom:8px;">✏️ Set Remaining Payments (Kitna payment baaki rakhna hai)</label>
+                    <div
+                        style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:15px; margin-top:15px;">
+                        <div
+                            style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
+                            <label
+                                style="color:#fff; font-size:13px; font-weight:600; display:block; margin-bottom:8px;">✏️
+                                Set Remaining Slot (0 or 1)</label>
                             <div style="display:flex; gap:8px;">
-                                <input id="adm-fampay-remaining-input" type="number" min="0" max="10" value="10" placeholder="e.g. 8" style="padding:8px 12px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:#fff; width:100%;">
-                                <button class="btn btn-primary btn-sm" onclick="saveFamPayRemaining()" style="flex-shrink:0;"><i class="fas fa-save"></i> Set Remaining</button>
+                                <input id="adm-fampay-remaining-input" type="number" min="0" max="1" value="1"
+                                    placeholder="1 or 0"
+                                    style="padding:8px 12px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:#fff; width:100%;">
+                                <button class="btn btn-primary btn-sm" onclick="saveFamPayRemaining()"
+                                    style="flex-shrink:0;"><i class="fas fa-save"></i> Set Remaining</button>
                             </div>
-                            <small style="color:var(--text-muted); font-size:11px; margin-top:6px; display:block;">Agar 8 daalenge toh 2 complete ho jayega aur 8 payments baaki bachega.</small>
+                            <small style="color:var(--text-muted); font-size:11px; margin-top:6px; display:block;">1 daalenge toh full slot bachega, 0 daalenge toh turant dusre account pe rotate ho jayega.</small>
                         </div>
 
-                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
-                            <label style="color:#fff; font-size:13px; font-weight:600; display:block; margin-bottom:8px;">⚡ Manual Switch / Reset (Full 10 Slots)</label>
+                        <div
+                            style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
+                            <label
+                                style="color:#fff; font-size:13px; font-weight:600; display:block; margin-bottom:8px;">⚡
+                                Manual Switch / Reset (Fresh 1 Slot)</label>
                             <div style="display:flex; gap:8px;">
-                                <button class="btn btn-sm btn-outline" id="btn-switch-fampay" onclick="switchFamPayAccount()" style="flex:1; border-color:var(--neon-purple); color:#fff;"><i class="fas fa-exchange-alt"></i> Switch to Other Account</button>
-                                <button class="btn btn-sm btn-outline" onclick="resetFamPayCounter()" title="Reset to full 10 remaining" style="border-color:var(--warning); color:var(--warning);"><i class="fas fa-undo"></i> Reset to 10</button>
+                                <button class="btn btn-sm btn-outline" id="btn-switch-fampay"
+                                    onclick="switchFamPayAccount()"
+                                    style="flex:1; border-color:var(--neon-purple); color:#fff;"><i
+                                        class="fas fa-exchange-alt"></i> Switch to Other Account</button>
+                                <button class="btn btn-sm btn-outline" onclick="resetFamPayCounter()"
+                                    title="Reset to 1 slot remaining"
+                                    style="border-color:var(--warning); color:var(--warning);"><i
+                                        class="fas fa-undo"></i> Reset to 1</button>
                             </div>
-                            <small style="color:var(--text-muted); font-size:11px; margin-top:6px; display:block;">Switch karte hi naya account fresh 10 slots ke sath live ho jayega.</small>
+                            <small
+                                style="color:var(--text-muted); font-size:11px; margin-top:6px; display:block;">Switch
+                                karte hi dusra account fresh 1 slot ke sath live ho jayega.</small>
                         </div>
                     </div>
                 </div>
@@ -2749,7 +2794,7 @@
         };
 
         // ============================================
-        // ✅ FAMPAY SCANNER & ROTATION CONTROLLER
+        // ✅ FAMPAY SCANNER & ROTATION CONTROLLER (1-SLOT ALTERNATING)
         // ============================================
         window.loadFamPayStatus = async () => {
             try {
@@ -2760,9 +2805,9 @@
                 const activeAcc = data.active_account || 1;
                 const activeUpi = data.active_upi || (activeAcc === 1 ? 'aditya802@fam' : 'krishna802@fam');
                 const curCount = data.current_count || 0;
-                const limit = 10;
-                const remaining = data.remaining !== undefined ? data.remaining : Math.max(0, 10 - curCount);
-                const percent = Math.min(100, Math.round((curCount / 10) * 100));
+                const limit = 1;
+                const remaining = data.remaining !== undefined ? data.remaining : Math.max(0, 1 - curCount);
+                const percent = Math.min(100, Math.round((curCount / 1) * 100));
 
                 const nextAcc = activeAcc === 1 ? 2 : 1;
                 const nextUpi = nextAcc === 1 ? 'aditya802@fam' : 'krishna802@fam';
@@ -2773,22 +2818,22 @@
 
                 const titleEl = document.getElementById('adm-fampay-active-account-title');
                 if (titleEl) {
-                    titleEl.innerText = activeAcc === 1 
-                        ? 'Account 1 (adityakumar73699065@gmail.com)' 
+                    titleEl.innerText = activeAcc === 1
+                        ? 'Account 1 (adityakumar73699065@gmail.com)'
                         : 'Account 2 (adityakumar7369906597@gmail.com)';
                 }
 
                 const remEl = document.getElementById('adm-fampay-remaining');
-                if (remEl) remEl.innerText = `${remaining} Payments Left`;
+                if (remEl) remEl.innerText = `${remaining} Payment${remaining === 1 ? '' : 's'} Left`;
 
                 const hintEl = document.getElementById('adm-fampay-auto-switch-hint');
-                if (hintEl) hintEl.innerText = `Auto-switches to Account ${nextAcc} (${nextUpi}) with fresh 10 slots`;
+                if (hintEl) hintEl.innerText = `Auto-switches to Account ${nextAcc} (${nextUpi}) after 1 payment`;
 
                 const limitDisp = document.getElementById('adm-fampay-limit-display');
-                if (limitDisp) limitDisp.innerText = `10 Fixed Slots`;
+                if (limitDisp) limitDisp.innerText = `1 Slot (Alternating)`;
 
                 const progText = document.getElementById('adm-fampay-progress-text');
-                if (progText) progText.innerText = `${curCount} / 10`;
+                if (progText) progText.innerText = `${curCount} / 1`;
 
                 const pctText = document.getElementById('adm-fampay-percent-text');
                 if (pctText) pctText.innerText = `${percent}%`;
@@ -2810,13 +2855,18 @@
         window.saveFamPayRemaining = async () => {
             const input = document.getElementById('adm-fampay-remaining-input');
             const remaining = parseInt(input.value);
-            if (isNaN(remaining) || remaining < 0 || remaining > 10) return showToast("Enter remaining payments between 0 and 10", "error");
+            if (isNaN(remaining) || (remaining !== 0 && remaining !== 1)) return showToast("Enter remaining slot 0 or 1", "error");
 
             try {
+                const token = currentAdmin ? await currentAdmin.getIdToken() : '';
                 const res = await fetch('https://nexostore.myvipsite.fun/admin-fampay.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'set_remaining', remaining: remaining })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'X-Admin-Key': 'nexo_adm_9905976007'
+                    },
+                    body: JSON.stringify({ action: 'set_remaining', remaining: remaining, token: token })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -2831,12 +2881,17 @@
         };
 
         window.switchFamPayAccount = async () => {
-            if (!confirm("Are you sure you want to switch active FamPay scanner account? The other account will start with full 10 slots.")) return;
+            if (!confirm("Are you sure you want to switch active FamPay scanner account? The other account will start with fresh 1 slot.")) return;
             try {
+                const token = currentAdmin ? await currentAdmin.getIdToken() : '';
                 const res = await fetch('https://nexostore.myvipsite.fun/admin-fampay.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'switch' })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'X-Admin-Key': 'nexo_adm_9905976007'
+                    },
+                    body: JSON.stringify({ action: 'switch', token: token })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -2851,12 +2906,17 @@
         };
 
         window.resetFamPayCounter = async () => {
-            if (!confirm("Reset counter to 0 for active account (Full 10 payments remaining)?")) return;
+            if (!confirm("Reset counter to 0 for active account (Full 1 slot remaining)?")) return;
             try {
+                const token = currentAdmin ? await currentAdmin.getIdToken() : '';
                 const res = await fetch('https://nexostore.myvipsite.fun/admin-fampay.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'reset_count' })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'X-Admin-Key': 'nexo_adm_9905976007'
+                    },
+                    body: JSON.stringify({ action: 'reset_count', token: token })
                 });
                 const data = await res.json();
                 if (data.success) {
